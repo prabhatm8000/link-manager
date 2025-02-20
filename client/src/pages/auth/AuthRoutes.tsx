@@ -3,6 +3,7 @@ import PageNotFound from "../PageNotFound";
 import AuthLogin from "./components/AuthLogin";
 import AuthSignUp from "./components/AuthSignUp";
 import AuthLayout from "./AuthLayout";
+import AuthOtp from "./components/AuthOtp";
 
 const AuthRoutes = () => {
     return (
@@ -20,6 +21,14 @@ const AuthRoutes = () => {
                 element={
                     <AuthLayout>
                         <AuthSignUp />
+                    </AuthLayout>
+                }
+            />
+            <Route
+                path="otp/:email"
+                element={
+                    <AuthLayout>
+                        <AuthOtp />
                     </AuthLayout>
                 }
             />

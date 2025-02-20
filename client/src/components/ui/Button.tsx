@@ -5,9 +5,12 @@ import {
     type BasicElementProps,
 } from "./classUtity";
 
-interface ButtonProps extends BasicElementProps {
+interface ButtonProps
+    extends BasicElementProps,
+        React.ButtonHTMLAttributes<HTMLButtonElement> {
     type?: "button" | "submit" | "reset";
     disabled?: boolean;
+    onClick?: (event: React.MouseEvent) => void;
 }
 
 const Button: FC<ButtonProps> = ({

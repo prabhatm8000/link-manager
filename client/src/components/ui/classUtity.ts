@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 
 export interface BasicElementProps {
-    onClick?: () => void;
     children?: ReactNode;
     className?: string;
     variant?:
