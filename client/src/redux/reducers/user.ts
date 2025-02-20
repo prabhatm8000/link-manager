@@ -16,8 +16,8 @@ const initialState: IUserState = {
     isOtpSent: false,
 };
 
-const usersSlice = createSlice({
-    name: "users",
+const userSlice = createSlice({
+    name: "user",
     initialState,
     reducers: {},
     extraReducers: (builder) => {
@@ -102,4 +102,4 @@ const usersSlice = createSlice({
     },
 });
 
-export default usersSlice.reducer;
+export default userSlice.reducer;

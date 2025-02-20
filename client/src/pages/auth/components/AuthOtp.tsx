@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import TitleText from "../../../components/TitleText";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
@@ -16,6 +16,7 @@ const AuthOtp = () => {
     const param = useParams();
     const userState: IUserState = useSelector((state: any) => state.users);
     const dispatch = useDispatch<AppDispatch>();
+    const navigate = useNavigate();
     const [timeLeft, setTimeLeft] = useState(5 * 60);
 
     useEffect(() => {
@@ -34,6 +35,12 @@ const AuthOtp = () => {
             })
         );
     });
+
+    useEffect(() => {
+        if (userState.isAuthenticated) {
+            navigate("/dashboard");
+        }
+    }, [userState]);
 
     return (
         <Card variant="none" className="p-6 flex flex-col gap-4 w-full">
@@ -55,7 +62,7 @@ const AuthOtp = () => {
                 <Button
                     className="my-5"
                     type="submit"
-                    // disabled={userState.loading || timeLeft <= 0}
+                    disabled={userState?.loading || timeLeft <= 0}
                 >
                     Verify
                 </Button>

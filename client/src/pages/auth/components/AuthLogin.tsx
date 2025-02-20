@@ -1,18 +1,40 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import Input from "../../../components/ui/Input";
 import TitleText from "../../../components/TitleText";
 import { useForm } from "react-hook-form";
+import type { IUserState } from "../../../redux/reducers/types";
+import { useSelector } from "react-redux";
+import type { AppDispatch } from "../../../redux/store";
+import { useDispatch } from "react-redux";
+import { useEffect } from "react";
+import { login } from "../../../redux/thunks/usersThunk";
 
 const AuthLogin = () => {
     const {
         register,
         handleSubmit,
+        formState: { errors },
     } = useForm();
 
+    const user: IUserState = useSelector((state: any) => state.user);
+    const dispatch = useDispatch<AppDispatch>();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user?.isAuthenticated) {
+            navigate("/workspace");
+        }
+    }, [user]);
+
     const onSubmit = handleSubmit((data) => {
-        console.log(data);
+        dispatch(
+            login({
+                email: data.email,
+                password: data.password,
+            })
+        );
     });
 
     return (
@@ -28,6 +50,11 @@ const AuthLogin = () => {
                     className="w-full"
                     autoComplete="email"
                 />
+                {errors.email && (
+                    <span className="text-red-500">
+                        {errors.email.message as string}
+                    </span>
+                )}
                 <Input
                     {...register("password", { required: true })}
                     id="password"
@@ -37,7 +64,14 @@ const AuthLogin = () => {
                     className="w-full"
                     autoComplete="password"
                 />
-                <Button className="my-5">Login</Button>
+                {errors.password && (
+                    <span className="text-red-500">
+                        {errors.password.message as string}
+                    </span>
+                )}
+                <Button disabled={user?.loading} className="my-5">
+                    Login
+                </Button>
             </form>
             <div className="text-center text-black/70 dark:text-white/70">
                 don't have an account?{" "}

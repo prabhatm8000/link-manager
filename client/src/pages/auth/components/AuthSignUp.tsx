@@ -34,7 +34,7 @@ const AuthSignUp = () => {
     });
 
     useEffect(() => {
-        if (!userState?.error && !userState.loading && userState?.isOtpSent) {
+        if (!userState?.error && !userState?.loading && userState?.isOtpSent) {
             navigate("/auth/otp/" + getValues("email"));
         }
     }, [userState]);
@@ -52,24 +52,24 @@ const AuthSignUp = () => {
                     className="w-full"
                     autoComplete="name"
                 />
-                {errors.email && (
-                    <p className="text-red-500 text-sm">
-                        {errors.email.message as string}
-                    </p>
+                {errors.name && (
+                    <span className="text-red-500 text-sm">
+                        {errors.name.message as string}
+                    </span>
                 )}
                 <Input
                     {...register("email", { required: "Email is required" })}
                     id="email"
                     type="email"
                     placeholder="Email"
-                    variant={errors.name ? "danger-outline" : "outline"}
+                    variant={errors.email ? "danger-outline" : "outline"}
                     className="w-full"
                     autoComplete="email"
                 />
                 {errors.email && (
-                    <p className="text-red-500 text-sm">
+                    <span className="text-red-500 text-sm">
                         {errors.email.message as string}
-                    </p>
+                    </span>
                 )}
                 <Input
                     {...register("password", {
@@ -83,14 +83,14 @@ const AuthSignUp = () => {
                     id="password"
                     type="password"
                     placeholder="Password"
-                    variant={errors.name ? "danger-outline" : "outline"}
+                    variant={errors.password ? "danger-outline" : "outline"}
                     className="w-full"
                     autoComplete="new-password"
                 />
                 {errors.password && (
-                    <p className="text-red-500 text-sm">
+                    <span className="text-red-500 text-sm">
                         {errors.password.message as string}
-                    </p>
+                    </span>
                 )}
                 <Input
                     {...register("confirmPassword", {
@@ -104,19 +104,19 @@ const AuthSignUp = () => {
                     id="confirmPassword"
                     type="password"
                     placeholder="Confirm Password"
-                    variant={errors.name ? "danger-outline" : "outline"}
+                    variant={errors.confirmPassword ? "danger-outline" : "outline"}
                     className="w-full"
                     autoComplete="new-password"
                 />
                 {errors.confirmPassword && (
-                    <p className="text-red-500 text-sm">
+                    <span className="text-red-500 text-sm">
                         {errors.confirmPassword.message as string}
-                    </p>
+                    </span>
                 )}
                 <Button
                     className="my-5"
                     type="submit"
-                    disabled={userState.loading}
+                    disabled={userState?.loading}
                 >
                     Signup
                 </Button>

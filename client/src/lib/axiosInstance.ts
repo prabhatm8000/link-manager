@@ -17,7 +17,7 @@ const axiosInstance = axios.create({
         try {
             const jsonPayload = JSON.parse(payload);
             if (jsonPayload.message) toast(jsonPayload.message);
-            return jsonPayload; // ✅ Return parsed JSON, not raw payload
+            return payload; // ✅ Return parsed JSON, not raw payload
         } catch (error) {
             return payload; // In case the response is not JSON
         }
