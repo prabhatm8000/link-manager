@@ -17,7 +17,7 @@ export const otpCookieConfig = {
     httpOnly: true,
     secure: true,
     sameSite: "strict" as "strict" | "lax" | "none",
-    maxAge: 5 * 60 * 1000, // 5 minutes
+    maxAge: 50 * 60 * 1000, // 5 minutes
 }
 
 // otp

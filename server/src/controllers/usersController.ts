@@ -1,35 +1,48 @@
 import type { Request, Response } from "express";
 import { APIResponseError } from "../errors/response";
 import asyncWrapper from "../lib/asyncWrapper";
-import { setAuthCookie } from "../lib/cookie";
+import { setAuthCookie, setOtpCookie } from "../lib/cookie";
 import usersService from "../services/usersService";
+import otpService from "../services/otpService";
 
-const register = asyncWrapper(async (req: Request, res: Response) => {
-    const { name, email, password, profilePicture } = req.body;
+const registerAndSendOtp = asyncWrapper(async (req: Request, res: Response) => {
+    const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
         throw new APIResponseError("Missing required fields", 400, false);
     }
 
-    const user = await usersService.createUser({
-        name,
-        email,
-        password,
-        profilePicture,
-    });
-
-    if (!user) {
+    const user = await usersService.getUserByEmail(email);
+    if (user) {
         throw new APIResponseError("User already exists", 400, false);
     }
 
-    setAuthCookie(res, user);
+    await otpService.genarateAndSendOtpViaMain(email);
+    setOtpCookie(res, { email, name, password });
 
-    return res.status(200).json({
-        success: true,
-        message: "User created successfully",
-        data: user,
-    });
+    res.status(200).json({ success: true, message: "OTP sent successfully" });
 });
+
+const registerAndVerifyOtp = asyncWrapper(
+    async (req: Request, res: Response) => {
+        // from middleware
+        const { name, email, password } = req.body;
+
+        const user = await usersService.createUser({
+            name,
+            email,
+            password,
+        });
+
+        setAuthCookie(res, user);
+
+        res.status(200).json({
+            success: true,
+            message: "User created successfully",
+            data: user,
+        });
+    }
+);
 
 const login = asyncWrapper(async (req: Request, res: Response) => {
     const { email, password } = req.body;
@@ -41,9 +54,24 @@ const login = asyncWrapper(async (req: Request, res: Response) => {
 
     setAuthCookie(res, user);
 
-    return res.status(200).json({
+    res.status(200).json({
         success: true,
         message: "User logged in successfully",
+        data: user,
+    });
+});
+
+const verify = asyncWrapper(async (req: Request, res: Response) => {
+    // from middleware
+    const user = req.user;
+
+    if (!user) {
+        throw new APIResponseError("User not found", 404, false);
+    }
+
+    res.status(200).json({
+        success: true,
+        message: "",
         data: user,
     });
 });
@@ -56,7 +84,7 @@ const updateUser = asyncWrapper(async (req: Request, res: Response) => {
         throw new APIResponseError("User not found", 404, false);
     }
 
-    return res.status(200).json({
+    res.status(200).json({
         success: true,
         message: "User updated successfully",
         data: user,
@@ -71,7 +99,7 @@ const deactivateUser = asyncWrapper(async (req: Request, res: Response) => {
         throw new APIResponseError("User not found", 404, false);
     }
 
-    return res.status(200).json({
+    res.status(200).json({
         success: true,
         message: "User deactivated successfully",
         data: user,
@@ -79,8 +107,10 @@ const deactivateUser = asyncWrapper(async (req: Request, res: Response) => {
 });
 
 const usersController = {
-    register,
+    registerAndSendOtp,
+    registerAndVerifyOtp,
     login,
+    verify,
     updateUser,
     deactivateUser,
 };

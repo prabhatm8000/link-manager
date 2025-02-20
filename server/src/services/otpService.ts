@@ -1,4 +1,5 @@
 import { otpConfig } from "../constants/configs";
+import { APIResponseError } from "../errors/response";
 import { sendOtpEmail } from "../lib/mail";
 import Otp from "../models/otp";
 
@@ -11,9 +12,17 @@ const genarateOtp = (size: number = 6): string => {
 const genarateAndSendOtpViaMain = async (email: string) => {
     const otp = genarateOtp(otpConfig.size);
     const expiresAt = new Date(Date.now() + otpConfig.expiresAt);
-    const otpObj = await Otp.create({ email, otp: otp, expiresAt });
+    let otpObj = await Otp.findOne({ email });
+    if (otpObj) {
+        otpObj.otp = otp;
+        otpObj.expiresAt = expiresAt;
+    } else {
+        otpObj = new Otp({ email, otp, expiresAt });    
+    }
+    await otpObj.save(); 
+
     if (!otpObj) {
-        throw new Error("Failed to create OTP");
+        throw new Error("Failed to create or update OTP");
     }
 
     await sendOtpEmail(email, otp);
@@ -23,16 +32,16 @@ const verifyOtp = async (email: string, otp: string): Promise<boolean> => {
     const otpObj = await Otp.findOne({ email });
 
     if (!otpObj) {
-        throw new Error("Invalid OTP");
+        throw new APIResponseError("Invalid OTP", 400, false);
     }
 
     if (otpObj.expiresAt < new Date()) {
-        throw new Error("OTP has expired");
+        throw new APIResponseError("OTP has expired", 400, false);
     }
 
     const isMatch = await otpObj.compareOtp(otp);
     if (!isMatch) {
-        throw new Error("Invalid OTP");
+        throw new APIResponseError("Invalid OTP", 400, false);
     }
 
     await otpObj.deleteOne();

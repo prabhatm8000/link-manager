@@ -1,10 +1,15 @@
+import { config } from "dotenv";
 import nodemailer from "nodemailer";
+import envVars from "../constants/envVars";
 
+config();
 const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false,
     auth: {
-        user: "your-email@gmail.com",
-        pass: "your-app-password",
+        user: envVars.EMAIL,
+        pass: envVars.EMAIL_PASSWORD,
     },
 });
 
@@ -20,7 +25,7 @@ async function sendMail({
     html: string;
 }) {
     const mailOptions = {
-        from: "your-email@gmail.com",
+        from: `Teleport - <${envVars.EMAIL}>`,
         to: to,
         subject: subject,
         text: text,
@@ -65,4 +70,5 @@ async function sendPasswordResetEmail(to: string, resetToken: string) {
     await sendMail(mailObj);
 }
 
-export { sendOtpEmail, sendVerificationEmail, sendPasswordResetEmail };
+export { sendOtpEmail, sendPasswordResetEmail, sendVerificationEmail };
+

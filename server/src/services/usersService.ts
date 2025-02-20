@@ -46,6 +46,11 @@ const getUserById = async (id: string): Promise<IUser | null> => {
     return user;
 };
 
+const getUserByEmail = async (email: string): Promise<IUser | null> => {
+    const user = await User.findOne({ email });
+    return user;
+}
+
 const updateUser = async (
     id: string,
     data: {
@@ -74,6 +79,7 @@ const usersService = {
     login,
     createUser,
     getUserById,
+    getUserByEmail,
     updateUser,
     deactivateUser,
 };

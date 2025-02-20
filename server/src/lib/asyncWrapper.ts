@@ -13,19 +13,24 @@ const asyncWrapper = (
             await callback(req, res, next);
             if (next) next();
         } catch (error) {
-            if (error instanceof APIResponseError) {
-                res.status(error.status).json({
-                    success: error.success,
-                    message: error.message,
-                });
-            } else {
-                res.status(500).json({
-                    success: false,
-                    message: "Internal Server Error",
-                });
-            }
+            catchHandler(error, res);
         }
     };
+};
+
+export const catchHandler = (error: any, res: Response) => {
+    if (error instanceof APIResponseError) {
+        res.status(error.status).json({
+            success: error.success,
+            message: error.message,
+        });
+    } else {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
+    }
 };
 
 export default asyncWrapper;

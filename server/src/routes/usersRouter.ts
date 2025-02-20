@@ -5,9 +5,17 @@ import verifyOtpMiddleware from "../middlewares/verifyOtpMiddleware";
 
 const usersRouter = Router();
 
-usersRouter.post("/register", [verifyOtpMiddleware], usersController.register);
+usersRouter.post("/register-send-otp", [], usersController.registerAndSendOtp);
+
+usersRouter.post(
+    "/register-verify-otp",
+    [verifyOtpMiddleware],
+    usersController.registerAndVerifyOtp
+);
 
 usersRouter.post("/login", [], usersController.login);
+
+usersRouter.get("/verify", [authMiddleware], usersController.verify);
 
 usersRouter.patch("/update", [authMiddleware], usersController.updateUser);
 

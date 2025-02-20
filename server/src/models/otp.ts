@@ -30,14 +30,14 @@ const otpSchema = new mongoose.Schema<IOtp>(
     }
 );
 
-const Otp = mongoose.model<IOtp>("Otp", otpSchema);
-
-export default Otp;
-
 otpSchema.index({ email: 1 }, { unique: true });
 
 otpSchema.pre("save", async function (next) {
-    if (this.isModified("otp")) {
+    if (this.isNew || this.isModified("otp")) {
+        if (!this.otp) {
+            return next(new Error("OTP is required before saving"));
+        }
+
         this.otp = await bcrypt.hash(this.otp, 10);
     }
     next();
@@ -46,3 +46,6 @@ otpSchema.pre("save", async function (next) {
 otpSchema.methods.compareOtp = async function (otp: string): Promise<boolean> {
     return await bcrypt.compare(otp, this.otp);
 };
+
+const Otp = mongoose.model<IOtp>("Otp", otpSchema);
+export default Otp;

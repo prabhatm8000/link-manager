@@ -1,4 +1,4 @@
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import {
     authCookieConfig,
@@ -6,23 +6,23 @@ import {
     otpConfig,
     otpCookieConfig,
 } from "../constants/configs";
+import envVars from "../constants/envVars";
 import { APIResponseError } from "../errors/response";
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
+const JWT_SECRET = envVars.JWT_SECRET as string;
 
 // #region auth
 export const setAuthCookie = (res: Response, payload: any) => {
     const token = jwt.sign({ payload }, JWT_SECRET, {
         expiresIn: jwtConfig.jwtTokenExpires,
     });
-
     res.cookie(authCookieConfig.authCookieName, token, {
         ...authCookieConfig, // httpOnly secure sameSite maxAge
     });
 };
 
 export const getAuthCookie = async (req: any): Promise<any> => {
-    const token = req.cookies[authCookieConfig.authCookieName];
+    const token = req?.cookies?.[authCookieConfig.authCookieName];
 
     if (!token) {
         throw new APIResponseError("Unauthorized", 401, false);
@@ -59,8 +59,8 @@ export const setOtpCookie = (res: Response, payload: OtpPayload) => {
     });
 };
 
-export const getOtpCookie = async (req: any): Promise<OtpPayload> => {
-    const token = req.cookies[otpCookieConfig.otpCookieName];
+export const getOtpCookie = async (req: Request): Promise<OtpPayload> => {
+    const token = req?.cookies?.[otpCookieConfig.otpCookieName];
 
     if (!token) {
         throw new APIResponseError("Unauthorized", 401, false);

@@ -1,15 +1,18 @@
 import type { NextFunction, Request, Response } from "express";
-import asyncWrapper from "../lib/asyncWrapper";
-import { getOtpCookie } from "../lib/cookie";
-import otpService from "../services/otpService";
 import { APIResponseError } from "../errors/response";
-import { otpCookieConfig } from "../constants/configs";
+import { getOtpCookie, removeOtpCookie } from "../lib/cookie";
+import otpService from "../services/otpService";
+import { catchHandler } from "../lib/asyncWrapper";
 
-const verifyOtpMiddleware = asyncWrapper(
-    async (req: Request, res: Response, next?: NextFunction) => {
+const verifyOtpMiddleware = async (
+    req: Request,
+    res: Response,
+    next?: NextFunction
+) => {
+    const { email, otp } = req.body;
+    try {
         const payload = await getOtpCookie(req);
 
-        const { email, otp } = req.body;
         if (email !== payload.email) {
             throw new APIResponseError("Unauthorized", 401, false);
         }
@@ -19,13 +22,16 @@ const verifyOtpMiddleware = asyncWrapper(
             throw new APIResponseError("Invalid OTP", 400, false);
         }
 
-        res.clearCookie(otpCookieConfig.otpCookieName);
+        removeOtpCookie(res);
+
         req.body = {
             ...payload,
         };
 
         if (next) next();
+    } catch (error) {
+        catchHandler(error, res);
     }
-);
+};
 
 export default verifyOtpMiddleware;
