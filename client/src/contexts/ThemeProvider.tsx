@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 
 export const ThemeContext = createContext<{
     theme: "light" | "dark";
@@ -22,6 +22,16 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
             return newTheme;
         });
     };
+
+    useEffect(() => {
+        const handleListener = (e: KeyboardEvent) => {
+            if (e.ctrlKey && e.key === ",") toggleTheme();
+        };
+        addEventListener("keydown", handleListener);
+        return () => {
+            removeEventListener("keydown", handleListener);
+        };
+    }, []);
 
     return (
         <ThemeContext.Provider value={{ theme, toggleTheme }}>

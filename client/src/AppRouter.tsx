@@ -1,9 +1,11 @@
 import { lazy, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 import SuspenseWrapper from "./components/SuspenseWrapper";
-import DashboardRoutes from "./pages/dashboard/DashboardRoutes";
-import LoadingPage from "./pages/LoadingPage";
+import ThemeBtn from "./components/ThemeBtn";
+import { useTheme } from "./hooks/useTheme";
+import { handleToastIcons } from "./lib/toastFuncs";
 import type { IUserState } from "./redux/reducers/types";
 import type { AppDispatch } from "./redux/store";
 import { verifyUser } from "./redux/thunks/usersThunk";
@@ -11,26 +13,24 @@ import { verifyUser } from "./redux/thunks/usersThunk";
 const AuthRoutes = lazy(() => import("./pages/auth/AuthRoutes"));
 const LandlingRoutes = lazy(() => import("./pages/landing/LandingRoutes"));
 const PageNotFound = lazy(() => import("./pages/PageNotFound"));
+const WorkspaceRoutes = lazy(() => import("./pages/workspace/WorkspaceRoutes"));
 
 const PrivateRoutes = () => {
-    const user: IUserState = useSelector((state: any) => state.user);
     return (
         <Routes>
-            {user?.isAuthenticated && (
-                <Route
-                    path="/"
-                    element={
-                        <SuspenseWrapper>
-                            <DashboardRoutes />
-                        </SuspenseWrapper>
-                    }
-                />
-            )}
+            <Route
+                path="/"
+                element={
+                    <SuspenseWrapper>
+                        <WorkspaceRoutes />
+                    </SuspenseWrapper>
+                }
+            />
             <Route
                 path="*"
                 element={
                     <SuspenseWrapper>
-                        {user?.loading ? <LoadingPage /> : <PageNotFound />}
+                        <PageNotFound />
                     </SuspenseWrapper>
                 }
             />
@@ -41,9 +41,12 @@ const PrivateRoutes = () => {
 const AppRouter = () => {
     const user: IUserState = useSelector((state: any) => state.user);
     const dispatch = useDispatch<AppDispatch>();
+    const { theme } = useTheme();
+
     useEffect(() => {
         dispatch(verifyUser());
     }, []);
+
     return (
         <BrowserRouter>
             <Routes>
@@ -69,7 +72,7 @@ const AppRouter = () => {
                         user?.isAuthenticated ? (
                             <PrivateRoutes />
                         ) : (
-                            <AuthRoutes />
+                            <Navigate to="/auth/login" />
                         )
                     }
                 />
@@ -82,6 +85,8 @@ const AppRouter = () => {
                     }
                 />
             </Routes>
+            <ThemeBtn />
+            <ToastContainer theme={theme} icon={handleToastIcons} />
         </BrowserRouter>
     );
 };

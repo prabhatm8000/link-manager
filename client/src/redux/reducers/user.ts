@@ -1,11 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
     login,
+    logout,
     registerAndSendOtp,
     registerAndVerifyOtp,
     verifyUser,
 } from "../thunks/usersThunk";
-import type { IUser, IUserState } from "./types";
+import type { ApiResponseType, IUser, IUserState } from "./types";
 
 const initialState: IUserState = {
     user: null,
@@ -37,7 +38,7 @@ const userSlice = createSlice({
         builder.addCase(verifyUser.rejected, (state, action) => {
             state.loading = false;
             state.error = action.error.message || null;
-            state.message = (action.payload as IUserState).message;
+            state.message = (action.payload as ApiResponseType).message;
         });
 
         // login
@@ -56,7 +57,26 @@ const userSlice = createSlice({
         builder.addCase(login.rejected, (state, action) => {
             state.loading = false;
             state.error = action.error.message || null;
-            state.message = (action.payload as IUserState).message;
+            state.message = (action.payload as ApiResponseType).message;
+        });
+
+        // logout
+        builder.addCase(logout.fulfilled, (state) => {
+            state.user = null;
+            state.isAuthenticated = false;
+            state.loading = false;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(logout.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(logout.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error.message || null;
+            state.message = (action.payload as ApiResponseType).message;
         });
 
         // register and otpSend
@@ -76,7 +96,7 @@ const userSlice = createSlice({
         builder.addCase(registerAndSendOtp.rejected, (state, action) => {
             state.loading = false;
             state.error = action.error.message || null;
-            state.message = (action.payload as IUserState).message;
+            state.message = (action.payload as ApiResponseType).message;
             state.isOtpSent = false;
         });
 
@@ -97,7 +117,7 @@ const userSlice = createSlice({
         builder.addCase(registerAndVerifyOtp.rejected, (state, action) => {
             state.loading = false;
             state.error = action.error.message || null;
-            state.message = (action.payload as IUserState).message;
+            state.message = (action.payload as ApiResponseType).message;
         });
     },
 });

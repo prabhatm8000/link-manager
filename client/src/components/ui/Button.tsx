@@ -1,37 +1,48 @@
 import { FC } from "react";
-import {
-    getRoundnessClasses,
-    getVariantClasses,
-    type BasicElementProps,
-} from "./classUtity";
+import { handleRoundness } from "./classUtity";
 
-interface ButtonProps
-    extends BasicElementProps,
-        React.ButtonHTMLAttributes<HTMLButtonElement> {
-    type?: "button" | "submit" | "reset";
-    disabled?: boolean;
-    onClick?: (event: React.MouseEvent) => void;
+export interface ButtonProps
+    extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?:
+        | "primary"
+        | "outline"
+        | "secondary"
+        | "danger"
+        | "danger-outline"
+        | "none";
+    roundness?: "full" | "light" | "";
 }
 
-const Button: FC<ButtonProps> = ({
-    children,
-    className,
-    onClick,
-    type,
-    variant,
-    roundness,
-    disabled,
-}) => {
+const handleVariant = (variant: ButtonProps["variant"]) => {
+    switch (variant) {
+        case "danger":
+            return "bg-red-500 text-white hover:bg-red-800 dark:bg-red-900";
+        case "danger-outline":
+            return "bg-white/50 border border-red-500 text-red-500 hover:bg-red-200/50 dark:bg-black/50 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-950/50";
+        case "none":
+            return "hover:bg-black/10 dark:hover:bg-white/10";
+        case "outline":
+            return "bg-white/50 border border-black/50 hover:bg-black/10 dark:bg-black/50 dark:border-white/50 dark:hover:bg-white/10";
+        case "secondary":
+            return "bg-black/30 dark:bg-white/30";
+        default:
+            return "hover:opacity-60 bg-black text-white dark:bg-white dark:text-black";
+    }
+};
+
+const Button: FC<ButtonProps> = (props) => {
+    const classes = `${handleVariant(props.variant)} ${handleRoundness(
+        props.roundness
+    )}`;
     return (
         <button
-            className={`p-2 text-md hover:opacity-75 disabled:opacity-45 ${getRoundnessClasses(
-                roundness
-            )} ${getVariantClasses(variant)} ${className}`}
-            disabled={disabled}
-            onClick={onClick}
-            type={type}
+            {...props}
+            className={`p-2 outline-none ${classes} ${props.className}`}
+            disabled={props.disabled}
+            onClick={props.onClick}
+            type={props.type}
         >
-            {children}
+            {props.children}
         </button>
     );
 };

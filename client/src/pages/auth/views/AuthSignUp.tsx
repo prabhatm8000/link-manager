@@ -9,6 +9,7 @@ import Input from "../../../components/ui/Input";
 import type { IUserState } from "../../../redux/reducers/types";
 import type { AppDispatch } from "../../../redux/store";
 import { registerAndSendOtp } from "../../../redux/thunks/usersThunk";
+import LoadingCircle from "../../../components/ui/LoadingCircle";
 
 const AuthSignUp = () => {
     const {
@@ -40,8 +41,11 @@ const AuthSignUp = () => {
     }, [userState]);
 
     return (
-        <Card variant="none" className="p-6 flex flex-col gap-4 w-full">
-            <TitleText variant="none">Signup</TitleText>
+        <Card
+            variant="none"
+            className="p-6 flex flex-col gap-4 w-full backdrop-blur-lg"
+        >
+            <TitleText className="text-center">Signup</TitleText>
             <form className="flex flex-col" onSubmit={onSubmit}>
                 <Input
                     {...register("name", { required: "Name is required" })}
@@ -104,7 +108,9 @@ const AuthSignUp = () => {
                     id="confirmPassword"
                     type="password"
                     placeholder="Confirm Password"
-                    variant={errors.confirmPassword ? "danger-outline" : "outline"}
+                    variant={
+                        errors.confirmPassword ? "danger-outline" : "outline"
+                    }
                     className="w-full"
                     autoComplete="new-password"
                 />
@@ -113,12 +119,14 @@ const AuthSignUp = () => {
                         {errors.confirmPassword.message as string}
                     </span>
                 )}
+                
                 <Button
-                    className="my-5"
-                    type="submit"
                     disabled={userState?.loading}
+                    type="submit"
+                    className="mt-3 px-4 flex items-center justify-center gap-2"
                 >
-                    Signup
+                    {userState?.loading && <LoadingCircle className="size-5" />}
+                    <span>Signup</span>
                 </Button>
             </form>
             <div className="text-center text-black/70 dark:text-white/70">

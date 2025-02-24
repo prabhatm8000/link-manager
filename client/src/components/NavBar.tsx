@@ -13,7 +13,6 @@ const NavBar = () => {
         <nav className="sticky top-0 flex gap-2 items-end justify-between px-4 py-2">
             <Link to={"/"} className="">
                 <TitleText
-                    variant="none"
                     className="text-3xl flex gap-2 justify-start items-center"
                 >
                     <IoIosLink />

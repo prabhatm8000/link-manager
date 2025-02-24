@@ -1,9 +1,8 @@
 import { lazy } from "react";
-import ThemeBtn from "./components/ThemeBtn";
-import { ThemeProvider } from "./contexts/ThemeProvider";
 import { Provider } from "react-redux";
+import { ThemeProvider } from "./contexts/ThemeProvider";
 import store from "./redux/store";
-import { ToastContainer } from "react-toastify";
+import SuspenseWrapper from "./components/SuspenseWrapper";
 
 const AppRouter = lazy(() => import("./AppRouter"));
 
@@ -12,9 +11,9 @@ const App = () => {
         <div className="">
             <ThemeProvider>
                 <Provider store={store}>
-                    <AppRouter />
-                    <ThemeBtn />
-                    <ToastContainer theme="dark" />
+                    <SuspenseWrapper>
+                        <AppRouter />
+                    </SuspenseWrapper>
                 </Provider>
             </ThemeProvider>
         </div>

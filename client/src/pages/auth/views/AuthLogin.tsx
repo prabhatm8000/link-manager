@@ -10,6 +10,7 @@ import type { AppDispatch } from "../../../redux/store";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { login } from "../../../redux/thunks/usersThunk";
+import LoadingCircle from "../../../components/ui/LoadingCircle";
 
 const AuthLogin = () => {
     const {
@@ -38,8 +39,11 @@ const AuthLogin = () => {
     });
 
     return (
-        <Card variant="none" className="p-6 flex flex-col gap-4 w-full">
-            <TitleText variant="none">Login</TitleText>
+        <Card
+            className="p-6 flex flex-col gap-4 w-full backdrop-blur-lg"
+            variant="none"
+        >
+            <TitleText className="text-center">Login</TitleText>
             <form className="flex flex-col" onSubmit={onSubmit}>
                 <Input
                     {...register("email", { required: true })}
@@ -69,8 +73,13 @@ const AuthLogin = () => {
                         {errors.password.message as string}
                     </span>
                 )}
-                <Button disabled={user?.loading} className="my-5">
-                    Login
+                <Button
+                    disabled={user?.loading}
+                    type="submit"
+                    className="mt-3 px-4 flex items-center justify-center gap-2"
+                >
+                    {user?.loading && <LoadingCircle className="size-5" />}
+                    <span>Login</span>
                 </Button>
             </form>
             <div className="text-center text-black/70 dark:text-white/70">

@@ -1,9 +1,9 @@
 import { Route, Routes } from "react-router-dom";
 import PageNotFound from "../PageNotFound";
-import AuthLogin from "./components/AuthLogin";
-import AuthSignUp from "./components/AuthSignUp";
+import AuthLogin from "./views/AuthLogin";
+import AuthSignUp from "./views/AuthSignUp";
 import AuthLayout from "./AuthLayout";
-import AuthOtp from "./components/AuthOtp";
+import AuthOtp from "./views/AuthOtp";
 
 const AuthRoutes = () => {
     return (

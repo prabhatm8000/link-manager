@@ -1,16 +1,11 @@
-import { getVariantClasses, type BasicElementProps } from "./ui/classUtity";
+interface TitleTextProps {
+    className?: string;
+    children?: React.ReactNode;
+}
 
-interface TitleTextProps extends BasicElementProps {}
-
-const TitleText = ({ className, children, variant }: TitleTextProps) => {
+const TitleText = ({ className, children }: TitleTextProps) => {
     return (
-        <div
-            className={`text-3xl orbitron-500 ${getVariantClasses(
-                variant
-            )} ${className}`}
-        >
-            {children}
-        </div>
+        <div className={`text-3xl orbitron-500 ${className}`}>{children}</div>
     );
 };
 

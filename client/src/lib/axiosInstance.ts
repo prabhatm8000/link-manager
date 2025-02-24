@@ -8,18 +8,20 @@ const axiosInstance = axios.create({
         "Content-Type": "application/json",
     },
     timeout: 10000,
-    // transformResponse: (payload: any) => {
-    //     const jsonPayload = JSON.parse(payload);
-    //     if (jsonPayload.message) toast(jsonPayload.message);
-    //     return payload;
-    // },
     transformResponse: (payload: any) => {
+        const jsonPayload = JSON.parse(payload);
         try {
-            const jsonPayload = JSON.parse(payload);
-            if (jsonPayload.message) toast(jsonPayload.message);
-            return payload; // ✅ Return parsed JSON, not raw payload
+            if (!jsonPayload.message) {
+                return jsonPayload;
+            }
+            if (jsonPayload.success) {
+                toast.success(jsonPayload.message);
+            } else {
+                toast.error(jsonPayload.message);
+            }
+            return jsonPayload;
         } catch (error) {
-            return payload; // In case the response is not JSON
+            return jsonPayload;
         }
     },
 });

@@ -5,9 +5,10 @@ export type ApiResponseType = {
 };
 
 export interface IUser {
-    id: string;
+    _id: string;
     name: string;
     email: string;
+    profilePicture?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -19,4 +20,22 @@ export interface IUserState {
     error: string | null;
     message: string | null;
     isOtpSent: boolean;
+}
+
+export interface IWorkspace {
+    _id: string;
+    name: string;
+    description: string;
+    createdBy: string;
+    team?: string[] | IUser[];
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface IWorkspaceState {
+    workspaces: IWorkspace[];
+    currentWorkspace: IWorkspace | null;
+    loading: boolean;
+    error: string | null;
+    message: string | null;
 }

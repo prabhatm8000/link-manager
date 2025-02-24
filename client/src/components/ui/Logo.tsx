@@ -14,7 +14,6 @@ const Logo = ({
 }) => {
     return (
         <TitleText
-            variant="none"
             className={`text-3xl flex gap-2 items-center ${className}`}
         >
             {showLogo && <IoIosLink size={logoSize} />}
