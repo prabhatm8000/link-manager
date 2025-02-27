@@ -26,7 +26,6 @@ const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
                         : "-translate-x-[100%] md:translate-x-0"
                 }`}
                 setShowSideBar={() => setShowSideBar((p) => !p)}
-                showSideBar={showSideBar}
             />
 
             <div className="grid grid-cols-1 grid-rows-[auto_1fr] md:flex md:justify-center h-full w-full ">

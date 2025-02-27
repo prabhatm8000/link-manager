@@ -29,11 +29,9 @@ import WorkspaceItem from "./WorkspaceItem";
 
 // #region SideBar
 const SideBar = ({
-    showSideBar,
     setShowSideBar,
     className,
 }: {
-    showSideBar: boolean;
     setShowSideBar: () => void;
     className?: string;
 }) => {
