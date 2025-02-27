@@ -15,6 +15,8 @@ usersRouter.post(
 
 usersRouter.post("/login", [], usersController.login);
 
+usersRouter.post("/logout", [authMiddleware], usersController.logout);
+
 usersRouter.get("/verify", [authMiddleware], usersController.verify);
 
 usersRouter.patch("/update", [authMiddleware], usersController.updateUser);

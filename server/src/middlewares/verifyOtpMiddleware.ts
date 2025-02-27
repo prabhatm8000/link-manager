@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { APIResponseError } from "../errors/response";
 import { getOtpCookie, removeOtpCookie } from "../lib/cookie";
-import otpService from "../services/otpService";
+import otpService from "../services/otpsService";
 import { catchHandler } from "../lib/asyncWrapper";
 
 const verifyOtpMiddleware = async (

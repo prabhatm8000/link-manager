@@ -25,12 +25,12 @@ export const getAuthCookie = async (req: any): Promise<any> => {
     const token = req?.cookies?.[authCookieConfig.authCookieName];
 
     if (!token) {
-        throw new APIResponseError("Unauthorized", 401, false);
+        throw new APIResponseError("", 401, false);
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
     if (typeof decoded === "string" || !decoded.payload) {
-        throw new APIResponseError("Unauthorized", 401, false);
+        throw new APIResponseError("", 401, false);
     }
 
     return (decoded as JwtPayload).payload;

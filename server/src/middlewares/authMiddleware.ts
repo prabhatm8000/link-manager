@@ -31,7 +31,7 @@ const authMiddleware = async (
         const user = await usersService.getUserById(payload._id);
 
         if (!user) {
-            throw new APIResponseError("Unauthorized", 401, false);
+            throw new APIResponseError("", 401, false);
         }
 
         req.user = user;

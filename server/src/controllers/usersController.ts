@@ -1,9 +1,9 @@
 import type { Request, Response } from "express";
 import { APIResponseError } from "../errors/response";
 import asyncWrapper from "../lib/asyncWrapper";
-import { setAuthCookie, setOtpCookie } from "../lib/cookie";
+import { removeAuthCookie, setAuthCookie, setOtpCookie } from "../lib/cookie";
 import usersService from "../services/usersService";
-import otpService from "../services/otpService";
+import otpService from "../services/otpsService";
 
 const registerAndSendOtp = asyncWrapper(async (req: Request, res: Response) => {
     const { name, email, password } = req.body;
@@ -61,6 +61,14 @@ const login = asyncWrapper(async (req: Request, res: Response) => {
     });
 });
 
+const logout = asyncWrapper(async (req: Request, res: Response) => {
+    removeAuthCookie(res);
+    res.status(200).json({
+        success: true,
+        message: "User logged out successfully",
+    });
+});
+
 const verify = asyncWrapper(async (req: Request, res: Response) => {
     // from middleware
     const user = req.user;
@@ -110,6 +118,7 @@ const usersController = {
     registerAndSendOtp,
     registerAndVerifyOtp,
     login,
+    logout,
     verify,
     updateUser,
     deactivateUser,

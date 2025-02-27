@@ -2,11 +2,13 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
 export interface IUser extends mongoose.Document {
+    _id: string | mongoose.Types.ObjectId;
     name: string;
     email: string;
     password?: string;
     profilePicture?: string;
     isActive?: boolean;
+    workspaceCreatedCount?: number;
     comparePassword(password: string): Promise<boolean>;
 }
 
@@ -32,6 +34,10 @@ const userSchema = new mongoose.Schema(
         isActive: {
             type: Boolean,
             default: true,
+        },
+        workspaceCreatedCount: {
+            type: Number,
+            default: 0,
         },
     },
     {
