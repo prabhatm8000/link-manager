@@ -1,0 +1,5 @@
+google auth
+mail queueing and optimization
+store no. workspace created on the user modal
+single provider for modal
+organize and optimize keyboard shortcuts
