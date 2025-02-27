@@ -13,9 +13,9 @@ const LogoutBtn = (props: ButtonProps) => {
     };
     return (
         <Button
-            className="flex items-center gap-2"
             onClick={handleLogout}
             {...props}
+            className={"flex items-center gap-2 " + props?.className}
         >
             <IoIosLogOut />
             <span>Logout</span>

@@ -20,7 +20,7 @@ const AuthSignUp = () => {
         formState: { errors },
     } = useForm();
 
-    const userState: IUserState = useSelector((state: any) => state.users);
+    const userState: IUserState = useSelector((state: any) => state.user);
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
 
@@ -46,7 +46,7 @@ const AuthSignUp = () => {
             className="p-6 flex flex-col gap-4 w-full backdrop-blur-lg"
         >
             <TitleText className="text-center">Signup</TitleText>
-            <form className="flex flex-col" onSubmit={onSubmit}>
+            <form className="flex flex-col gap-4" onSubmit={onSubmit}>
                 <Input
                     {...register("name", { required: "Name is required" })}
                     id="name"
@@ -123,7 +123,7 @@ const AuthSignUp = () => {
                 <Button
                     disabled={userState?.loading}
                     type="submit"
-                    className="mt-3 px-4 flex items-center justify-center gap-2"
+                    className="mt-2 px-4 flex items-center justify-center gap-2"
                 >
                     {userState?.loading && <LoadingCircle className="size-5" />}
                     <span>Signup</span>

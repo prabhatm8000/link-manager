@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { IoClose } from "react-icons/io5";
 import Button from "./Button";
 import {
@@ -5,7 +6,6 @@ import {
     getVariantClasses,
     type BasicElementProps,
 } from "./classUtity";
-import { useEffect } from "react";
 
 interface IModalProps extends BasicElementProps {
     children: React.ReactNode;
@@ -13,8 +13,7 @@ interface IModalProps extends BasicElementProps {
     isOpen: boolean;
 }
 
-const Modal = (props: IModalProps) => {
-    if (!props.isOpen) return null;
+const Modal = ({ isOpen, ...props }: IModalProps) => {
     useEffect(() => {
         const handleKey = (e: KeyboardEvent) => {
             if (e.code === "Escape") {
@@ -22,16 +21,22 @@ const Modal = (props: IModalProps) => {
             }
         };
 
-        addEventListener("keydown", handleKey);
+        window.addEventListener("keydown", handleKey);
 
-        return () => removeEventListener("keypress", handleKey);
-    }, []);
+        return () => {
+            window.removeEventListener("keydown", handleKey);
+        };
+    }, [props.onClose]);
+
+    // if (!isOpen) return null;
     return (
         <div
-            className={`fixed top-0 left-0 w-full h-full bg-black/50 z-50 flex justify-center items-center transition-all duration-300 ease-out `}
+            className={`fixed top-0 left-0 w-full h-full backdrop-blur-[2px] bg-black/50 z-50 flex justify-center items-center transition-all duration-300 ease-out ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+            onClick={props.onClose}
         >
             <div
-                className={`relative min-w-96 bg-white p-4 rounded-lg transition duration-300 ${getVariantClasses(
+                onClick={(e) => e.stopPropagation()}
+                className={`relative min-w-96 bg-white p-4 rounded-lg ${getVariantClasses(
                     props.variant
                 )} ${getRoundnessClasses(props.roundness)} ${props.className}`}
             >

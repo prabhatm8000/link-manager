@@ -49,13 +49,15 @@ export const getRoundnessClasses = (
     }
 };
 
-export const handleRoundness = (roundness?: "full" | "light" | "") => {
+export const handleRoundness = (roundness?: "" | "full" | "light" | "none") => {
     switch (roundness) {
+        case "none":
+            return "rounded-none";
         case "full":
             return "rounded-full";
         case "light":
             return "rounded-lg";
         default:
-            return "rounded-none";
+            return "rounded-md";
     }
 };

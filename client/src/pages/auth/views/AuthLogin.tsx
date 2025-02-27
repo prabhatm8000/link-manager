@@ -44,7 +44,7 @@ const AuthLogin = () => {
             variant="none"
         >
             <TitleText className="text-center">Login</TitleText>
-            <form className="flex flex-col" onSubmit={onSubmit}>
+            <form className="flex flex-col gap-4" onSubmit={onSubmit}>
                 <Input
                     {...register("email", { required: true })}
                     id="email"
@@ -76,7 +76,7 @@ const AuthLogin = () => {
                 <Button
                     disabled={user?.loading}
                     type="submit"
-                    className="mt-3 px-4 flex items-center justify-center gap-2"
+                    className="mt-2 px-4 flex items-center justify-center gap-2"
                 >
                     {user?.loading && <LoadingCircle className="size-5" />}
                     <span>Login</span>

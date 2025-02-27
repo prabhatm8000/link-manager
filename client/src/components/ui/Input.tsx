@@ -11,6 +11,8 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
         | "danger-outline"
         | "none";
     roundness?: "full" | "light" | "";
+    label?: string;
+    showlabel?: boolean;
 }
 
 const handleVariant = (variant: InputProps["variant"]) => {
@@ -31,12 +33,12 @@ const handleVariant = (variant: InputProps["variant"]) => {
 };
 
 const Input: React.FC<InputProps> = (props: InputProps) => {
-    const [showLabel, setShowLabel] = useState(false);
+    const [sl, setSL] = useState(false);
     const handleShowLabel = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.value) {
-            setShowLabel(false);
+            setSL(false);
         } else {
-            setShowLabel(true);
+            setSL(true);
         }
     };
 
@@ -45,29 +47,31 @@ const Input: React.FC<InputProps> = (props: InputProps) => {
     )}`;
 
     return (
-        <div className="relative py-3">
-            {props.placeholder && (
+        <div className={`relative ${props.showlabel ? "py-3" : "py-1"}`}>
+            {props?.showlabel !== false && (
                 <label
                     className={`cursor-text absolute top-[50%] left-1 transform text-xs w-fit ${
-                        showLabel
+                        sl
                             ? "-translate-y-[225%] opacity-100"
                             : "translate-y-[100%] opacity-0"
                     } transition-all duration-300 ease-out ${
                         props.placeholderClass
                     }`}
                     htmlFor={props.id}
-                    style={{
-                    }}
+                    style={{}}
                 >
-                    {props.placeholder}
+                    {props.label || props.placeholder}
                 </label>
             )}
             <input
                 {...props}
-                className={`p-2 outline-none ${classes} ${props.className}`}
+                className={`p-2 outline-none disabled:opacity-70 ${classes} ${props.className}`}
                 onClick={props.onClick}
                 type={props.type}
-                onChange={handleShowLabel}
+                onChange={(e) => {
+                    handleShowLabel(e);
+                    props?.onChange?.(e);
+                }}
                 onLoad={handleShowLabel}
             ></input>
         </div>

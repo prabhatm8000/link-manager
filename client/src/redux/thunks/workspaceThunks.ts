@@ -32,11 +32,23 @@ export const getAllWorkspaces = createAsyncThunk(
     }
 );
 
+export const getMyWorkspaces = createAsyncThunk(
+    "workspace/get-my",
+    async (_, { rejectWithValue, fulfillWithValue }) => {
+        try {
+            const res = await axiosInstance.get("/workspace/my");
+            return fulfillWithValue(res.data as ApiResponseType);
+        } catch (error: any) {
+            return rejectWithValue(error.response.data as ApiResponseType);
+        }
+    }
+);
+
 export const getWorkspaceById = createAsyncThunk(
     "workspace/get-by-id",
     async (id: string, { rejectWithValue, fulfillWithValue }) => {
         try {
-            const res = await axiosInstance.get(`/workspace/${id}`);
+            const res = await axiosInstance.get(`/workspace/id/${id}`);
             return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
             return rejectWithValue(error.response.data as ApiResponseType);
@@ -56,7 +68,7 @@ export const updateWorkspace = createAsyncThunk(
     ) => {
         try {
             const res = await axiosInstance.patch(
-                `/workspace/${data.id}`,
+                `/workspace/id/${data.id}`,
                 data
             );
             return fulfillWithValue(res.data as ApiResponseType);
@@ -66,11 +78,11 @@ export const updateWorkspace = createAsyncThunk(
     }
 );
 
-export const deactivateWorkspace = createAsyncThunk(
-    "workspace/deactivate",
+export const deleteWorkspace = createAsyncThunk(
+    "workspace/delete",
     async (id: string, { rejectWithValue, fulfillWithValue }) => {
         try {
-            const res = await axiosInstance.delete(`/workspace/${id}`);
+            const res = await axiosInstance.delete(`/workspace/id/${id}`);
             return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
             return rejectWithValue(error.response.data as ApiResponseType);

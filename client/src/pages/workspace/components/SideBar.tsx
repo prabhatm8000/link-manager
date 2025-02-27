@@ -1,6 +1,11 @@
 import { useEffect, useState, type JSX } from "react";
 import { HiCursorClick } from "react-icons/hi";
-import { IoIosLink, IoIosSettings } from "react-icons/io";
+import {
+    IoIosClose,
+    IoIosLink,
+    IoIosMenu,
+    IoIosSettings,
+} from "react-icons/io";
 import { IoAnalytics } from "react-icons/io5";
 import { TbSelector } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
@@ -23,13 +28,22 @@ import SideBarUsageBars from "./SideBarUsageBars";
 import WorkspaceItem from "./WorkspaceItem";
 
 // #region SideBar
-const SideBar = () => {
-    const userState: IUserState = useSelector((state: any) => state.user);
+const SideBar = ({
+    showSideBar,
+    setShowSideBar,
+    className,
+}: {
+    showSideBar: boolean;
+    setShowSideBar: () => void;
+    className?: string;
+}) => {
     return (
-        <div className="w-64 bg-black/10 dark:bg-white/10 p-2 flex flex-col justify-between">
+        <div
+            className={`w-64 h-full backdrop-blur-lg bg-white dark:bg-black p-2 flex flex-col justify-between ${className}`}
+        >
             <div className="flex flex-col gap-6">
-                <SideBarHeader userState={userState} />
-                <SideBarBody />
+                <SideBarHeader />
+                <SideBarBody setShowSideBar={setShowSideBar} />
             </div>
             <SideBarUsageBars
                 data={[
@@ -46,7 +60,14 @@ export default SideBar;
 // #endregion SideBar
 
 // #region Header
-const SideBarHeader = ({ userState }: { userState: IUserState }) => {
+export const SideBarHeader = ({
+    show,
+    handleShow,
+}: {
+    show?: boolean;
+    handleShow?: () => void;
+}) => {
+    const userState: IUserState = useSelector((state: any) => state.user);
     const [_, setSearchParams] = useSearchParams();
     const handleTabChange = (tab: SideBarTabType) => {
         setSearchParams((p) => {
@@ -56,24 +77,42 @@ const SideBarHeader = ({ userState }: { userState: IUserState }) => {
     };
     return (
         <div className="flex items-end justify-between gap-2">
-            <Link to={"/"} className="">
-                <TitleText
-                    className="text-xl flex gap-2 justify-start items-center"
-                >
+            <Link to={"/"}>
+                <TitleText className="text-xl flex gap-2 justify-start items-center">
                     <IoIosLink />
                     <span>Ref.com</span>
                 </TitleText>
             </Link>
-            <Avatar
-                props={{
-                    src: userState?.user?.profilePicture || undefined,
-                    alt: userState?.user?.name,
-                    className: "w-12 h-12 cursor-pointer",
-                    onClick: () => handleTabChange("profile"),
-                }}
-                title={userState?.user?.name || "U"}
-                size="md"
-            />
+            {handleShow ? (
+                <Button
+                    variant={show ? "danger-outline" : "outline"}
+                    className="md:hidden transition-all duration-300 ease-out"
+                    onClick={handleShow}
+                >
+                    <div
+                        className={`transform ${
+                            show ? "rotate-0" : "rotate-180"
+                        } transition-all duration-300 ease-out`}
+                    >
+                        {show ? (
+                            <IoIosClose className="size-5" />
+                        ) : (
+                            <IoIosMenu className="size-5" />
+                        )}
+                    </div>
+                </Button>
+            ) : (
+                <Avatar
+                    props={{
+                        src: userState?.user?.profilePicture || undefined,
+                        alt: userState?.user?.name,
+                        className: "w-12 h-12 cursor-pointer md:hidden",
+                        onClick: () => handleTabChange("profile"),
+                    }}
+                    title={userState?.user?.name || "U"}
+                    size="md"
+                />
+            )}
         </div>
     );
 };
@@ -92,7 +131,7 @@ const tabs: { title: string; value: SideBarTabType; icon: JSX.Element }[] = [
     { title: "Analytics", value: "analytics", icon: <IoAnalytics /> },
     { title: "Settings", value: "settings", icon: <IoIosSettings /> },
 ];
-const SideBarBody = () => {
+const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
     const workspaceState: IWorkspaceState = useSelector(
         (state: any) => state.workspace
     );
@@ -124,6 +163,7 @@ const SideBarBody = () => {
         }
         setSelectedWorkspaceId(workspaceId);
         setCurrentTab(tab);
+        setShowSideBar();
     }, [searchParams, workspaceState.workspaces]);
 
     useEffect(() => {
@@ -161,21 +201,24 @@ const SideBarBody = () => {
                 <CreateWorkspaceBtnWithModal />
             )}
 
+            {/* select workspaces or tab */}
             {showWorkspaces ? (
-                <div className="flex flex-col gap-2 max-h-80 h-80 overflow-y-auto">
-                    <span className="text-black/50 dark:text-white/50">
+                <div>
+                    <h4 className="text-black/50 dark:text-white/50">
                         Workspaces
-                    </span>
-                    <CreateWorkspaceBtnWithModal />
-                    {workspaceState.workspaces.map((workspace, index) => (
-                        <WorkspaceItem
-                            key={index}
-                            data={workspace}
-                            className="p-2 cursor-pointer"
-                            avatarSize="md"
-                            setActiveWorkspace={handleActiveWorkspaceChange}
-                        />
-                    ))}
+                    </h4>
+                    <div className="flex flex-col gap-2 max-h-80 h-80 overflow-y-auto">
+                        {workspaceState.workspaces.map((workspace, index) => (
+                            <WorkspaceItem
+                                key={index}
+                                data={workspace}
+                                className="p-2 cursor-pointer"
+                                avatarSize="md"
+                                setActiveWorkspace={handleActiveWorkspaceChange}
+                            />
+                        ))}
+                        <CreateWorkspaceBtnWithModal />
+                    </div>
                 </div>
             ) : (
                 <div className="flex flex-col text-black/50 dark:text-white/50 font-semibold text-sm">

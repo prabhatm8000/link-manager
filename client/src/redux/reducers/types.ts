@@ -35,6 +35,7 @@ export interface IWorkspace {
 export interface IWorkspaceState {
     workspaces: IWorkspace[];
     currentWorkspace: IWorkspace | null;
+    myWorkspaces: IWorkspace[];
     loading: boolean;
     error: string | null;
     message: string | null;

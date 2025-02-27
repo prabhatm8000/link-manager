@@ -49,7 +49,7 @@ const AuthOtp = () => {
             className="p-6 flex flex-col gap-4 w-full backdrop-blur-lg"
         >
             <TitleText className="text-center">Signup</TitleText>
-            <form className="flex flex-col" onSubmit={onSubmit}>
+            <form className="flex flex-col gap-4" onSubmit={onSubmit}>
                 <p>OTP sent to {param.email}</p>
                 <Input
                     {...register("otp", { required: true })}
@@ -67,7 +67,7 @@ const AuthOtp = () => {
                 <Button
                     disabled={userState?.loading || timeLeft <= 0}
                     type="submit"
-                    className="mt-3 px-4 flex items-center justify-center gap-2"
+                    className="mt-2 px-4 flex items-center justify-center gap-2"
                 >
                     {userState?.loading && <LoadingCircle className="size-5" />}
                     <span>Verify</span>
