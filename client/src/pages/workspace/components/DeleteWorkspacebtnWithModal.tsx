@@ -50,7 +50,7 @@ const DeleteWorkspacebtnWithModal = ({
     return (
         <>
             <Button
-                className="flex gap-2 items-center"
+                className="flex gap-2 items-center justify-center"
                 variant="danger"
                 onClick={() => setShowDeleteWorkspaceModal(true)}
             >

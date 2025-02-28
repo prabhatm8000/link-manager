@@ -75,11 +75,11 @@ const CreateWorkspaceBtnWithModal = ({
 
     // edit mode: setting current workspace name and description
     useEffect(() => {
-        if (!workspace && workspaceId && workspaceState.myWorkspaces.length) {
-            const workspace = workspaceState.myWorkspaces.find(
+        if (!workspace && workspaceId && workspaceState.workspaces.length) {
+            const workspace = workspaceState.workspaces.find(
                 (workspace) => workspace._id === workspaceId
             );
-
+            
             if (workspace) {
                 setWorkspace(workspace);
                 setValue("workspaceName", workspace.name);
@@ -106,7 +106,7 @@ const CreateWorkspaceBtnWithModal = ({
             <Button
                 onClick={() => setShowCreateWorkspaceModal(true)}
                 variant="secondary"
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2"
             >
                 {editMode ? <TbEdit /> : <IoIosAdd />}
                 {!dontShowBtnText && <span>{mainText}</span>}

@@ -19,12 +19,18 @@ const ThemeBtn = () => {
 
     return (
         <Button
-            className="fixed bottom-0 right-0 m-6 text-2xl"
+            className="fixed bottom-0 right-0 m-4 text-2xl"
             onClick={toggleTheme}
             variant="primary"
             roundness="full"
         >
-            {theme === "light" ? <IoIosMoon /> : <IoIosSunny />}
+            <div
+                className={`transform ${
+                    theme === "light" ? "rotate-0" : "rotate-180"
+                } transition-all duration-300 ease-out`}
+            >
+                {theme === "light" ? <IoIosMoon /> : <IoIosSunny />}
+            </div>
         </Button>
     );
 };

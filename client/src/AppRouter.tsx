@@ -9,6 +9,7 @@ import { handleToastIcons } from "./lib/toastFuncs";
 import type { IUserState } from "./redux/reducers/types";
 import type { AppDispatch } from "./redux/store";
 import { verifyUser } from "./redux/thunks/usersThunk";
+import LoadingPage from "./pages/LoadingPage";
 
 const AuthRoutes = lazy(() => import("./pages/auth/AuthRoutes"));
 const LandlingRoutes = lazy(() => import("./pages/landing/LandingRoutes"));
@@ -71,6 +72,8 @@ const AppRouter = () => {
                     element={
                         user?.isAuthenticated ? (
                             <PrivateRoutes />
+                        ) : user.loading ? (
+                            <LoadingPage />
                         ) : (
                             <Navigate to="/auth/login" />
                         )

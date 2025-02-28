@@ -55,8 +55,8 @@ const ProfileView = () => {
             <ViewHeader heading="Profile" subHeading="Manage your profile" />
             <div className="flex flex-col gap-4 w-full">
                 <div className="flex flex-col gap-8">
-                    <div className="w-full flex justify-between items-center">
-                        <div className="flex gap-4">
+                    <div className="w-full grid grid-cols-[auto_1fr] items-center">
+                        <div className="grid grid-cols-[1fr_auto] gap-2 w-fit">
                             <Avatar
                                 props={{
                                     src:
@@ -68,11 +68,11 @@ const ProfileView = () => {
                                 title={userState?.user?.name || "U"}
                                 size="lg"
                             />
-                            <div>
-                                <h3 className="text-lg font-semibold">
+                            <div className="w-fit">
+                                <h3 className="text-lg font-semibold line-clamp-1">
                                     {userState?.user?.name}
                                 </h3>
-                                <h4 className="text-sm text-black/50 dark:text-white/50">
+                                <h4 className="text-sm text-black/50 dark:text-white/50 line-clamp-1">
                                     {userState?.user?.email}
                                 </h4>
                             </div>
@@ -158,7 +158,7 @@ const ProfileView = () => {
                         </h3>
                         {workspaceState.loading ? (
                             <LoadingCircle className="size-5" />
-                        ) : (
+                        ) : workspaceState.myWorkspaces.length > 0 ? (
                             <div className="flex flex-col gap-4 w-full">
                                 {workspaceState.myWorkspaces.map(
                                     (item, index) => (
@@ -170,6 +170,10 @@ const ProfileView = () => {
                                     )
                                 )}
                             </div>
+                        ) : (
+                            <h3 className="text-black/50 dark:text-white/50">
+                                You have not created any workspace yet
+                            </h3>
                         )}
                     </div>
                 </div>

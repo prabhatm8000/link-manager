@@ -8,7 +8,7 @@ import type { IUserState } from "../redux/reducers/types";
 const NavBar = () => {
     const user: IUserState = useSelector((state: any) => state.user);
     return (
-        <nav className="sticky top-0 flex gap-2 items-end justify-between px-4 py-2">
+        <nav className="sticky top-0 flex gap-2 items-end justify-between p-4">
             <Link to={"/"} className="">
                 <TitleText
                     className="text-3xl flex gap-2 justify-start items-center"

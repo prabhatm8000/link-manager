@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import SideBar, { SideBarHeader } from "./components/SideBar";
 
 const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
-    const [showSideBar, setShowSideBar] = useState<boolean>(true);
+    const [showSideBar, setShowSideBar] = useState<boolean>(false);
     useEffect(() => {
         const workspaceElement = document.getElementById("workspace");
         if (workspaceElement) {
@@ -15,8 +15,8 @@ const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
             <div
                 onClick={() => setShowSideBar(false)}
                 className={`${
-                    showSideBar ? "fixed" : "hidden"
-                } md:hidden z-40 top-0 left-0 w-full h-full bg-black/50 backdrop-blur-[1px]`}
+                    showSideBar ? "fixed md:hidden" : "hidden"
+                } z-40 top-0 left-0 w-full h-full bg-black/50 backdrop-blur-[1px]`}
             />
 
             <SideBar
@@ -29,7 +29,7 @@ const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
             />
 
             <div className="grid grid-cols-1 grid-rows-[auto_1fr] md:flex md:justify-center h-full w-full ">
-                <div className="block md:hidden px-4 py-2">
+                <div className="block md:hidden p-4">
                     <SideBarHeader
                         show={showSideBar}
                         handleShow={() => setShowSideBar((p) => !p)}
@@ -37,7 +37,7 @@ const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
                 </div>
                 <div
                     id="workspace"
-                    className="h-full w-full py-2 px-6 md:px-4 min-w-sm md:max-w-xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl"
+                    className="h-full w-full p-4 min-w-sm md:max-w-xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl"
                 >
                     {children}
                 </div>

@@ -151,6 +151,7 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
             prev.set("tab", tab);
             return prev;
         });
+        setShowSideBar();
     };
 
     useEffect(() => {
@@ -161,7 +162,6 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
         }
         setSelectedWorkspaceId(workspaceId);
         setCurrentTab(tab);
-        setShowSideBar();
     }, [searchParams, workspaceState.workspaces]);
 
     useEffect(() => {
