@@ -1,6 +1,7 @@
 import { useEffect, useState, type JSX } from "react";
 import { HiCursorClick } from "react-icons/hi";
 import {
+    IoIosAdd,
     IoIosClose,
     IoIosLink,
     IoIosMenu,
@@ -23,7 +24,6 @@ import {
     getAllWorkspaces,
     getWorkspaceById,
 } from "../../../redux/thunks/workspaceThunks";
-import CreateWorkspaceBtnWithModal from "./CreateWorkspaceBtnWithModal";
 import SideBarUsageBars from "./SideBarUsageBars";
 import WorkspaceItem from "./WorkspaceItem";
 
@@ -196,7 +196,13 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
                     <TbSelector className="opacity-50" />
                 </Button>
             ) : (
-                <CreateWorkspaceBtnWithModal />
+                <Button
+                    variant="none"
+                    onClick={() => handleTabChange("profile")}
+                    className="flex gap-2 items-center justify-center w-full"
+                >
+                    No workspace. Create one!
+                </Button>
             )}
 
             {/* select workspaces or tab */}
@@ -215,7 +221,14 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
                                 setActiveWorkspace={handleActiveWorkspaceChange}
                             />
                         ))}
-                        <CreateWorkspaceBtnWithModal />
+                        <Button
+                            variant="none"
+                            onClick={() => handleTabChange("profile")}
+                            className="flex gap-2 items-center justify-center w-full"
+                        >
+                            <IoIosAdd className="size-5" />
+                            <span>Create workspace</span>
+                        </Button>
                     </div>
                 </div>
             ) : (

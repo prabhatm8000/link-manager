@@ -39,10 +39,7 @@ const AuthLogin = () => {
     });
 
     return (
-        <Card
-            className="p-6 flex flex-col gap-4 w-full backdrop-blur-lg"
-            variant="none"
-        >
+        <Card className="p-6 flex flex-col gap-4 w-full backdrop-blur-xs" variant="none">
             <TitleText className="text-center">Login</TitleText>
             <form className="flex flex-col gap-4" onSubmit={onSubmit}>
                 <Input
@@ -50,7 +47,7 @@ const AuthLogin = () => {
                     id="email"
                     type="email"
                     placeholder="Email"
-                    variant="outline"
+                    variant="secondary"
                     className="w-full"
                     autoComplete="email"
                 />
@@ -64,7 +61,7 @@ const AuthLogin = () => {
                     id="password"
                     type="password"
                     placeholder="Password"
-                    variant="outline"
+                    variant="secondary"
                     className="w-full"
                     autoComplete="password"
                 />

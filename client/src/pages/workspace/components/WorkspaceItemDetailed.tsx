@@ -13,9 +13,9 @@ const WorkspaceItemDetailed = (props: {
     const userState: IUserState = useSelector((state: any) => state.user);
     return (
         <div
-            className={`grid grid-cols-[auto_1fr_auto] items-start gap-1 p-2 rounded-md bg-black/10 dark:bg-white/10 ${props.className}`}
+            className={`grid grid-cols-[auto_1fr_auto] items-start gap-1 p-1 rounded-md bg-black/10 dark:bg-white/10 ${props.className}`}
         >
-            <div className="relative p-2 rounded-md w-full h-full bg-black/5 dark:bg-white/5">
+            <div className="relative p-1 rounded-md w-full h-full">
                 <Avatar
                     props={{ alt: props.data?.name }}
                     size={props.avatarSize || "lg"}
@@ -26,7 +26,7 @@ const WorkspaceItemDetailed = (props: {
             <div
                 onClick={() => props?.setActiveWorkspace?.(props.data)}
                 title={props.data?.name}
-                className="flex flex-col gap-1 p-2 rounded-md w-full h-full bg-black/5 dark:bg-white/5"
+                className="flex flex-col gap-1 p-1 rounded-md w-full h-full"
             >
                 <h3>{props.data?.name}</h3>
                 <div className="relative text-xs text-black/50 dark:text-white/50">
@@ -46,8 +46,8 @@ const WorkspaceItemDetailed = (props: {
             </div>
 
             {userState.user?._id === props.data?.createdBy && (
-                <div className="rounded-md w-full h-full bg-black/5 dark:bg-white/5">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
+                <div className="rounded-md w-full h-full">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 p-1">
                         <CreateWorkspaceBtnWithModal
                             editMode
                             dontShowBtnText

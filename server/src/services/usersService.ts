@@ -18,6 +18,9 @@ const login = async ({
         throw new APIResponseError("Invalid password", 401, false);
     }
 
+    user.lastLogin = new Date();
+    await user.save();
+
     return user.toJSON();
 };
 

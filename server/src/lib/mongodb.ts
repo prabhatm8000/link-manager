@@ -5,7 +5,7 @@ export const connectToDB = () => {
     const mongo = mongoose.connect(envVars.MONGODB_URI as string);
     // mongo
     //     .then((o) =>
-    //         o.connection.db?.collection("workspaces")?.dropIndex("team_1")
+    //         o.connection.db?.collection("users")?.dropIndex("name_1")
     //     )
     //     .then((_) => console.log("done"));
     return mongo;

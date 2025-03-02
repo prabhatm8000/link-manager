@@ -43,7 +43,7 @@ const AuthSignUp = () => {
     return (
         <Card
             variant="none"
-            className="p-6 flex flex-col gap-4 w-full backdrop-blur-lg"
+            className="p-6 flex flex-col gap-4 w-full backdrop-blur-xs"
         >
             <TitleText className="text-center">Signup</TitleText>
             <form className="flex flex-col gap-4" onSubmit={onSubmit}>
@@ -52,7 +52,7 @@ const AuthSignUp = () => {
                     id="name"
                     type="text"
                     placeholder="Name"
-                    variant={errors.name ? "danger-outline" : "outline"}
+                    variant={errors.name ? "danger-outline" : "secondary"}
                     className="w-full"
                     autoComplete="name"
                 />
@@ -66,7 +66,7 @@ const AuthSignUp = () => {
                     id="email"
                     type="email"
                     placeholder="Email"
-                    variant={errors.email ? "danger-outline" : "outline"}
+                    variant={errors.email ? "danger-outline" : "secondary"}
                     className="w-full"
                     autoComplete="email"
                 />
@@ -87,7 +87,7 @@ const AuthSignUp = () => {
                     id="password"
                     type="password"
                     placeholder="Password"
-                    variant={errors.password ? "danger-outline" : "outline"}
+                    variant={errors.password ? "danger-outline" : "secondary"}
                     className="w-full"
                     autoComplete="new-password"
                 />
@@ -109,7 +109,7 @@ const AuthSignUp = () => {
                     type="password"
                     placeholder="Confirm Password"
                     variant={
-                        errors.confirmPassword ? "danger-outline" : "outline"
+                        errors.confirmPassword ? "danger-outline" : "secondary"
                     }
                     className="w-full"
                     autoComplete="new-password"

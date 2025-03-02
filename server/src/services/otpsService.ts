@@ -4,12 +4,12 @@ import { sendOtpEmail } from "../lib/mail";
 import Otp from "../models/otps";
 
 const genarateOtp = (size: number = 6): string => {
-    return Math.floor(Math.pow(10, size) * Math.random() + 9)
+    return Math.floor(Math.pow(10, size + 1) * Math.random())
         .toString()
         .slice(0, size);
 };
 
-const genarateAndSendOtpViaMain = async (email: string) => {
+const genarateAndSendOtpViaMail = async (email: string) => {
     const otp = genarateOtp(otpConfig.size);
     const expiresAt = new Date(Date.now() + otpConfig.expiresAt);
     let otpObj = await Otp.findOne({ email });
@@ -25,8 +25,10 @@ const genarateAndSendOtpViaMain = async (email: string) => {
         throw new Error("Failed to create or update OTP");
     }
 
-    await sendOtpEmail(email, otp);
+    // await sendOtpEmail(email, otp);
+    console.log(email, otp);
 };
+
 
 const verifyOtp = async (email: string, otp: string): Promise<boolean> => {
     const otpObj = await Otp.findOne({ email });
@@ -48,5 +50,5 @@ const verifyOtp = async (email: string, otp: string): Promise<boolean> => {
     return true;
 };
 
-const otpService = { genarateAndSendOtpViaMain, verifyOtp };
+const otpService = { genarateAndSendOtpViaMail, verifyOtp };
 export default otpService;

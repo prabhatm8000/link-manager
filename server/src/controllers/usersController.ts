@@ -17,7 +17,7 @@ const registerAndSendOtp = asyncWrapper(async (req: Request, res: Response) => {
         throw new APIResponseError("User already exists", 400, false);
     }
 
-    await otpService.genarateAndSendOtpViaMain(email);
+    await otpService.genarateAndSendOtpViaMail(email);
     setOtpCookie(res, { email, name, password });
 
     res.status(200).json({ success: true, message: "OTP sent successfully" });

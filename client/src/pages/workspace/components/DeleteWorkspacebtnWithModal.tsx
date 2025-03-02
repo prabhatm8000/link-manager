@@ -54,7 +54,7 @@ const DeleteWorkspacebtnWithModal = ({
                 variant="danger"
                 onClick={() => setShowDeleteWorkspaceModal(true)}
             >
-                {workspaceState.loading ? <LoadingCircle /> : <IoIosTrash />}
+                <IoIosTrash />
                 {!dontShowBtnText && <span>{mainText}</span>}
             </Button>
             <Modal

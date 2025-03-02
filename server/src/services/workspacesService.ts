@@ -16,7 +16,7 @@ const createWorkspace = async (workspace: {
         session.startTransaction();
         const user = await User.findById(workspace.createdBy);
         const workspaceCreatedCount = user?.workspaceCreatedCount;
-        if (!workspaceCreatedCount) {
+        if (!user || workspaceCreatedCount === undefined) {
             throw new APIResponseError("Something went wrong", 404, false);
         }
 
@@ -222,19 +222,15 @@ const getTeamMembers = async (workspaceId: string) => {
                 from: "users",
                 localField: "team",
                 foreignField: "_id",
-                as: "teamDetails",
+                as: "members",
             },
         },
         {
             $project: {
-                "teamDetails.name": 1,
-                "teamDetails.email": 1,
-                "teamDetails._id": 1,
-                "teamDetails.profilePicture": 1,
-                name: 1,
-                description: 1,
-                createdBy: 1,
-                isActive: 1,
+                "members.name": 1,
+                "members.email": 1,
+                "members._id": 1,
+                "members.profilePicture": 1,
             },
         },
     ]);
@@ -243,14 +239,18 @@ const getTeamMembers = async (workspaceId: string) => {
         throw new APIResponseError("Workspace not found", 404, false);
     }
 
-    return result;
+    return result[0];
 };
 
-const removeTeamMember = async (workspaceId: string, userId: string) => {
+const removeTeamMember = async (
+    workspaceId: string,
+    memberId: string,
+    userId: string
+) => {
     const result = await Workspace.updateOne(
-        { _id: workspaceId },
+        { _id: workspaceId, createdBy: userId },
         {
-            $pull: { team: new mongoose.Types.ObjectId(userId) },
+            $pull: { team: new mongoose.Types.ObjectId(memberId) },
             $inc: { teamCount: -1 },
         }
     );
@@ -260,6 +260,59 @@ const removeTeamMember = async (workspaceId: string, userId: string) => {
     }
 
     return result;
+};
+
+const getInviteData = async (workspaceId: string, senderId: string) => {
+    const result = await Workspace.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(workspaceId),
+            },
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "createdBy",
+                foreignField: "_id",
+                as: "createdByDetails",
+            },
+        },
+        {
+            $unwind: "$createdByDetails",
+        },
+        {
+            $project: {
+                "createdByDetails.name": 1,
+                "createdByDetails.email": 1,
+                "createdByDetails._id": 1,
+                "createdByDetails.profilePicture": 1,
+                name: 1,
+                description: 1,
+                createdBy: 1,
+            },
+        },
+    ]);
+
+    const workspace = result[0];
+
+    if (!workspace) {
+        throw new APIResponseError("Workspace not found", 404, false);
+    }
+
+    const senderDetails = await User.findById(senderId);
+    if (!senderDetails) {
+        throw new APIResponseError("User not found", 404, false);
+    }
+
+    return {
+        workspace,
+        senderDetails: {
+            _id: senderDetails._id,
+            name: senderDetails.name,
+            email: senderDetails.email,
+            profilePicture: senderDetails.profilePicture,
+        },
+    };
 };
 
 const workspacesService = {
@@ -272,6 +325,7 @@ const workspacesService = {
     addTeamMember,
     getTeamMembers,
     removeTeamMember,
+    getInviteData,
 };
 
 export default workspacesService;

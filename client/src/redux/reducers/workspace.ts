@@ -4,14 +4,24 @@ import {
     deleteWorkspace,
     getAllWorkspaces,
     getMyWorkspaces,
+    getTeamMembers,
     getWorkspaceById,
+    postAcceptInvite,
+    removeTeamMember,
+    sendInvite,
     updateWorkspace,
 } from "../thunks/workspaceThunks";
-import type { ApiResponseType, IWorkspace, IWorkspaceState } from "./types";
+import type {
+    ApiResponseType,
+    IUser,
+    IWorkspace,
+    IWorkspaceState,
+} from "./types";
 
 const initialState: IWorkspaceState = {
     workspaces: [],
     currentWorkspace: null,
+    currentWorkspaceTeam: [],
     myWorkspaces: [],
     loading: false,
     error: null,
@@ -85,18 +95,21 @@ const workspaceSlice = createSlice({
         // getWorkspaceById
         builder.addCase(getWorkspaceById.fulfilled, (state, action) => {
             state.currentWorkspace = action.payload.data as IWorkspace;
+            state.currentWorkspaceTeam = [] as IUser[];
             state.loading = false;
             state.error = null;
             state.message = null;
         });
         builder.addCase(getWorkspaceById.pending, (state) => {
             state.currentWorkspace = null;
+            state.currentWorkspaceTeam = [] as IUser[];
             state.loading = true;
             state.error = null;
             state.message = null;
         });
         builder.addCase(getWorkspaceById.rejected, (state, action) => {
             state.currentWorkspace = null;
+            state.currentWorkspaceTeam = [] as IUser[];
             state.loading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType)?.message;
@@ -155,6 +168,80 @@ const workspaceSlice = createSlice({
             state.message = null;
         });
         builder.addCase(deleteWorkspace.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error.message || null;
+            state.message = (action.payload as ApiResponseType)?.message;
+        });
+
+        // inviteUserToWorkspace
+        builder.addCase(sendInvite.fulfilled, (state, _) => {
+            state.loading = false;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(sendInvite.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(sendInvite.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error.message || null;
+            state.message = (action.payload as ApiResponseType)?.message;
+        });
+
+        // postAcceptInvite
+        builder.addCase(postAcceptInvite.fulfilled, (state, _) => {
+            state.loading = false;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(postAcceptInvite.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(postAcceptInvite.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error.message || null;
+            state.message = (action.payload as ApiResponseType)?.message;
+        });
+
+        // getTeamMembers
+        builder.addCase(getTeamMembers.fulfilled, (state, action) => {
+            state.currentWorkspaceTeam = action.payload.data?.members as IUser[];
+            state.loading = false;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(getTeamMembers.pending, (state) => {
+            state.currentWorkspaceTeam = [];
+            state.loading = true;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(getTeamMembers.rejected, (state, action) => {
+            state.currentWorkspaceTeam = [];
+            state.loading = false;
+            state.error = action.error.message || null;
+            state.message = (action.payload as ApiResponseType)?.message;
+        });
+
+        // removeTeamMember
+        builder.addCase(removeTeamMember.fulfilled, (state, action) => {
+            state.currentWorkspaceTeam = state.currentWorkspaceTeam.filter(
+                (member) => member._id !== action.payload.data.memberId
+            );
+            state.loading = false;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(removeTeamMember.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(removeTeamMember.rejected, (state, action) => {
             state.loading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType)?.message;

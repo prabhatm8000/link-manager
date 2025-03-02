@@ -18,10 +18,15 @@ export const otpCookieConfig = {
     secure: true,
     sameSite: "strict" as "strict" | "lax" | "none",
     maxAge: 50 * 60 * 1000, // 5 minutes
-}
+};
 
 // otp
 export const otpConfig = {
     size: 6,
-    expiresAt: 5 * 60 * 1000, // 5 minutes
+    expiresAt: 20 * 60 * 1000, // 20 minutes
+};
+
+// invite
+export const inviteConfig = {
+    expiresAt: 24 * 60 * 60 * 1000, // 1 days
 };

@@ -4,12 +4,13 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import SuspenseWrapper from "./components/SuspenseWrapper";
 import ThemeBtn from "./components/ThemeBtn";
-import { useTheme } from "./hooks/useTheme";
+import useTheme from "./hooks/useTheme";
 import { handleToastIcons } from "./lib/toastFuncs";
+import LoadingPage from "./pages/LoadingPage";
+import InvitePage from "./pages/invite/InvitePage";
 import type { IUserState } from "./redux/reducers/types";
 import type { AppDispatch } from "./redux/store";
 import { verifyUser } from "./redux/thunks/usersThunk";
-import LoadingPage from "./pages/LoadingPage";
 
 const AuthRoutes = lazy(() => import("./pages/auth/AuthRoutes"));
 const LandlingRoutes = lazy(() => import("./pages/landing/LandingRoutes"));
@@ -77,6 +78,14 @@ const AppRouter = () => {
                         ) : (
                             <Navigate to="/auth/login" />
                         )
+                    }
+                />
+                <Route
+                    path="/invite/:workspaceId/:senderId/:token"
+                    element={
+                        <SuspenseWrapper>
+                            <InvitePage />
+                        </SuspenseWrapper>
                     }
                 />
                 <Route

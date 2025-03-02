@@ -5,7 +5,7 @@ const ViewHeader = ({
     subHeading,
 }: {
     heading: string;
-    subHeading?: string;
+    subHeading?: string | React.ReactNode;
 }) => {
     return (
         <div className="flex flex-col gap-4 py-4 px-2">

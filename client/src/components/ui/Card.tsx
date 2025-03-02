@@ -20,7 +20,7 @@ const handleVariant = (variant: CardProps["variant"]) => {
         case "danger-outline":
             return "bg-white/50 border border-red-500 dark:bg-black/50 dark:border-red-400";
         case "outline":
-            return "bg-white/50 border border-black/50 dark:bg-black/50 dark:border-white/50";
+            return "bg-transparent border border-black/50 dark:border-white/50";
         case "primary":
             return "bg-black text-white dark:bg-white dark:text-black";
         case "secondary":

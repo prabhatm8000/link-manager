@@ -8,6 +8,7 @@ export interface IUser extends mongoose.Document {
     password?: string;
     profilePicture?: string;
     isActive?: boolean;
+    lastLogin?: Date;
     workspaceCreatedCount?: number;
     comparePassword(password: string): Promise<boolean>;
 }
@@ -17,7 +18,6 @@ const userSchema = new mongoose.Schema(
         name: {
             type: String,
             required: true,
-            unique: true,
         },
         email: {
             type: String,
@@ -34,6 +34,9 @@ const userSchema = new mongoose.Schema(
         isActive: {
             type: Boolean,
             default: true,
+        },
+        lastLogin: {
+            type: Date,
         },
         workspaceCreatedCount: {
             type: Number,

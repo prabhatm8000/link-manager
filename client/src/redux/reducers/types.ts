@@ -9,6 +9,7 @@ export interface IUser {
     name: string;
     email: string;
     profilePicture?: string;
+    lastLogin?: Date;
     createdAt: string;
     updatedAt: string;
 }
@@ -35,6 +36,7 @@ export interface IWorkspace {
 export interface IWorkspaceState {
     workspaces: IWorkspace[];
     currentWorkspace: IWorkspace | null;
+    currentWorkspaceTeam: IUser[];
     myWorkspaces: IWorkspace[];
     loading: boolean;
     error: string | null;

@@ -26,7 +26,7 @@ const handleVariant = (variant: InputProps["variant"]) => {
         case "outline":
             return "bg-white/50 border border-black/50 hover:bg-black/10 dark:bg-black/50 dark:border-white/50 dark:hover:bg-white/10";
         case "secondary":
-            return "bg-black/30 dark:bg-white/30";
+            return "bg-black/10 dark:bg-white/10";
         default:
             return "hover:opacity-60 bg-black text-white placeholder:text-white/60 dark:bg-white dark:text-black dark:placeholder:text-black/60";
     }

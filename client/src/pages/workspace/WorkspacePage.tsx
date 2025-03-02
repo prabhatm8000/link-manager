@@ -5,9 +5,12 @@ import LinksView from "./views/LinksView";
 import EventsView from "./views/EventsView";
 import AnalyticsView from "./views/AnalyticsView";
 import SettingsView from "./views/SettingsView";
+import NoWorkspace from "./views/NoWorkspace";
 
 const WorkspacePage = () => {
     const [searchParams, _] = useSearchParams();
+    if (!searchParams.get("workspaceId") && searchParams.get("tab") != "profile") return <NoWorkspace />;
+
     switch (searchParams.get("tab") as SideBarTabType) {
         case "profile":
             return <ProfileView />;

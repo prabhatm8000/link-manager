@@ -1,8 +1,11 @@
-import { config } from "dotenv";
 import nodemailer from "nodemailer";
 import envVars from "../constants/envVars";
+import type { IUser } from "../models/users";
+import type { IWorkspace } from "../models/workspaces";
+import { inviteConfig, otpConfig } from "../constants/configs";
+import jwt from "jsonwebtoken";
 
-config();
+const JWT_SECRET = envVars.JWT_SECRET as string;
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
     port: 587,
@@ -12,6 +15,21 @@ const transporter = nodemailer.createTransport({
         pass: envVars.EMAIL_PASSWORD,
     },
 });
+
+/**
+ * @param workspaceId Invite for which workspaceId
+ * @param senderId Senders userId
+ * @returns Invite link `{clientUrl}/invite/{workspaceId}/{userId}/{token}`
+ */
+const genarateInviteLink = (workspaceId: string, senderId: string): string => {
+    const payload = { workspaceId, senderId };
+    const token = jwt.sign({ payload }, JWT_SECRET, {
+        expiresIn: inviteConfig.expiresAt,
+    });
+
+    const inviteLink = `${envVars.CLIENT_URL}/invite/${workspaceId}/${senderId}/${token}`;
+    return inviteLink;
+};
 
 async function sendMail({
     to,
@@ -43,9 +61,13 @@ async function sendMail({
 async function sendOtpEmail(to: string, otp: string) {
     const mailObj = {
         to: to,
-        subject: "OTP Verification - expires in 5 minutes",
-        text: `Your OTP is: ${otp}. It will expire in 5 minutes.`,
-        html: `<p>Your OTP is: ${otp}. It will expire in 5 minutes.</p>`,
+        subject: "OTP Verification",
+        text: `Your OTP is: ${otp}. It will expire in ${
+            otpConfig.expiresAt / 60000
+        } minutes.`,
+        html: `<p>Your OTP is: ${otp}. It will expire in ${
+            otpConfig.expiresAt / 60000
+        } minutes.</p>`,
     };
     await sendMail(mailObj);
 }
@@ -70,5 +92,31 @@ async function sendPasswordResetEmail(to: string, resetToken: string) {
     await sendMail(mailObj);
 }
 
-export { sendOtpEmail, sendPasswordResetEmail, sendVerificationEmail };
+async function sendInviteToJoinWorkspaceMail(
+    to: string,
+    workspace: IWorkspace,
+    senderUser: IUser
+) {
+    const inviteLink = genarateInviteLink(
+        workspace._id.toString(),
+        senderUser._id.toString()
+    );
+    const mailObj = {
+        to,
+        subject: `Invited by ${senderUser.name} to join workspace`,
+        text: `You have been invited by \nName: ${senderUser.name}\nEmail: ${senderUser.email}\nto join ${workspace.name} workspace.\n\nClick here to join: ${inviteLink}`,
+        html: `<p>You have been invited by</p>
+                <p>Name: ${senderUser.name}</p>
+                <p>Email: ${senderUser.email}</p>
+                <p>to join ${workspace.name} workspace.</p>
+                <p>Click here to join: <a href="${inviteLink}">${inviteLink}</a></p>`,
+    };
+    await sendMail(mailObj);
+}
 
+export {
+    sendOtpEmail,
+    sendPasswordResetEmail,
+    sendVerificationEmail,
+    sendInviteToJoinWorkspaceMail,
+};

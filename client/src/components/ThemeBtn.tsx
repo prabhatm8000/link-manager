@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { IoIosMoon, IoIosSunny } from "react-icons/io";
-import { useTheme } from "../hooks/useTheme";
+import useTheme from "../hooks/useTheme";
 import Button from "./ui/Button";
 
 const ThemeBtn = () => {

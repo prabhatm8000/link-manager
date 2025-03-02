@@ -15,7 +15,7 @@ import LoadingCircle from "../../../components/ui/LoadingCircle";
 const AuthOtp = () => {
     const { register, handleSubmit } = useForm();
     const param = useParams();
-    const userState: IUserState = useSelector((state: any) => state.users);
+    const userState: IUserState = useSelector((state: any) => state.user);
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
     const [timeLeft, setTimeLeft] = useState(5 * 60);
@@ -39,24 +39,24 @@ const AuthOtp = () => {
 
     useEffect(() => {
         if (userState.isAuthenticated) {
-            navigate("/dashboard");
+            navigate("/workspace");
         }
-    }, [userState]);
+    }, [userState.isAuthenticated]);
 
     return (
         <Card
             variant="none"
-            className="p-6 flex flex-col gap-4 w-full backdrop-blur-lg"
+            className="p-6 flex flex-col gap-4 w-full backdrop-blur-xs"
         >
             <TitleText className="text-center">Signup</TitleText>
             <form className="flex flex-col gap-4" onSubmit={onSubmit}>
-                <p>OTP sent to {param.email}</p>
+                <p className="text-center">OTP sent to {param.email}</p>
                 <Input
                     {...register("otp", { required: true })}
                     id="otp"
                     type="text"
                     placeholder="OTP"
-                    variant="outline"
+                    variant="secondary"
                     className="w-full"
                     autoComplete="name"
                 />

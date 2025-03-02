@@ -15,6 +15,7 @@ import type { AppDispatch } from "../../../redux/store";
 import { getMyWorkspaces } from "../../../redux/thunks/workspaceThunks";
 import ViewHeader from "../components/ViewHeader";
 import WorkspaceItemDetailed from "../components/WorkspaceItemDetailed";
+import CreateWorkspaceBtnWithModal from "../components/CreateWorkspaceBtnWithModal";
 
 const ProfileView = () => {
     const userState: IUserState = useSelector((state: any) => state.user);
@@ -54,8 +55,9 @@ const ProfileView = () => {
         <>
             <ViewHeader heading="Profile" subHeading="Manage your profile" />
             <div className="flex flex-col gap-4 w-full">
-                <div className="flex flex-col gap-8">
-                    <div className="w-full grid grid-cols-[auto_1fr] items-center">
+                <div className="space-y-8">
+                    {/* user info */}
+                    <div className="w-full grid grid-cols-[1fr_auto] gap-2 items-center">
                         <div className="grid grid-cols-[1fr_auto] gap-2 w-fit">
                             <Avatar
                                 props={{
@@ -75,14 +77,22 @@ const ProfileView = () => {
                                 <h4 className="text-sm text-black/50 dark:text-white/50 line-clamp-1">
                                     {userState?.user?.email}
                                 </h4>
+                                {userState?.user?.lastLogin && (
+                                    <h4 className="text-sm text-black/50 dark:text-white/50 line-clamp-1">
+                                        {new Date(
+                                            userState?.user?.lastLogin
+                                        ).toLocaleString()}
+                                    </h4>
+                                )}
                             </div>
                         </div>
                         <LogoutBtn variant="danger" className="w-fit" />
                     </div>
 
+                    {/* edit form */}
                     <form
                         onSubmit={onSubmit}
-                        className="grid grid-cols-1 lg:grid-cols-2 gap-2"
+                        className="grid grid-cols-1 lg:grid-cols-2 gap-3"
                     >
                         <div className="w-full">
                             <span className="text-sm opacity-50">Name</span>
@@ -152,10 +162,14 @@ const ProfileView = () => {
                         </div>
                     </form>
 
-                    <div className="flex flex-col gap-6">
-                        <h3 className="text-black/50 dark:text-white/50">
-                            Workspaces created
-                        </h3>
+                    {/* my workspaces */}
+                    <div className="flex flex-col gap-3">
+                        <div className="flex justify-center flex-col sm:flex-row sm:justify-between gap-3">
+                            <h3 className="text-black/50 dark:text-white/50">
+                                My Workspaces
+                            </h3>
+                            <CreateWorkspaceBtnWithModal />
+                        </div>
                         {workspaceState.loading ? (
                             <LoadingCircle className="size-5" />
                         ) : workspaceState.myWorkspaces.length > 0 ? (
@@ -172,7 +186,7 @@ const ProfileView = () => {
                             </div>
                         ) : (
                             <h3 className="text-black/50 dark:text-white/50">
-                                You have not created any workspace yet
+                                You have not created any workspace yet!
                             </h3>
                         )}
                     </div>

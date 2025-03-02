@@ -1,19 +1,19 @@
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { Express } from "express";
+import envVars from "./constants/envVars";
 import { connectToDB } from "./lib/mongodb";
 import router from "./routes/router";
-import envVars from "./constants/envVars";
-import cookieParser from "cookie-parser";
 
 const app: Express = express();
 const PORT = envVars.PORT;
-const NODE_ENV = envVars.NODE_ENV;
+const CLIENT_URL = envVars.CLIENT_URL;
 
 app.use(express.json());
 app.use(cookieParser());
 app.use(
     cors({
-        origin: NODE_ENV === "dev" ? envVars.DEV_CLIENT_URL : "",
+        origin: CLIENT_URL,
         credentials: true,
     })
 );
