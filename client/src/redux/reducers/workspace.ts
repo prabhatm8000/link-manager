@@ -4,7 +4,6 @@ import {
     deleteWorkspace,
     getAllWorkspaces,
     getMyWorkspaces,
-    getTeamMembers,
     getWorkspaceById,
     postAcceptInvite,
     removeTeamMember,
@@ -202,26 +201,6 @@ const workspaceSlice = createSlice({
             state.message = null;
         });
         builder.addCase(postAcceptInvite.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.error.message || null;
-            state.message = (action.payload as ApiResponseType)?.message;
-        });
-
-        // getTeamMembers
-        builder.addCase(getTeamMembers.fulfilled, (state, action) => {
-            state.currentWorkspaceTeam = action.payload.data?.members as IUser[];
-            state.loading = false;
-            state.error = null;
-            state.message = null;
-        });
-        builder.addCase(getTeamMembers.pending, (state) => {
-            state.currentWorkspaceTeam = [];
-            state.loading = true;
-            state.error = null;
-            state.message = null;
-        });
-        builder.addCase(getTeamMembers.rejected, (state, action) => {
-            state.currentWorkspaceTeam = [];
             state.loading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType)?.message;

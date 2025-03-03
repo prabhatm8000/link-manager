@@ -4,17 +4,18 @@ import useTheme from "../hooks/useTheme";
 import Button from "./ui/Button";
 
 const ThemeBtn = () => {
-    const { theme, toggleTheme } = useTheme();
+    const { theme, toggleTheme, setTheme } = useTheme();
 
     useEffect(() => {
-        document.documentElement.setAttribute(
-            "data-theme",
+        const gettingTheme =
             localStorage.theme === "dark" ||
-                (!("theme" in localStorage) &&
-                    window.matchMedia("(prefers-color-scheme: dark)").matches)
+            (!("theme" in localStorage) &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches)
                 ? "dark"
-                : "light"
-        );
+                : "light";
+
+                setTheme(gettingTheme);
+        document.documentElement.setAttribute("data-theme", gettingTheme);
     }, [theme]);
 
     return (

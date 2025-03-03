@@ -156,20 +156,6 @@ export const postAcceptInvite = createAsyncThunk(
     }
 );
 
-export const getTeamMembers = createAsyncThunk(
-    "workspace/get-team-members",
-    async (workspaceId: string, { rejectWithValue, fulfillWithValue }) => {
-        try {
-            const res = await axiosInstance.get(
-                `/workspace/team-members/${workspaceId}`
-            );
-            return fulfillWithValue(res.data as ApiResponseType);
-        } catch (error: any) {
-            return rejectWithValue(error.response.data as ApiResponseType);
-        }
-    }
-);
-
 export const removeTeamMember = createAsyncThunk(
     "workspace/remove-team-member",
     async (

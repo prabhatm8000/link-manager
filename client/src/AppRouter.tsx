@@ -71,12 +71,14 @@ const AppRouter = () => {
                 <Route
                     path="/workspace/*"
                     element={
-                        user?.isAuthenticated ? (
+                        user.isAuthenticated ? (
                             <PrivateRoutes />
                         ) : user.loading ? (
                             <LoadingPage />
                         ) : (
-                            <Navigate to="/auth/login" />
+                            // <Navigate to="/auth/login" />
+                            <LoadingPage />
+                            
                         )
                     }
                 />

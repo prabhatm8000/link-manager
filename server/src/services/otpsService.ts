@@ -14,6 +14,11 @@ const genarateAndSendOtpViaMail = async (email: string) => {
     const expiresAt = new Date(Date.now() + otpConfig.expiresAt);
     let otpObj = await Otp.findOne({ email });
     if (otpObj) {
+        // 3 minutes
+        const diff = (Date.now() - otpObj.createdAt.getTime()) / 1000;
+        if (diff < 180) {
+            throw new APIResponseError("Too soon, try after few minutes", 400, false);
+        }
         otpObj.otp = otp;
         otpObj.expiresAt = expiresAt;
     } else {

@@ -7,26 +7,30 @@ import Card from "../../../components/ui/Card";
 import Input from "../../../components/ui/Input";
 import type { IUserState } from "../../../redux/reducers/types";
 import type { AppDispatch } from "../../../redux/store";
-import { registerAndVerifyOtp } from "../../../redux/thunks/usersThunk";
+import {
+    registerAndVerifyOtp,
+    resendOtp,
+} from "../../../redux/thunks/usersThunk";
 
 import { useEffect, useState } from "react";
 import LoadingCircle from "../../../components/ui/LoadingCircle";
 
+const coolDownTime = 2.5 * 60;
 const AuthOtp = () => {
     const { register, handleSubmit } = useForm();
     const param = useParams();
     const userState: IUserState = useSelector((state: any) => state.user);
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const [timeLeft, setTimeLeft] = useState(5 * 60);
+    const [coolDownTimer, setCoolDownTimer] = useState(coolDownTime);
 
     useEffect(() => {
-        if (timeLeft <= 0) return;
+        if (coolDownTimer <= 0) return;
         const timer = setInterval(() => {
-            setTimeLeft((prev) => prev - 1);
+            setCoolDownTimer((prev) => prev - 1);
         }, 1000);
         return () => clearInterval(timer);
-    }, [timeLeft]);
+    }, [coolDownTimer]);
 
     const onSubmit = handleSubmit((data) => {
         dispatch(
@@ -36,6 +40,12 @@ const AuthOtp = () => {
             })
         );
     });
+
+    const handleResendOtp = () => {
+        dispatch(resendOtp()).then(() => {
+            setCoolDownTimer(coolDownTime);
+        });
+    };
 
     useEffect(() => {
         if (userState.isAuthenticated) {
@@ -60,12 +70,31 @@ const AuthOtp = () => {
                     className="w-full"
                     autoComplete="name"
                 />
-                <p>{`Time left: ${Math.floor(timeLeft / 60)}:${
-                    timeLeft % 60
-                }`}</p>
+                <div className="flex justify-center items-center gap-2">
+                    <span>
+                        {`${Math.floor(coolDownTimer / 60)}:${(
+                            coolDownTimer % 60
+                        )
+                            .toString()
+                            .padStart(2, "0")}`}
+                    </span>
+                    <Button
+                        disabled={userState?.loading || coolDownTimer > 0}
+                        type="button"
+                        variant="link"
+                        onClick={handleResendOtp}
+                        className={
+                            !(userState?.loading || coolDownTimer > 0)
+                                ? "hover:underline"
+                                : ""
+                        }
+                    >
+                        resend
+                    </Button>
+                </div>
 
                 <Button
-                    disabled={userState?.loading || timeLeft <= 0}
+                    disabled={userState?.loading}
                     type="submit"
                     className="mt-2 px-4 flex items-center justify-center gap-2"
                 >

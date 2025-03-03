@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { APIResponseError } from "../errors/response";
 import User from "../models/users";
 import Workspace from "../models/workspaces";
+import { validateObjectId } from "../lib/mongodb";
 
 const MAX_WORKSPACES = 5;
 const MAX_TEAM_MEMBERS = 20;
@@ -56,6 +57,8 @@ const createWorkspace = async (workspace: {
 };
 
 const getWorkspaceById = async (workspaceId: string, userId: string) => {
+    validateObjectId(workspaceId);
+    validateObjectId(userId);
     const result = await Workspace.aggregate([
         {
             $match: {
@@ -83,11 +86,26 @@ const getWorkspaceById = async (workspaceId: string, userId: string) => {
             },
         },
         {
+            $lookup: {
+                from: "users",
+                localField: "createdBy",
+                foreignField: "_id",
+                as: "createdByDetails",
+            },
+        },
+        {
+            $unwind: "$createdByDetails",
+        },
+        {
             $project: {
                 "teamDetails.name": 1,
                 "teamDetails.email": 1,
                 "teamDetails._id": 1,
                 "teamDetails.profilePicture": 1,
+                "createdByDetails.name": 1,
+                "createdByDetails.email": 1,
+                "createdByDetails._id": 1,
+                "createdByDetails.profilePicture": 1,
                 name: 1,
                 description: 1,
                 createdBy: 1,
@@ -104,6 +122,7 @@ const getWorkspaceById = async (workspaceId: string, userId: string) => {
 };
 
 const getWorkspaceByCreatorId = async (userId: string) => {
+    validateObjectId(userId);
     const result = await Workspace.find({
         createdBy: new mongoose.Types.ObjectId(userId),
         isActive: true,
@@ -112,6 +131,7 @@ const getWorkspaceByCreatorId = async (userId: string) => {
 };
 
 const getAllWorkspacesForUser = async (userId: string) => {
+    validateObjectId(userId);
     const result = await Workspace.aggregate([
         {
             $match: {
@@ -148,6 +168,7 @@ const updateWorkspace = async (
     createdBy: string,
     data: { name: string; description: string }
 ) => {
+    validateObjectId(workspaceId);
     return await Workspace.findOneAndUpdate(
         { _id: new mongoose.Types.ObjectId(workspaceId), createdBy: createdBy },
         { $set: data },
@@ -156,6 +177,8 @@ const updateWorkspace = async (
 };
 
 const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
+    validateObjectId(workspaceId);
+    validateObjectId(createdBy);
     const session = await mongoose.startSession();
     try {
         session.startTransaction();
@@ -190,6 +213,8 @@ const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
 };
 
 const addTeamMember = async (workspaceId: string, userId: string) => {
+    validateObjectId(workspaceId);
+    validateObjectId(userId);
     const workspace = await Workspace.findById(workspaceId);
     if (!workspace) {
         throw new APIResponseError("Workspace not found", 404, false);
@@ -215,6 +240,7 @@ const addTeamMember = async (workspaceId: string, userId: string) => {
 };
 
 const getTeamMembers = async (workspaceId: string) => {
+    validateObjectId(workspaceId);
     const result = await Workspace.aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(workspaceId) } },
         {
@@ -247,6 +273,9 @@ const removeTeamMember = async (
     memberId: string,
     userId: string
 ) => {
+    validateObjectId(workspaceId);
+    validateObjectId(memberId);
+    validateObjectId(userId);
     const result = await Workspace.updateOne(
         { _id: workspaceId, createdBy: userId },
         {
@@ -263,6 +292,8 @@ const removeTeamMember = async (
 };
 
 const getInviteData = async (workspaceId: string, senderId: string) => {
+    validateObjectId(workspaceId);
+    validateObjectId(senderId);
     const result = await Workspace.aggregate([
         {
             $match: {

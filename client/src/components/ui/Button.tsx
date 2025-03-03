@@ -9,12 +9,15 @@ export interface ButtonProps
         | "secondary"
         | "danger"
         | "danger-outline"
+        | "link"
         | "none";
     roundness?: "full" | "light" | "";
 }
 
 const handleVariant = (variant: ButtonProps["variant"]) => {
     switch (variant) {
+        case "link":
+            return "px-0 py-0 text-blue-500 dark:text-blue-400 disabled:text-blue-950 dark:disabled:text-blue-200";
         case "danger":
             return "bg-red-500 text-white hover:bg-red-700 dark:bg-red-900 dark:hover:bg-red-950";
         case "danger-outline":

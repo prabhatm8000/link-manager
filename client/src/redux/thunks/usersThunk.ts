@@ -66,6 +66,20 @@ export const registerAndSendOtp = createAsyncThunk(
     }
 );
 
+export const resendOtp = createAsyncThunk(
+    "user/resend-otp",
+    async (_, { rejectWithValue, fulfillWithValue }) => {
+        try {
+            const res = await axiosInstance.post("/user/resend-otp", {
+                resend: true,
+            });
+            return fulfillWithValue(res.data as ApiResponseType);
+        } catch (error: any) {
+            return rejectWithValue(error.response.data as ApiResponseType);
+        }
+    }
+);
+
 export const registerAndVerifyOtp = createAsyncThunk(
     "user/register-verify-otp",
     async (

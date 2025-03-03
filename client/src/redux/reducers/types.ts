@@ -28,7 +28,9 @@ export interface IWorkspace {
     name: string;
     description: string;
     createdBy: string;
-    team?: string[] | IUser[];
+    createdByDetails?: IUser;
+    team?: string[];
+    teamDetails?: IUser[];
     createdAt: string;
     updatedAt: string;
 }

@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import Avatar from "../../../components/Avatar";
 import LoadingCircle from "../../../components/ui/LoadingCircle";
 import type {
@@ -7,10 +6,6 @@ import type {
     IUserState,
     IWorkspaceState,
 } from "../../../redux/reducers/types";
-import { AppDispatch } from "../../../redux/store";
-import {
-    getTeamMembers
-} from "../../../redux/thunks/workspaceThunks";
 import CreateWorkspaceBtnWithModal from "../components/CreateWorkspaceBtnWithModal";
 import DeleteWorkspacebtnWithModal from "../components/DeleteWorkspacebtnWithModal";
 import InviteTeamMemberBtnWithModal from "../components/InviteTeamMemberBtnWithModal";
@@ -22,15 +17,6 @@ const SettingsView = () => {
         (state: any) => state.workspace
     );
     const userState: IUserState = useSelector((state: any) => state.user);
-    const dispatch = useDispatch<AppDispatch>();
-
-    useEffect(() => {
-        if (workspaceState?.currentWorkspaceTeam?.length) return;
-        dispatch(
-            getTeamMembers(workspaceState?.currentWorkspace?._id as string)
-        );
-    }, []);
-
     if (!workspaceState?.currentWorkspace) return null;
     return (
         <>
@@ -52,7 +38,7 @@ const SettingsView = () => {
                             {workspaceState?.currentWorkspace?.name}
                         </h3>
                         <div className="text-black/50 dark:text-white/50">
-                            {workspaceState?.currentWorkspace?.createdBy}
+                            {`Created By: ${workspaceState?.currentWorkspace?.createdByDetails?.email}`}
                         </div>
                         <div className="text-black/50 dark:text-white/50">
                             {workspaceState?.currentWorkspace?.description}
@@ -83,14 +69,11 @@ const SettingsView = () => {
 
                 {workspaceState?.loading ? (
                     <LoadingCircle className="size-5" />
-                ) : workspaceState?.currentWorkspaceTeam?.length ? (
+                ) : workspaceState?.currentWorkspace.teamDetails?.length ? (
                     <div>
-                        {workspaceState?.currentWorkspaceTeam?.map(
-                            (member: IUser) => (
-                                <MemberItem
-                                    key={member._id}
-                                    member={member}
-                                />
+                        {workspaceState?.currentWorkspace.teamDetails?.map(
+                            (member: IUser, index) => (
+                                <MemberItem key={index} member={member} />
                             )
                         )}
                     </div>

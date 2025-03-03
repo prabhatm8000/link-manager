@@ -4,6 +4,7 @@ import {
     logout,
     registerAndSendOtp,
     registerAndVerifyOtp,
+    resendOtp,
     verifyUser,
 } from "../thunks/usersThunk";
 import type { ApiResponseType, IUser, IUserState } from "./types";
@@ -94,6 +95,27 @@ const userSlice = createSlice({
             state.isOtpSent = false;
         });
         builder.addCase(registerAndSendOtp.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error.message || null;
+            state.message = (action.payload as ApiResponseType).message;
+            state.isOtpSent = false;
+        });
+
+        // resend otp
+        builder.addCase(resendOtp.fulfilled, (state, action) => {
+            state.user = action.payload.data as IUser;
+            state.loading = false;
+            state.error = null;
+            state.message = null;
+            state.isOtpSent = true;
+        });
+        builder.addCase(resendOtp.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+            state.message = null;
+            state.isOtpSent = false;
+        });
+        builder.addCase(resendOtp.rejected, (state, action) => {
             state.loading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType).message;

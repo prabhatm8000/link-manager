@@ -9,17 +9,20 @@ const verifyOtpMiddleware = async (
     res: Response,
     next?: NextFunction
 ) => {
-    const { email, otp } = req.body;
+    // email, otp will be undefined on resend === true
+    const { email, otp, resend } = req.body;
     try {
         const payload = await getOtpCookie(req);
 
-        if (email !== payload.email) {
-            throw new APIResponseError("Unauthorized", 401, false);
-        }
+        if (!resend) {
+            if (email !== payload.email) {
+                throw new APIResponseError("Unauthorized", 401, false);
+            }
 
-        const isMatch = await otpService.verifyOtp(email, otp);
-        if (!isMatch) {
-            throw new APIResponseError("Invalid OTP", 400, false);
+            const isMatch = await otpService.verifyOtp(email, otp);
+            if (!isMatch) {
+                throw new APIResponseError("Invalid OTP", 400, false);
+            }
         }
 
         removeOtpCookie(res);

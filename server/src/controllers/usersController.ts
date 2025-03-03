@@ -23,6 +23,14 @@ const registerAndSendOtp = asyncWrapper(async (req: Request, res: Response) => {
     res.status(200).json({ success: true, message: "OTP sent successfully" });
 });
 
+const resendOtp = asyncWrapper(async (req: Request, res: Response) => {
+    // from middleware
+    const { name, email, password } = req.body;
+    await otpService.genarateAndSendOtpViaMail(email);
+    setOtpCookie(res, { email, name, password });
+    res.status(200).json({ success: true, message: "OTP sent successfully" });
+});
+
 const registerAndVerifyOtp = asyncWrapper(
     async (req: Request, res: Response) => {
         // from middleware
@@ -116,6 +124,7 @@ const deactivateUser = asyncWrapper(async (req: Request, res: Response) => {
 
 const usersController = {
     registerAndSendOtp,
+    resendOtp,
     registerAndVerifyOtp,
     login,
     logout,

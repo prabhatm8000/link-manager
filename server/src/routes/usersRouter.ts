@@ -7,6 +7,8 @@ const usersRouter = Router();
 
 usersRouter.post("/register-send-otp", [], usersController.registerAndSendOtp);
 
+usersRouter.post("/resend-otp", [verifyOtpMiddleware], usersController.resendOtp);
+
 usersRouter.post(
     "/register-verify-otp",
     [verifyOtpMiddleware],
