@@ -6,9 +6,9 @@ import {
     getMyWorkspaces,
     getWorkspaceById,
     postAcceptInvite,
-    removeTeamMember,
+    removePeople,
     sendInvite,
-    updateWorkspace,
+    updateWorkspace
 } from "../thunks/workspaceThunks";
 import type {
     ApiResponseType,
@@ -20,7 +20,7 @@ import type {
 const initialState: IWorkspaceState = {
     workspaces: [],
     currentWorkspace: null,
-    currentWorkspaceTeam: [],
+    currentWorkspacePeople: [],
     myWorkspaces: [],
     loading: false,
     error: null,
@@ -94,21 +94,21 @@ const workspaceSlice = createSlice({
         // getWorkspaceById
         builder.addCase(getWorkspaceById.fulfilled, (state, action) => {
             state.currentWorkspace = action.payload.data as IWorkspace;
-            state.currentWorkspaceTeam = [] as IUser[];
+            state.currentWorkspacePeople = [] as IUser[];
             state.loading = false;
             state.error = null;
             state.message = null;
         });
         builder.addCase(getWorkspaceById.pending, (state) => {
             state.currentWorkspace = null;
-            state.currentWorkspaceTeam = [] as IUser[];
+            state.currentWorkspacePeople = [] as IUser[];
             state.loading = true;
             state.error = null;
             state.message = null;
         });
         builder.addCase(getWorkspaceById.rejected, (state, action) => {
             state.currentWorkspace = null;
-            state.currentWorkspaceTeam = [] as IUser[];
+            state.currentWorkspacePeople = [] as IUser[];
             state.loading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType)?.message;
@@ -206,21 +206,21 @@ const workspaceSlice = createSlice({
             state.message = (action.payload as ApiResponseType)?.message;
         });
 
-        // removeTeamMember
-        builder.addCase(removeTeamMember.fulfilled, (state, action) => {
-            state.currentWorkspaceTeam = state.currentWorkspaceTeam.filter(
-                (member) => member._id !== action.payload.data.memberId
+        // removePeople
+        builder.addCase(removePeople.fulfilled, (state, action) => {
+            state.currentWorkspacePeople = state.currentWorkspacePeople.filter(
+                (people) => people._id !== action.payload.data.peopleId
             );
             state.loading = false;
             state.error = null;
             state.message = null;
         });
-        builder.addCase(removeTeamMember.pending, (state) => {
+        builder.addCase(removePeople.pending, (state) => {
             state.loading = true;
             state.error = null;
             state.message = null;
         });
-        builder.addCase(removeTeamMember.rejected, (state, action) => {
+        builder.addCase(removePeople.rejected, (state, action) => {
             state.loading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType)?.message;

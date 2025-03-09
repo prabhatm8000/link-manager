@@ -1,21 +1,21 @@
-import { GoUnlink } from "react-icons/go";
+import { IoIosLink } from "react-icons/io";
 import ViewHeader from "../components/ViewHeader";
 
-const NoWorkspace = () => {
+const LoadingView = () => {
     return (
         <div className="h-full grid grid-cols-1 grid-rows-[auto_1fr]">
             <ViewHeader
-                heading="No Workspace"
-                subHeading="Create a workspace, goto to profile or click on 'Create one' button in the sidebar."
+                heading="Loading..."
+                subHeading="Waiting for the workspace to load..."
             />
             <div className="py-4 h-full flex flex-col items-center justify-center -translate-y-[10%]">
-                <GoUnlink
+                <IoIosLink
                     size={100}
-                    className="m-auto text-black/15 dark:text-white/15"
+                    className="animate-pulse duration-300 ease-in-out"
                 />
             </div>
         </div>
     );
 };
 
-export default NoWorkspace;
+export default LoadingView;

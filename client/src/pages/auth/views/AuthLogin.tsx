@@ -39,37 +39,48 @@ const AuthLogin = () => {
     });
 
     return (
-        <Card className="p-6 flex flex-col gap-4 w-full backdrop-blur-xs" variant="none">
+        <Card
+            className="p-6 flex flex-col gap-4 w-full backdrop-blur-xs"
+            variant="none"
+        >
             <TitleText className="text-center">Login</TitleText>
             <form className="flex flex-col gap-4" onSubmit={onSubmit}>
-                <Input
-                    {...register("email", { required: true })}
-                    id="email"
-                    type="email"
-                    placeholder="Email"
-                    variant="secondary"
-                    className="w-full"
-                    autoComplete="email"
-                />
-                {errors.email && (
-                    <span className="text-red-500">
-                        {errors.email.message as string}
-                    </span>
-                )}
-                <Input
-                    {...register("password", { required: true })}
-                    id="password"
-                    type="password"
-                    placeholder="Password"
-                    variant="secondary"
-                    className="w-full"
-                    autoComplete="password"
-                />
-                {errors.password && (
-                    <span className="text-red-500">
-                        {errors.password.message as string}
-                    </span>
-                )}
+                <div>
+                    <Input
+                        {...register("email", {
+                            required: "This field is required.",
+                        })}
+                        id="email"
+                        type="email"
+                        placeholder="Email"
+                        variant="secondary"
+                        className="w-full"
+                        autoComplete="email"
+                    />
+                    {errors.email && (
+                        <span className="text-red-500 text-sm">
+                            {errors.email.message as string}
+                        </span>
+                    )}
+                </div>
+                <div>
+                    <Input
+                        {...register("password", {
+                            required: "This field is required.",
+                        })}
+                        id="password"
+                        type="password"
+                        placeholder="Password"
+                        variant="secondary"
+                        className="w-full"
+                        autoComplete="password"
+                    />
+                    {errors.password && (
+                        <span className="text-red-500 text-sm">
+                            {errors.password.message as string}
+                        </span>
+                    )}
+                </div>
                 <Button
                     disabled={user?.loading}
                     type="submit"

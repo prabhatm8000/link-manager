@@ -20,12 +20,12 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
             <div className="fixed -z-10 top-0 left-0 w-full h-full bg-white dark:bg-black">
                 {theme === "dark" ? (
                     <img
-                        src="/public/backgrounds/auth-dark.jpg"
+                        src="/backgrounds/auth-dark.jpg"
                         className="w-full h-full object-cover"
                     />
                 ) : (
                     <img
-                        src="/public/backgrounds/auth-light.jpg"
+                        src="/backgrounds/auth-light.jpg"
                         className="w-full h-full object-cover"
                     />
                 )}

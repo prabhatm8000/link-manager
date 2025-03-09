@@ -8,8 +8,8 @@ import type {
 } from "../../../redux/reducers/types";
 import CreateWorkspaceBtnWithModal from "../components/CreateWorkspaceBtnWithModal";
 import DeleteWorkspacebtnWithModal from "../components/DeleteWorkspacebtnWithModal";
-import InviteTeamMemberBtnWithModal from "../components/InviteTeamMemberBtnWithModal";
-import MemberItem from "../components/MemberItem";
+import InvitePeopleBtnWithModal from "../components/InvitePeopleBtnWithModal";
+import PeopleItem from "../components/PeopleItem";
 import ViewHeader from "../components/ViewHeader";
 
 const SettingsView = () => {
@@ -60,26 +60,26 @@ const SettingsView = () => {
                 )}
 
                 <div className="flex justify-center flex-col sm:flex-row sm:justify-between gap-3">
-                    <h3 className="text-black/50 dark:text-white/50">Team</h3>
+                    <h3 className="text-black/50 dark:text-white/50">People</h3>
                     {userState?.user?._id ===
                         workspaceState?.currentWorkspace?.createdBy && (
-                        <InviteTeamMemberBtnWithModal />
+                        <InvitePeopleBtnWithModal />
                     )}
                 </div>
 
                 {workspaceState?.loading ? (
                     <LoadingCircle className="size-5" />
-                ) : workspaceState?.currentWorkspace.teamDetails?.length ? (
+                ) : workspaceState?.currentWorkspace.peopleDetails?.length ? (
                     <div>
-                        {workspaceState?.currentWorkspace.teamDetails?.map(
-                            (member: IUser, index) => (
-                                <MemberItem key={index} member={member} />
+                        {workspaceState?.currentWorkspace.peopleDetails?.map(
+                            (people: IUser, index) => (
+                                <PeopleItem key={index} people={people} />
                             )
                         )}
                     </div>
                 ) : (
                     <div className="text-black/50 dark:text-white/50">
-                        No team members
+                        No people in this workspace
                     </div>
                 )}
             </div>

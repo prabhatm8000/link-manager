@@ -116,7 +116,7 @@ const acceptInvite = asyncWrapper(async (req, res) => {
         throw new APIResponseError("Bad request", 404, false);
     }
 
-    await workspacesService.addTeamMember(workspaceId, user._id.toString());
+    await workspacesService.addPeople(workspaceId, user._id.toString());
 
     res.status(201).json({
         success: true,
@@ -124,24 +124,24 @@ const acceptInvite = asyncWrapper(async (req, res) => {
     });
 });
 
-const getTeamMembers = asyncWrapper(async (req, res) => {
+const getPeople = asyncWrapper(async (req, res) => {
     const { id: workspaceId } = req.params;
-    const members = await workspacesService.getTeamMembers(workspaceId);
-    res.status(200).json({ success: true, message: "", data: members });
+    const people = await workspacesService.getPeople(workspaceId);
+    res.status(200).json({ success: true, message: "", data: people });
 });
 
-const removeTeamMember = asyncWrapper(async (req, res) => {
+const removePeople = asyncWrapper(async (req, res) => {
     const { id: workspaceId } = req.params;
-    const { memberId } = req.body;
-    await workspacesService.removeTeamMember(
+    const { peopleId } = req.body;
+    await workspacesService.removePeople(
         workspaceId,
-        memberId,
+        peopleId,
         req?.user?._id as string
     );
     res.status(200).json({
         success: true,
-        message: "Member removed",
-        data: { memberId, workspaceId },
+        message: "People removed",
+        data: { peopleId, workspaceId },
     });
 });
 
@@ -155,8 +155,8 @@ const workspacesController = {
     sendInviteToJoinWorkspace,
     getAcceptInvite,
     acceptInvite,
-    getTeamMembers,
-    removeTeamMember,
+    getPeople,
+    removePeople,
 };
 
 export default workspacesController;

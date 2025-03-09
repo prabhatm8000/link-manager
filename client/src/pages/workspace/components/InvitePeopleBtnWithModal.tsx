@@ -12,7 +12,7 @@ import type { AppDispatch } from "../../../redux/store";
 import { useDispatch } from "react-redux";
 import { sendInvite } from "../../../redux/thunks/workspaceThunks";
 
-const InviteTeamMemberBtnWithModal = () => {
+const InvitePeopleBtnWithModal = () => {
     const mainText = "Send Invite";
     const [showModal, setShowModal] = useState<boolean>(false);
     const {
@@ -45,7 +45,7 @@ const InviteTeamMemberBtnWithModal = () => {
                 className="flex items-center justify-center gap-2"
             >
                 <BsSendPlus className="size-5" />
-                <span>Invite Member</span>
+                <span>Invite</span>
             </Button>
             <Modal
                 variant="outline"
@@ -90,4 +90,4 @@ const InviteTeamMemberBtnWithModal = () => {
     );
 };
 
-export default InviteTeamMemberBtnWithModal;
+export default InvitePeopleBtnWithModal;

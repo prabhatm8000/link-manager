@@ -5,12 +5,24 @@ import LinksView from "./views/LinksView";
 import EventsView from "./views/EventsView";
 import AnalyticsView from "./views/AnalyticsView";
 import SettingsView from "./views/SettingsView";
-import NoWorkspace from "./views/NoWorkspace";
+import NoWorkspaceView from "./views/NoWorkspaceView";
+import type { IWorkspaceState } from "../../redux/reducers/types";
+import { useSelector } from "react-redux";
+import LoadingView from "./views/LoadingView";
 
 const WorkspacePage = () => {
     const [searchParams, _] = useSearchParams();
-    if (!searchParams.get("workspaceId") && searchParams.get("tab") != "profile") return <NoWorkspace />;
+    const workspaceState: IWorkspaceState = useSelector(
+        (state: any) => state.workspace
+    );
 
+    if (
+        !searchParams.get("workspaceId") &&
+        searchParams.get("tab") != "profile"
+    ) {
+        if (workspaceState.loading) return <LoadingView />;
+        return <NoWorkspaceView />;
+    }
     switch (searchParams.get("tab") as SideBarTabType) {
         case "profile":
             return <ProfileView />;

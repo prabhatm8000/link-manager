@@ -9,8 +9,8 @@ export interface IWorkspace extends mongoose.Document {
     description: string;
     // workspace will follow plan of user who created it
     createdBy: mongoose.Types.ObjectId;
-    team: mongoose.Types.ObjectId[];
-    teamCount: number;
+    people: mongoose.Types.ObjectId[];
+    peopleCount: number;
     isActive: boolean;
 }
 
@@ -19,7 +19,6 @@ const workspaceSchema = new mongoose.Schema(
         name: {
             type: String,
             required: true,
-            unique: true,
         },
         description: {
             type: String,
@@ -30,8 +29,8 @@ const workspaceSchema = new mongoose.Schema(
             ref: "User",
             required: true,
         },
-        team: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-        teamCount: {
+        people: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+        peopleCount: {
             type: Number,
             default: 0,
         },
@@ -45,7 +44,6 @@ const workspaceSchema = new mongoose.Schema(
     }
 );
 
-workspaceSchema.index({ name: 1 }, { unique: true });
 const Workspace = mongoose.model<IWorkspace>("Workspace", workspaceSchema);
 
 export default Workspace;

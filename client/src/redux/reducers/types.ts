@@ -29,8 +29,8 @@ export interface IWorkspace {
     description: string;
     createdBy: string;
     createdByDetails?: IUser;
-    team?: string[];
-    teamDetails?: IUser[];
+    people?: string[];
+    peopleDetails?: IUser[];
     createdAt: string;
     updatedAt: string;
 }
@@ -38,7 +38,7 @@ export interface IWorkspace {
 export interface IWorkspaceState {
     workspaces: IWorkspace[];
     currentWorkspace: IWorkspace | null;
-    currentWorkspaceTeam: IUser[];
+    currentWorkspacePeople: IUser[];
     myWorkspaces: IWorkspace[];
     loading: boolean;
     error: string | null;

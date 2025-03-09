@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import SideBar, { SideBarHeader } from "./components/SideBar";
-import useTheme from "../../hooks/useTheme";
 
 const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
-    const { theme } = useTheme();
     const [showSideBar, setShowSideBar] = useState<boolean>(false);
     useEffect(() => {
         const workspaceElement = document.getElementById("workspace");
@@ -43,19 +41,6 @@ const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
                 >
                     {children}
                 </div>
-            </div>
-            <div className="fixed -z-10 top-0 left-0 w-full h-full bg-white dark:bg-black opacity-40">
-                {theme === "dark" ? (
-                    <img
-                        src="/public/backgrounds/auth-dark.jpg"
-                        className="w-full h-full object-cover"
-                    />
-                ) : (
-                    <img
-                        src="/public/backgrounds/auth-light.jpg"
-                        className="w-full h-full object-cover"
-                    />
-                )}
             </div>
         </div>
     );

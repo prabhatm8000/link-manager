@@ -10,10 +10,10 @@ import type {
     IWorkspaceState,
 } from "../../../redux/reducers/types";
 import type { AppDispatch } from "../../../redux/store";
-import { removeTeamMember } from "../../../redux/thunks/workspaceThunks";
+import { removePeople } from "../../../redux/thunks/workspaceThunks";
 
-const MemberItem = (props: {
-    member: IUser;
+const PeopleItem = (props: {
+    people: IUser;
     className?: string;
     avatarSize?: "sm" | "md" | "lg";
 }) => {
@@ -23,12 +23,12 @@ const MemberItem = (props: {
         (state: any) => state.workspace
     );
     const dispatch = useDispatch<AppDispatch>();
-    const handleRemoveMember = () => {
+    const handleRemovePeople = () => {
         setIsRemoving(true);
         dispatch(
-            removeTeamMember({
+            removePeople({
                 workspaceId: workspaceState?.currentWorkspace?._id as string,
-                memberId: props.member._id,
+                memberId: props.people._id,
             })
         ).finally(() => setIsRemoving(false));
     };
@@ -39,21 +39,21 @@ const MemberItem = (props: {
             <div className="relative p-1 rounded-md w-full h-full">
                 <Avatar
                     props={{
-                        alt: props.member.name,
-                        src: props.member.profilePicture,
+                        alt: props.people.name,
+                        src: props.people.profilePicture,
                     }}
                     size={props.avatarSize || "md"}
-                    title={props.member.name || "U"}
+                    title={props.people.name || "U"}
                 />
             </div>
 
             <div
-                className="flex flex-col gap-1 p-1 rounded-md w-full h-full"
-                title={props.member.name}
+                className="flex flex-col p-1 rounded-md w-full h-full"
+                title={props.people.name}
             >
-                <span>{props.member.name}</span>
+                <span>{props.people.name}</span>
                 <span className="text-black/50 dark:text-white/50 text-sm">
-                    {props.member.email}
+                    {props.people.email}
                 </span>
             </div>
 
@@ -62,7 +62,7 @@ const MemberItem = (props: {
                 <div className="rounded-md w-full h-full">
                     <div className="grid grid-cols-1 p-1">
                         <Button
-                            onClick={handleRemoveMember}
+                            onClick={handleRemovePeople}
                             className="flex gap-2 px-4 items-center justify-center"
                             variant="danger"
                         >
@@ -80,4 +80,4 @@ const MemberItem = (props: {
     );
 };
 
-export default MemberItem;
+export default PeopleItem;

@@ -18,16 +18,10 @@ workspacesRouter.post(
     workspacesController.sendInviteToJoinWorkspace
 );
 
-workspacesRouter.get(
-    "/invite/:workspaceId/:senderId/:token",
-    [verifyInvitTokenMiddleware],
-    workspacesController.getAcceptInvite
-);
-workspacesRouter.post(
-    "/invite/:workspaceId/:senderId/:token",
-    [verifyInvitTokenMiddleware],
-    workspacesController.acceptInvite
-);
+workspacesRouter
+    .route("/invite/:workspaceId/:senderId/:token")
+    .get([verifyInvitTokenMiddleware], workspacesController.getAcceptInvite)
+    .post([verifyInvitTokenMiddleware], workspacesController.acceptInvite);
 
 workspacesRouter
     .route("/id/:id")
@@ -36,8 +30,8 @@ workspacesRouter
     .delete(workspacesController.deleteWorkspace);
 
 workspacesRouter
-    .route("/team-members/:id")
-    .get(workspacesController.getTeamMembers)
-    .post(workspacesController.removeTeamMember);
+    .route("/people/:id")
+    .get(workspacesController.getPeople)
+    .post(workspacesController.removePeople);
 
 export default workspacesRouter;

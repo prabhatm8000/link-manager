@@ -156,20 +156,20 @@ export const postAcceptInvite = createAsyncThunk(
     }
 );
 
-export const removeTeamMember = createAsyncThunk(
-    "workspace/remove-team-member",
+export const removePeople = createAsyncThunk(
+    "workspace/remove-people",
     async (
         data: {
             workspaceId: string;
-            memberId: string;
+            peopleId: string;
         },
         { rejectWithValue, fulfillWithValue }
     ) => {
         try {
             const res = await axiosInstance.post(
-                `/workspace/team-members/${data.workspaceId}`,
+                `/workspace/people"/${data.workspaceId}`,
                 {
-                    memberId: data.memberId,
+                    peopleId: data.peopleId,
                 }
             );
             return fulfillWithValue(res.data as ApiResponseType);

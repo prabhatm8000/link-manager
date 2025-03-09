@@ -1,7 +1,7 @@
 import { lazy, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { ToastContainer, Zoom } from "react-toastify";
 import SuspenseWrapper from "./components/SuspenseWrapper";
 import ThemeBtn from "./components/ThemeBtn";
 import useTheme from "./hooks/useTheme";
@@ -78,7 +78,6 @@ const AppRouter = () => {
                         ) : (
                             // <Navigate to="/auth/login" />
                             <LoadingPage />
-                            
                         )
                     }
                 />
@@ -100,7 +99,17 @@ const AppRouter = () => {
                 />
             </Routes>
             <ThemeBtn />
-            <ToastContainer theme={theme} icon={handleToastIcons} />
+            <ToastContainer
+                theme={theme}
+                icon={handleToastIcons}
+                draggable
+                transition={Zoom}
+                limit={5}
+                autoClose={false}
+                closeButton={false}
+                position="bottom-center"
+                toastStyle={{ padding: "5px" }}
+            />
         </BrowserRouter>
     );
 };
