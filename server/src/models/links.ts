@@ -1,22 +1,26 @@
 import mongoose from "mongoose";
+import type { IUser } from "./users";
 
 /**
- * link and related events will follow plan of workspace
+ * links and related events will follow plan of workspace
  */
-export interface ILink extends mongoose.Document {
+export interface ILinks extends mongoose.Document {
     _id: mongoose.Types.ObjectId;
     name: string;
     tags: string[];
     destinationUrl: string;
-    shortLink: string;
-    comments: string[];
-    createdId: mongoose.Types.ObjectId;
+    shortUrlKey: string;
+    comment: string;
+    creatorId: mongoose.Types.ObjectId;
     workspaceId: mongoose.Types.ObjectId;
     isActive: boolean;
     expiresAt?: Date;
+
+    // when populated
+    creator?: IUser;
 }
 
-const linkSchema = new mongoose.Schema(
+const linksSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -29,12 +33,15 @@ const linkSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        shortLink: {
+        shortUrlKey: {
             type: String,
             required: true, 
             unique: true,
         },
-        createdId: {
+        comment: {
+            type: String,
+        },
+        creatorId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true,
@@ -57,6 +64,6 @@ const linkSchema = new mongoose.Schema(
     }
 );
 
-linkSchema.index({ shortLink: 1 }, { unique: true });
-const Link = mongoose.model<ILink>("Link", linkSchema);
-export default Link;
+linksSchema.index({ shortUrlKey: 1 }, { unique: true });
+const Links = mongoose.model<ILinks>("Links", linksSchema);
+export default Links;

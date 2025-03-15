@@ -44,3 +44,23 @@ export interface IWorkspaceState {
     error: string | null;
     message: string | null;
 }
+
+export interface ILink {
+    _id: string;
+    name: string;
+    tags: string[];
+    destinationUrl: string;
+    shortUrlKey: string;
+    comment: string;
+    workspaceId: string;
+    isActive: boolean;
+    expiresAt?: Date;
+    creator?: IUser;
+}
+
+export interface ILinkState {
+    links: ILink[];
+    loading: boolean;
+    error: string | null;
+    message: string | null;
+}

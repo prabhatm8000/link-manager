@@ -64,7 +64,7 @@ const login = asyncWrapper(async (req: Request, res: Response) => {
 
     res.status(200).json({
         success: true,
-        message: "User logged in successfully",
+        message: "Logged in successfully",
         data: user,
     });
 });
@@ -73,7 +73,7 @@ const logout = asyncWrapper(async (req: Request, res: Response) => {
     removeAuthCookie(res);
     res.status(200).json({
         success: true,
-        message: "User logged out successfully",
+        message: "Logged out successfully",
     });
 });
 

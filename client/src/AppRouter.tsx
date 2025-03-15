@@ -105,10 +105,6 @@ const AppRouter = () => {
                 draggable
                 transition={Zoom}
                 limit={5}
-                autoClose={false}
-                closeButton={false}
-                position="bottom-center"
-                toastStyle={{ padding: "5px" }}
             />
         </BrowserRouter>
     );

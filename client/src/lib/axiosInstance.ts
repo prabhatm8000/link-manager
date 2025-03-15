@@ -1,6 +1,5 @@
 import axios from "axios";
 import { toast } from "react-toastify";
-import CtkToast from "../components/CtkToast";
 
 const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_SERVER_URL,
@@ -16,9 +15,9 @@ const axiosInstance = axios.create({
                 return jsonPayload;
             }
             if (jsonPayload.success) {
-                toast(CtkToast, jsonPayload.message);
+                toast.success(jsonPayload.message);
             } else {
-                toast(CtkToast, jsonPayload.message);
+                toast.error(jsonPayload.message);
             }
             return jsonPayload;
         } catch (error) {
