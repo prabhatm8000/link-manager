@@ -3,6 +3,16 @@ import linksService from "../services/linksService";
 import asyncWrapper from "../lib/asyncWrapper";
 import { APIResponseError } from "../errors/response";
 
+const generateShortLinkKey = asyncWrapper(async (req: Request, res: Response) => {
+    const { size } = req.body;
+    const shortLinkKey = await linksService.generateShortLinkKey(size);
+    res.status(200).json({
+        success: true,
+        message: "",
+        data: shortLinkKey,
+    });
+});
+
 const createLink = asyncWrapper(async (req: Request, res: Response) => {
     const { name, tags, destinationUrl, shortUrlKey, creatorId, workspaceId, comment } =
         req.body;
@@ -27,7 +37,11 @@ const createLink = asyncWrapper(async (req: Request, res: Response) => {
         workspaceId,
         comment,
     });
-    res.status(201).json(link);
+    res.status(201).json({
+        success: true,
+        message: "Link created successfully",
+        data: link,
+    });
 });
 
 const getLinkByShortUrlKey = asyncWrapper(
@@ -37,7 +51,11 @@ const getLinkByShortUrlKey = asyncWrapper(
             throw new APIResponseError("Short URL key is required", 400, false);
         }
         const link = await linksService.getLinkByShortUrlKey(shortUrlKey);
-        res.status(200).json(link);
+        res.status(200).json({
+            success: true,
+            message: "",
+            data: link,
+        });
     }
 );
 
@@ -48,7 +66,11 @@ const getLinksByWorkspaceId = asyncWrapper(
             throw new APIResponseError("Workspace ID is required", 400, false);
         }
         const links = await linksService.getLinksByWorkspaceId(workspaceId);
-        res.status(200).json(links);
+        res.status(200).json({
+            success: true,
+            message: "",
+            data: links,
+        });
     }
 );
 
@@ -58,7 +80,11 @@ const getLinkById = asyncWrapper(async (req: Request, res: Response) => {
         throw new APIResponseError("Link ID is required", 400, false);
     }
     const link = await linksService.getLinkById(linkId);
-    res.status(200).json(link);
+    res.status(200).json({
+        success: true,
+        message: "",
+        data: link,
+    });
 });
 
 const updateLink = asyncWrapper(async (req: Request, res: Response) => {
@@ -67,7 +93,11 @@ const updateLink = asyncWrapper(async (req: Request, res: Response) => {
         throw new APIResponseError("Link ID is required", 400, false);
     }
     const link = await linksService.updateLink(linkId, req.body);
-    res.status(200).json(link);
+    res.status(200).json({
+        success: true,
+        message: "Link updated successfully",
+        data: link,
+    });
 });
 
 const deactivateLink = asyncWrapper(async (req: Request, res: Response) => {
@@ -76,7 +106,11 @@ const deactivateLink = asyncWrapper(async (req: Request, res: Response) => {
         throw new APIResponseError("Link ID is required", 400, false);
     }
     const link = await linksService.deactivateLink(linkId);
-    res.status(200).json(link);
+    res.status(200).json({
+        success: true,
+        message: "Link deactivated successfully",
+        data: link,
+    });
 });
 
 const deleteLink = asyncWrapper(async (req: Request, res: Response) => {
@@ -85,10 +119,15 @@ const deleteLink = asyncWrapper(async (req: Request, res: Response) => {
         throw new APIResponseError("Link ID is required", 400, false);
     }
     const link = await linksService.deleteLink(linkId);
-    res.status(200).json(link);
+    res.status(200).json({
+        success: true,
+        message: "Link deleted successfully",
+        data: link,
+    });
 });
 
 const linksController = {
+    generateShortLinkKey,
     createLink,
     getLinkByShortUrlKey,
     getLinksByWorkspaceId,

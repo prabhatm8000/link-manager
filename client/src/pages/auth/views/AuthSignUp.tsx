@@ -3,13 +3,14 @@ import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import TitleText from "../../../components/TitleText";
-import Button from "../../../components/ui/Button";
+import { Button } from "../../../components/ui/button";
 import Card from "../../../components/ui/Card";
-import Input from "../../../components/ui/Input";
+import { Input } from "../../../components/ui/input";
 import type { IUserState } from "../../../redux/reducers/types";
 import type { AppDispatch } from "../../../redux/store";
 import { registerAndSendOtp } from "../../../redux/thunks/usersThunk";
 import LoadingCircle from "../../../components/ui/LoadingCircle";
+import { Label } from "@/components/ui/label";
 
 const AuthSignUp = () => {
     const {
@@ -43,83 +44,92 @@ const AuthSignUp = () => {
     return (
         <Card
             variant="none"
-            className="p-6 flex flex-col gap-4 w-full backdrop-blur-xs"
+            className="p-6 flex flex-col gap-8 w-full backdrop-blur-xs"
         >
             <TitleText className="text-center">Signup</TitleText>
             <form className="flex flex-col gap-4" onSubmit={onSubmit}>
-                <Input
-                    {...register("name", { required: "Name is required" })}
-                    id="name"
-                    type="text"
-                    placeholder="Name"
-                    variant={errors.name ? "danger-outline" : "secondary"}
-                    className="w-full"
-                    autoComplete="name"
-                />
-                {errors.name && (
-                    <span className="text-red-500 text-sm">
-                        {errors.name.message as string}
-                    </span>
-                )}
-                <Input
-                    {...register("email", { required: "Email is required" })}
-                    id="email"
-                    type="email"
-                    placeholder="Email"
-                    variant={errors.email ? "danger-outline" : "secondary"}
-                    className="w-full"
-                    autoComplete="email"
-                />
-                {errors.email && (
-                    <span className="text-red-500 text-sm">
-                        {errors.email.message as string}
-                    </span>
-                )}
-                <Input
-                    {...register("password", {
-                        required: "Password is required",
-                        pattern: {
-                            value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                            message:
-                                "Password must be at least 8 characters, and contain at least one uppercase letter, one lowercase letter, one number, and one special character",
-                        },
-                    })}
-                    id="password"
-                    type="password"
-                    placeholder="Password"
-                    variant={errors.password ? "danger-outline" : "secondary"}
-                    className="w-full"
-                    autoComplete="new-password"
-                />
-                {errors.password && (
-                    <span className="text-red-500 text-sm">
-                        {errors.password.message as string}
-                    </span>
-                )}
-                <Input
-                    {...register("confirmPassword", {
-                        required: "Confirm Password is required",
-                        validate: (value) => {
-                            if (value !== watch("password")) {
-                                return "Passwords do not match";
-                            }
-                        },
-                    })}
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="Confirm Password"
-                    variant={
-                        errors.confirmPassword ? "danger-outline" : "secondary"
-                    }
-                    className="w-full"
-                    autoComplete="new-password"
-                />
-                {errors.confirmPassword && (
-                    <span className="text-red-500 text-sm">
-                        {errors.confirmPassword.message as string}
-                    </span>
-                )}
-                
+                <div className="flex flex-col gap-1 relative pb-4">
+                    <Label htmlFor="name">Name</Label>
+                    <Input
+                        {...register("name", { required: "Name is required" })}
+                        id="name"
+                        type="text"
+                        placeholder="Name"
+                        className="w-full"
+                        autoComplete="name"
+                    />
+                    {errors.name && (
+                        <span className="text-red-500 text-xs absolute bottom-0">
+                            {errors.name.message as string}
+                        </span>
+                    )}
+                </div>
+                <div className="flex flex-col gap-1 relative pb-4">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                        {...register("email", {
+                            required: "Email is required",
+                        })}
+                        id="email"
+                        type="email"
+                        placeholder="Email"
+                        className="w-full"
+                        autoComplete="email"
+                    />
+                    {errors.email && (
+                        <span className="text-red-500 text-xs absolute bottom-0">
+                            {errors.email.message as string}
+                        </span>
+                    )}
+                </div>
+                <div className="flex flex-col gap-1 relative pb-4">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                        {...register("password", {
+                            required: "Password is required",
+                            pattern: {
+                                value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+                                message:
+                                    "Password must be at least 8 characters, and contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+                            },
+                        })}
+                        id="password"
+                        type="password"
+                        placeholder="Password"
+                        className="w-full"
+                        autoComplete="new-password"
+                    />
+                    {errors.password && (
+                        <span className="text-red-500 text-xs absolute bottom-0">
+                            {errors.password.message as string}
+                        </span>
+                    )}
+                </div>
+
+                <div className="flex flex-col gap-1 relative pb-4">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input
+                        {...register("confirmPassword", {
+                            required: "Confirm Password is required",
+                            validate: (value) => {
+                                if (value !== watch("password")) {
+                                    return "Passwords do not match";
+                                }
+                            },
+                        })}
+                        id="confirmPassword"
+                        type="password"
+                        placeholder="Confirm Password"
+                        className="w-full"
+                        autoComplete="new-password"
+                    />
+                    {errors.confirmPassword && (
+                        <span className="text-red-500 text-xs absolute bottom-0">
+                            {errors.confirmPassword.message as string}
+                        </span>
+                    )}
+                </div>
+
                 <Button
                     disabled={userState?.loading}
                     type="submit"

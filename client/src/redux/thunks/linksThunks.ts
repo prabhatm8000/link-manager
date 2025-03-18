@@ -2,6 +2,21 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { ApiResponseType } from "../reducers/types";
 import axiosInstance from "../../lib/axiosInstance";
 
+export const generateShortLinkKey = createAsyncThunk(
+    "links/generate-short-link-key",
+    async (data: { size?: number }, { rejectWithValue, fulfillWithValue }) => {
+        try {
+            const res = await axiosInstance.post(
+                "/link/generate-short-link-key",
+                data
+            );
+            return fulfillWithValue(res.data as ApiResponseType);
+        } catch (error: any) {
+            return rejectWithValue(error.response.data as ApiResponseType);
+        }
+    }
+);
+
 export const createLink = createAsyncThunk(
     "links/create",
     async (
@@ -16,7 +31,7 @@ export const createLink = createAsyncThunk(
         { rejectWithValue, fulfillWithValue }
     ) => {
         try {
-            const res = await axiosInstance.post("/links", data);
+            const res = await axiosInstance.post("/link", data);
             return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
             return rejectWithValue(error.response.data as ApiResponseType);
@@ -29,7 +44,7 @@ export const getLinksByWorkspaceId = createAsyncThunk(
     async (workspaceId: string, { rejectWithValue, fulfillWithValue }) => {
         try {
             const res = await axiosInstance.get(
-                `/links/workspace/${workspaceId}`
+                `/link/workspace/${workspaceId}`
             );
             return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
@@ -50,10 +65,7 @@ export const updateLink = createAsyncThunk(
         { rejectWithValue, fulfillWithValue }
     ) => {
         try {
-            const res = await axiosInstance.patch(
-                `/links/${data.linkId}`,
-                data
-            );
+            const res = await axiosInstance.patch(`/link/${data.linkId}`, data);
             return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
             return rejectWithValue(error.response.data as ApiResponseType);
@@ -65,7 +77,7 @@ export const deleteLink = createAsyncThunk(
     "links/delete",
     async (linkId: string, { rejectWithValue, fulfillWithValue }) => {
         try {
-            const res = await axiosInstance.delete(`/links/${linkId}`);
+            const res = await axiosInstance.delete(`/link/${linkId}`);
             return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
             return rejectWithValue(error.response.data as ApiResponseType);
@@ -77,9 +89,7 @@ export const deactivateLink = createAsyncThunk(
     "links/deactivate",
     async (linkId: string, { rejectWithValue, fulfillWithValue }) => {
         try {
-            const res = await axiosInstance.patch(
-                `/links/${linkId}/deactivate`
-            );
+            const res = await axiosInstance.patch(`/link/${linkId}/deactivate`);
             return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
             return rejectWithValue(error.response.data as ApiResponseType);
@@ -91,7 +101,7 @@ export const getLinkByShortUrlKey = createAsyncThunk(
     "links/get-by-short-url-key",
     async (shortUrlKey: string, { rejectWithValue, fulfillWithValue }) => {
         try {
-            const res = await axiosInstance.get(`/links/${shortUrlKey}`);
+            const res = await axiosInstance.get(`/link/${shortUrlKey}`);
             return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
             return rejectWithValue(error.response.data as ApiResponseType);
@@ -103,12 +113,10 @@ export const getLinkById = createAsyncThunk(
     "links/get-by-id",
     async (linkId: string, { rejectWithValue, fulfillWithValue }) => {
         try {
-            const res = await axiosInstance.get(`/links/${linkId}`);
+            const res = await axiosInstance.get(`/link/${linkId}`);
             return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
             return rejectWithValue(error.response.data as ApiResponseType);
         }
     }
 );
-
-

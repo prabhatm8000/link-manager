@@ -25,6 +25,10 @@ const verifyInvitTokenMiddleware = async (
             throw new APIResponseError("Bad Request", 401, false);
         }
 
+        if (decoded.payload.recipientEmail !== req.user?.email) {
+            throw new APIResponseError("Unauthorized", 401, false);
+        }
+
         next();
     } catch (error) {}
 };

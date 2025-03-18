@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 import NavBar from "../../components/NavBar";
 import TitleText from "../../components/TitleText";
-import Button from "../../components/ui/Button";
+import { Button } from "../../components/ui/button";
 import LoadingCircle from "../../components/ui/LoadingCircle";
 import useTheme from "../../hooks/useTheme";
 import type {
     IUser,
+    IUserState,
     IWorkspace,
-    IWorkspaceState,
+    IWorkspaceState
 } from "../../redux/reducers/types";
 import { AppDispatch } from "../../redux/store";
 import {
@@ -25,13 +27,12 @@ const InvitePage = () => {
         workspaceId: string;
         token: string;
     }>();
-    const workspace: IWorkspaceState = useSelector(
-        (state: any) => state.workspace
-    );
     const [inviteData, setInviteData] = useState<{
         workspace: IWorkspace;
         senderDetails: IUser;
     }>();
+    const workspace: IWorkspaceState = useSelector((state: any) => state.workspace);
+    const user: IUserState = useSelector((state: any) => state.user.user);
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
 
@@ -64,7 +65,15 @@ const InvitePage = () => {
         getAcceptInviteCall();
     }, []);
 
-    if (!inviteData || workspace.loading) {
+    if (!user?.isAuthenticated) {
+        toast.error("You are not logged in.", {
+            description: "Redirecting to login page.",
+            onAutoClose: () => navigate("/auth/login"),
+            position: "top-center",
+        });
+    }
+
+    if (!inviteData) {
         return <LoadingPage />;
     }
 

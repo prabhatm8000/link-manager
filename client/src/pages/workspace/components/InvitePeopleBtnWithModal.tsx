@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { BsSendPlus } from "react-icons/bs";
 import TitleText from "../../../components/TitleText";
-import Button from "../../../components/ui/Button";
-import Input from "../../../components/ui/Input";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
 import Modal from "../../../components/ui/Modal";
 import LoadingCircle from "../../../components/ui/LoadingCircle";
 import { useSelector } from "react-redux";
@@ -11,6 +11,7 @@ import type { IWorkspaceState } from "../../../redux/reducers/types";
 import type { AppDispatch } from "../../../redux/store";
 import { useDispatch } from "react-redux";
 import { sendInvite } from "../../../redux/thunks/workspaceThunks";
+import { Label } from "@/components/ui/label";
 
 const InvitePeopleBtnWithModal = () => {
     const mainText = "Send Invite";
@@ -41,7 +42,7 @@ const InvitePeopleBtnWithModal = () => {
         <>
             <Button
                 onClick={() => setShowModal(true)}
-                variant="secondary"
+                variant="default"
                 className="flex items-center justify-center gap-2"
             >
                 <BsSendPlus className="size-5" />
@@ -53,25 +54,27 @@ const InvitePeopleBtnWithModal = () => {
                 isOpen={showModal}
                 onClose={handleCloseModal}
             >
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-8">
                     <TitleText className="text-xl">{mainText}</TitleText>
                     <form className="flex flex-col gap-4" onSubmit={onSubmit}>
-                        <Input
-                            id="reciverEmail"
-                            type="email"
-                            placeholder="Email"
-                            variant="outline"
-                            className="w-full"
-                            maxLength={100}
-                            {...register("reciverEmail", {
-                                required: "Receiver Email is required",
-                            })}
-                        />
-                        {errors.reciverEmail && (
-                            <span className="text-red-500">
-                                {errors.reciverEmail.message as string}
-                            </span>
-                        )}
+                        <div className="flex flex-col gap-1 relative pb-4">
+                            <Label htmlFor="reciverEmail">Email</Label>
+                            <Input
+                                id="reciverEmail"
+                                type="email"
+                                placeholder="Ex. jackson@example.com"
+                                className="w-full"
+                                maxLength={100}
+                                {...register("reciverEmail", {
+                                    required: "Receiver Email is required",
+                                })}
+                            />
+                            {errors.reciverEmail && (
+                                <span className="text-red-500 text-xs absolute bottom-0">
+                                    {errors.reciverEmail.message as string}
+                                </span>
+                            )}
+                        </div>
 
                         <Button
                             disabled={workspaceState?.loading}

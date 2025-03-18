@@ -44,14 +44,14 @@ const createUser = async ({
     return user.toJSON();
 };
 
-const getUserById = async (id: string): Promise<IUser | null> => {
+const getUserById = async (id: string) => {
     const user = await User.findById(id);
-    return user;
+    return user?.toJSON();
 };
 
-const getUserByEmail = async (email: string): Promise<IUser | null> => {
+const getUserByEmail = async (email: string) => {
     const user = await User.findOne({ email });
-    return user;
+    return user?.toJSON();
 }
 
 const updateUser = async (
@@ -62,12 +62,12 @@ const updateUser = async (
         password?: string;
         profilePicture?: string;
     }
-): Promise<IUser | null> => {
+) => {
     const user = await User.findByIdAndUpdate(id, data, { new: true });
-    return user;
+    return user?.toJSON();
 };
 
-const deactivateUser = async (id: string): Promise<IUser | null> => {
+const deactivateUser = async (id: string) => {
     const user = await User.findByIdAndUpdate(
         id,
         {
@@ -75,7 +75,7 @@ const deactivateUser = async (id: string): Promise<IUser | null> => {
         },
         { new: false }
     );
-    return user;
+    return user?.toJSON();
 };
 
 const usersService = {

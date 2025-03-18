@@ -5,62 +5,10 @@ import Links, { type ILinks } from "../models/links";
 const generateShortLinkKey = async (size: number = 10): Promise<string> => {
     const chars =
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-    // finding a unique key efficiently
-    const result = await Links.aggregate([
-        {
-            $sample: { size: 1 }, // Get a random document to ensure we're not stuck in a pattern
-        },
-        {
-            $project: {
-                _id: 0,
-                randomKey: {
-                    $function: {
-                        body: function (size: number, chars: string) {
-                            let result = "";
-                            for (let i = 0; i < size; i++) {
-                                result += chars.charAt(
-                                    Math.floor(Math.random() * chars.length)
-                                );
-                            }
-                            return result;
-                        },
-                        args: [size, chars],
-                        lang: "js",
-                    },
-                },
-            },
-        },
-        {
-            $lookup: {
-                from: "links",
-                let: { key: "$randomKey" },
-                pipeline: [
-                    {
-                        $match: {
-                            $expr: { $eq: ["$shortUrlKey", "$$key"] },
-                        },
-                    },
-                ],
-                as: "exists",
-            },
-        },
-        {
-            $match: {
-                exists: { $size: 0 },
-            },
-        },
-    ]);
-
-    if (result.length !== 0) {
-        return result[0].randomKey;
-    }
-
-    // If no unique key was found in first try, fallback to manual generation
     let isUnique = false;
     let key = "";
     let attempts = 0;
-    const MAX_ATTEMPTS = 10;
+    const MAX_ATTEMPTS = 5;
 
     while (!isUnique && attempts < MAX_ATTEMPTS) {
         attempts++;

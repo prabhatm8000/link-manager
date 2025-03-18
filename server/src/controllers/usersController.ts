@@ -46,7 +46,7 @@ const registerAndVerifyOtp = asyncWrapper(
 
         res.status(200).json({
             success: true,
-            message: "User created successfully",
+            message: "Signed in successfully",
             data: user,
         });
     }
@@ -64,7 +64,7 @@ const login = asyncWrapper(async (req: Request, res: Response) => {
 
     res.status(200).json({
         success: true,
-        message: "Logged in successfully",
+        message: "Logged in",
         data: user,
     });
 });
@@ -73,7 +73,7 @@ const logout = asyncWrapper(async (req: Request, res: Response) => {
     removeAuthCookie(res);
     res.status(200).json({
         success: true,
-        message: "Logged out successfully",
+        message: "Logged out",
     });
 });
 
@@ -93,8 +93,9 @@ const verify = asyncWrapper(async (req: Request, res: Response) => {
 });
 
 const updateUser = asyncWrapper(async (req: Request, res: Response) => {
-    const { id, data } = req.body;
-    const user = await usersService.updateUser(id, data);
+    const data = req.body;
+    const id = req?.user?._id as string;
+    const user = await usersService.updateUser(id, {name: data?.name});
 
     if (!user) {
         throw new APIResponseError("User not found", 404, false);
@@ -102,13 +103,13 @@ const updateUser = asyncWrapper(async (req: Request, res: Response) => {
 
     res.status(200).json({
         success: true,
-        message: "User updated successfully",
+        message: "Updated",
         data: user,
     });
 });
 
 const deactivateUser = asyncWrapper(async (req: Request, res: Response) => {
-    const { id } = req.body;
+    const id = req?.user?._id as string;
     const user = await usersService.deactivateUser(id);
 
     if (!user) {
@@ -117,7 +118,7 @@ const deactivateUser = asyncWrapper(async (req: Request, res: Response) => {
 
     res.status(200).json({
         success: true,
-        message: "User deactivated successfully",
+        message: "Deactivated successfully",
         data: user,
     });
 });

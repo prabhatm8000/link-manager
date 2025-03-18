@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { IoClose } from "react-icons/io5";
-import Button from "./Button";
 import {
     getRoundnessClasses,
     getVariantClasses,
     type BasicElementProps,
 } from "./classUtity";
+import { Button } from "./button";
 
 interface IModalProps extends BasicElementProps {
     children: React.ReactNode;
@@ -31,24 +31,23 @@ const Modal = ({ isOpen, ...props }: IModalProps) => {
     // if (!isOpen) return null;
     return (
         <div
-            className={`fixed top-0 left-0 w-full h-full backdrop-blur-[2px] bg-black/50 z-50 flex justify-center items-center transition-all duration-300 ease-out ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+            className={`fixed top-0 left-0 w-full h-full backdrop-blur-[2px] bg-black/50 z-50 flex justify-center items-center transition-all duration-300 ease-out ${
+                isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+            }`}
             onClick={props.onClose}
         >
             <div
                 onClick={(e) => e.stopPropagation()}
-                className={`relative min-w-96 bg-white p-4 rounded-lg ${getVariantClasses(
+                className={`relative min-w-96 bg-white p-4 rounded-lg max-h-[calc(100vh-4rem)] ${getVariantClasses(
                     props.variant
                 )} ${getRoundnessClasses(props.roundness)} ${props.className}`}
             >
                 <Button
                     onClick={props.onClose}
-                    variant="danger"
+                    variant="destructive"
                     className="absolute top-0 right-0 m-2"
-                    style={{
-                        padding: "4px",
-                    }}
                 >
-                    <IoClose />
+                    <IoClose className="size-5" />
                 </Button>
                 {props.children}
             </div>

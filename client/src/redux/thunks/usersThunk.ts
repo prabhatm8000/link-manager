@@ -100,3 +100,20 @@ export const registerAndVerifyOtp = createAsyncThunk(
         }
     }
 );
+
+export const updateUser = createAsyncThunk(
+    "user/update",
+    async (
+        data: {
+            name: string;
+        },
+        { rejectWithValue, fulfillWithValue }
+    ) => {
+        try {
+            const res = await axiosInstance.patch("/user/update", data);
+            return fulfillWithValue(res.data as ApiResponseType);
+        } catch (error: any) {
+            return rejectWithValue(error.response.data as ApiResponseType);
+        }
+    }
+);

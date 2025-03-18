@@ -1,7 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
-import Input from "../../../components/ui/Input";
 import TitleText from "../../../components/TitleText";
 import { useForm } from "react-hook-form";
 import type { IUserState } from "../../../redux/reducers/types";
@@ -11,6 +9,9 @@ import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { login } from "../../../redux/thunks/usersThunk";
 import LoadingCircle from "../../../components/ui/LoadingCircle";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 const AuthLogin = () => {
     const {
@@ -40,12 +41,13 @@ const AuthLogin = () => {
 
     return (
         <Card
-            className="p-6 flex flex-col gap-4 w-full backdrop-blur-xs"
+            className="p-6 flex flex-col gap-8 w-full backdrop-blur-xs"
             variant="none"
         >
             <TitleText className="text-center">Login</TitleText>
             <form className="flex flex-col gap-4" onSubmit={onSubmit}>
-                <div>
+                <div className="flex flex-col gap-1 relative pb-4">
+                    <Label htmlFor="email">Email</Label>
                     <Input
                         {...register("email", {
                             required: "This field is required.",
@@ -53,17 +55,17 @@ const AuthLogin = () => {
                         id="email"
                         type="email"
                         placeholder="Email"
-                        variant="secondary"
                         className="w-full"
                         autoComplete="email"
                     />
                     {errors.email && (
-                        <span className="text-red-500 text-sm">
+                        <span className="text-red-500 text-xs absolute bottom-0">
                             {errors.email.message as string}
                         </span>
                     )}
                 </div>
-                <div>
+                <div className="flex flex-col gap-1 relative pb-4">
+                    <Label htmlFor="password">Password</Label>
                     <Input
                         {...register("password", {
                             required: "This field is required.",
@@ -71,12 +73,11 @@ const AuthLogin = () => {
                         id="password"
                         type="password"
                         placeholder="Password"
-                        variant="secondary"
                         className="w-full"
                         autoComplete="password"
                     />
                     {errors.password && (
-                        <span className="text-red-500 text-sm">
+                        <span className="text-red-500 text-xs absolute bottom-0">
                             {errors.password.message as string}
                         </span>
                     )}

@@ -16,7 +16,7 @@ const createWorkspace = asyncWrapper(async (req, res) => {
     });
     res.status(201).json({
         success: true,
-        message: "Workspace created successfully",
+        message: "Workspace created",
         data: workspace,
     });
 });
@@ -51,7 +51,7 @@ const updateWorkspace = asyncWrapper(async (req, res) => {
     });
     res.status(200).json({
         success: true,
-        message: "Workspace updated successfully",
+        message: "Workspace updated",
         data: workspace,
     });
 });
@@ -62,7 +62,7 @@ const deleteWorkspace = asyncWrapper(async (req, res) => {
     const workspace = await workspacesService.deleteWorkspace(id, createdBy);
     res.status(200).json({
         success: true,
-        message: "Workspace deleted successfully",
+        message: "Workspace deleted",
         data: workspace,
     });
 });
@@ -120,7 +120,7 @@ const acceptInvite = asyncWrapper(async (req, res) => {
 
     res.status(201).json({
         success: true,
-        message: "Invite accepted successfully",
+        message: "Invite accepted",
     });
 });
 

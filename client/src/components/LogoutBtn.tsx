@@ -1,10 +1,10 @@
 import { IoIosLogOut } from "react-icons/io";
-import Button, { type ButtonProps } from "./ui/Button";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../redux/store";
 import { logout } from "../redux/thunks/usersThunk";
+import { Button } from "./ui/button";
 
-const LogoutBtn = (props: ButtonProps) => {
+const LogoutBtn = (props: React.ComponentProps<"button">) => {
     const dispatch = useDispatch<AppDispatch>();
     const handleLogout = () => {
         dispatch(logout()).then(() => {
@@ -13,6 +13,7 @@ const LogoutBtn = (props: ButtonProps) => {
     };
     return (
         <Button
+            variant={"destructive"}
             onClick={handleLogout}
             {...props}
             className={"flex items-center gap-2 " + props?.className}

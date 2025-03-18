@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useSearchParams } from "react-router-dom";
 import Avatar from "../../../components/Avatar";
 import TitleText from "../../../components/TitleText";
-import Button from "../../../components/ui/Button";
+import { Button }from "../../../components/ui/button";
 import type {
     IUserState,
     IWorkspace,
@@ -83,7 +83,7 @@ export const SideBarHeader = ({
             </Link>
             {handleShow ? (
                 <Button
-                    variant={show ? "danger-outline" : "outline"}
+                    variant={show ? "destructive" : "outline"}
                     className="md:hidden transition-all duration-300 ease-out"
                     onClick={handleShow}
                 >
@@ -187,7 +187,7 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
                 <Button
                     onClick={() => setShowWorkspaces((p) => !p)}
                     className="flex items-center justify-between w-full"
-                    variant="none"
+                    variant="ghost"
                 >
                     <WorkspaceItem
                         data={workspaceState.currentWorkspace}
@@ -197,7 +197,7 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
                 </Button>
             ) : (
                 <Button
-                    variant="none"
+                    variant="ghost"
                     onClick={() => handleTabChange("profile")}
                     className="flex gap-2 items-center justify-center w-full"
                 >
@@ -222,7 +222,7 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
                             />
                         ))}
                         <Button
-                            variant="none"
+                            variant="ghost"
                             onClick={() => handleTabChange("profile")}
                             className="flex gap-2 items-center justify-center w-full"
                         >
@@ -237,8 +237,8 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
                         <Button
                             key={index}
                             onClick={() => handleTabChange(tab.value)}
-                            variant="none"
-                            className={`flex items-center gap-1 ${
+                            variant="ghost"
+                            className={`flex items-center justify-start gap-1 ${
                                 currentTab === tab.value ? "text-blue-500" : ""
                             }`}
                         >

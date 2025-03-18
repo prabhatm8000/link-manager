@@ -5,6 +5,8 @@ import authMiddleware from "../middlewares/authMiddleware";
 const linksRouter = Router();
 linksRouter.use(authMiddleware);
 
+linksRouter.route("/generate-short-link-key").post(linksController.generateShortLinkKey);
+
 linksRouter.route("/").post(linksController.createLink);
 
 linksRouter

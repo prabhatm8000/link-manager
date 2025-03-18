@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { IoIosTrash } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import TitleText from "../../../components/TitleText";
-import Button from "../../../components/ui/Button";
+import { Button } from "../../../components/ui/button";
 import LoadingCircle from "../../../components/ui/LoadingCircle";
 import Modal from "../../../components/ui/Modal";
 import type {
@@ -12,12 +11,14 @@ import type {
 import { AppDispatch } from "../../../redux/store";
 import { deleteWorkspace } from "../../../redux/thunks/workspaceThunks";
 
-const DeleteWorkspacebtnWithModal = ({
+const DeleteWorkspaceModal = ({
     workspaceId,
-    dontShowBtnText,
+    isOpen,
+    onClose,
 }: {
     workspaceId: string;
-    dontShowBtnText?: boolean;
+    isOpen: boolean;
+    onClose: () => void;
 }) => {
     const mainText = "Delete Workspace";
     const workspaceState: IWorkspaceState = useSelector(
@@ -25,15 +26,10 @@ const DeleteWorkspacebtnWithModal = ({
     );
     const dispatch = useDispatch<AppDispatch>();
     const [workspace, setWorkspace] = useState<IWorkspace>();
-    const [showDeleteWorkspaceModal, setShowDeleteWorkspaceModal] =
-        useState<boolean>(false);
-    const handleCloseModal = () => {
-        setShowDeleteWorkspaceModal(false);
-    };
     const handleDeleteBtn = () => {
         if (!workspace) return;
         dispatch(deleteWorkspace(workspace._id)).then(() =>
-            setShowDeleteWorkspaceModal(false)
+            onClose()
         );
     };
 
@@ -49,19 +45,11 @@ const DeleteWorkspacebtnWithModal = ({
 
     return (
         <>
-            <Button
-                className="flex gap-2 items-center justify-center"
-                variant="danger"
-                onClick={() => setShowDeleteWorkspaceModal(true)}
-            >
-                <IoIosTrash />
-                {!dontShowBtnText && <span>{mainText}</span>}
-            </Button>
             <Modal
                 variant="outline"
                 roundness="light"
-                isOpen={showDeleteWorkspaceModal}
-                onClose={handleCloseModal}
+                isOpen={isOpen}
+                onClose={onClose}
             >
                 <div className="flex flex-col items-center gap-4">
                     <TitleText className="text-xl">{mainText}</TitleText>
@@ -72,7 +60,7 @@ const DeleteWorkspacebtnWithModal = ({
                     </pre>
                     <Button
                         className="flex gap-2 items-center w-fit"
-                        variant="danger"
+                        variant="destructive"
                         onClick={handleDeleteBtn}
                     >
                         {workspaceState.loading && (
@@ -86,4 +74,4 @@ const DeleteWorkspacebtnWithModal = ({
     );
 };
 
-export default DeleteWorkspacebtnWithModal;
+export default DeleteWorkspaceModal;

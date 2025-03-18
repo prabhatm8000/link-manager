@@ -1,9 +1,9 @@
 import { IoIosLink } from "react-icons/io";
 import { Link } from "react-router-dom";
-import Button from "./ui/Button";
 import TitleText from "./TitleText";
 import { useSelector } from "react-redux";
 import type { IUserState } from "../redux/reducers/types";
+import { Button } from "./ui/button";
 
 const NavBar = () => {
     const user: IUserState = useSelector((state: any) => state.user);
@@ -19,7 +19,7 @@ const NavBar = () => {
             </Link>
             <div className="flex gap-2 justify-end">
                 <Link to={user?.isAuthenticated ? "/workspace" : "/auth/login"}>
-                    <Button variant="primary" className="px-4 py-2">
+                    <Button variant="default" className="px-4 py-2">
                         {user?.isAuthenticated ? "Go to Workspace" : "Sign up"}
                     </Button>
                 </Link>

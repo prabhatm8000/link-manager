@@ -2,9 +2,9 @@ import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import TitleText from "../../../components/TitleText";
-import Button from "../../../components/ui/Button";
+import { Button } from "../../../components/ui/button";
 import Card from "../../../components/ui/Card";
-import Input from "../../../components/ui/Input";
+import { Input } from "../../../components/ui/input";
 import type { IUserState } from "../../../redux/reducers/types";
 import type { AppDispatch } from "../../../redux/store";
 import {
@@ -14,6 +14,11 @@ import {
 
 import { useEffect, useState } from "react";
 import LoadingCircle from "../../../components/ui/LoadingCircle";
+import {
+    InputOTP,
+    InputOTPGroup,
+    InputOTPSlot,
+} from "@/components/ui/input-otp";
 
 const coolDownTime = 2.5 * 60;
 const AuthOtp = () => {
@@ -56,17 +61,16 @@ const AuthOtp = () => {
     return (
         <Card
             variant="none"
-            className="p-6 flex flex-col gap-4 w-full backdrop-blur-xs"
+            className="p-6 flex flex-col gap-8 w-full backdrop-blur-xs"
         >
             <TitleText className="text-center">Signup</TitleText>
-            <form className="flex flex-col gap-4" onSubmit={onSubmit}>
+            <form className="flex flex-col gap-6" onSubmit={onSubmit}>
                 <p className="text-center">OTP sent to {param.email}</p>
                 <Input
                     {...register("otp", { required: true })}
                     id="otp"
                     type="text"
                     placeholder="OTP"
-                    variant="secondary"
                     className="w-full"
                     autoComplete="name"
                 />

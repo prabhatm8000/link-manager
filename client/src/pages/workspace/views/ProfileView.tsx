@@ -1,11 +1,21 @@
+import { Label } from "@/components/ui/label";
+import {
+    Table,
+    TableBody,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { updateUser } from "@/redux/thunks/usersThunk";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { MdAdd } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "../../../components/Avatar";
 import LogoutBtn from "../../../components/LogoutBtn";
-import Button from "../../../components/ui/Button";
+import { Button } from "../../../components/ui/button";
 import CommingSoon from "../../../components/ui/CommingSoon";
-import Input from "../../../components/ui/Input";
+import { Input } from "../../../components/ui/input";
 import LoadingCircle from "../../../components/ui/LoadingCircle";
 import type {
     IUserState,
@@ -15,7 +25,7 @@ import type { AppDispatch } from "../../../redux/store";
 import { getMyWorkspaces } from "../../../redux/thunks/workspaceThunks";
 import ViewHeader from "../components/ViewHeader";
 import WorkspaceItemDetailed from "../components/WorkspaceItemDetailed";
-import CreateWorkspaceBtnWithModal from "../components/CreateWorkspaceBtnWithModal";
+import CreateWorkspaceModal from "../components/CreateWorkspaceModal";
 
 const ProfileView = () => {
     const userState: IUserState = useSelector((state: any) => state.user);
@@ -30,9 +40,15 @@ const ProfileView = () => {
         formState: { errors },
     } = useForm();
     const [isUserDetailChanged, setIsUserDetailChanged] = useState(false);
+    const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] =
+        useState<boolean>(false);
 
     const onSubmit = handleSubmit((data) => {
-        console.log(data);
+        dispatch(
+            updateUser({
+                name: data.name,
+            })
+        );
     });
 
     // watching for changes in the user details form and updating the user's details in the database
@@ -86,7 +102,7 @@ const ProfileView = () => {
                                 )}
                             </div>
                         </div>
-                        <LogoutBtn variant="danger" className="w-fit" />
+                        <LogoutBtn className="w-fit" />
                     </div>
 
                     {/* edit form */}
@@ -94,8 +110,8 @@ const ProfileView = () => {
                         onSubmit={onSubmit}
                         className="grid grid-cols-1 lg:grid-cols-2 gap-3"
                     >
-                        <div className="w-full">
-                            <span className="text-sm opacity-50">Name</span>
+                        <div className="flex flex-col gap-1 relative pb-4">
+                            <Label htmlFor="name">Name</Label>
                             <Input
                                 {...register("name", {
                                     required: "Name is required",
@@ -104,24 +120,20 @@ const ProfileView = () => {
                                 id="name"
                                 type="text"
                                 placeholder="Name"
-                                variant={
-                                    errors.name ? "danger-outline" : "outline"
-                                }
                                 className="w-full"
                                 autoComplete="name"
-                                showlabel={false}
                             />
                             {errors.name && (
-                                <span className="text-red-500 text-sm">
+                                <span className="text-red-500 text-xs absolute bottom-0">
                                     {errors.name.message as string}
                                 </span>
                             )}
                         </div>
 
-                        <div className="w-full relative">
-                            <span className="text-sm opacity-50">
-                                {"Email"}
-                            </span>
+                        <div className="flex flex-col gap-1 relative pb-4">
+                            <Label htmlFor="email" className="opacity-50">
+                                Email
+                            </Label>
                             <Input
                                 {...register("email", {
                                     required: "Email is required",
@@ -130,17 +142,13 @@ const ProfileView = () => {
                                 id="email"
                                 type="email"
                                 placeholder="Email"
-                                variant={
-                                    errors.email ? "danger-outline" : "outline"
-                                }
                                 className="w-full"
                                 autoComplete="email"
-                                showlabel={false}
                                 disabled
                             />
                             <CommingSoon className="absolute top-0 right-0" />
                             {errors.email && (
-                                <span className="text-red-500 text-sm">
+                                <span className="text-red-500 text-xs absolute bottom-0">
                                     {errors.email.message as string}
                                 </span>
                             )}
@@ -168,28 +176,54 @@ const ProfileView = () => {
                             <h3 className="text-black/50 dark:text-white/50">
                                 My Workspaces
                             </h3>
-                            <CreateWorkspaceBtnWithModal />
+                            <Button
+                                onClick={() =>
+                                    setShowCreateWorkspaceModal(true)
+                                }
+                                variant={"default"}
+                                className="flex gap-2 items-center justify-start"
+                            >
+                                <MdAdd />
+                                <span>{"Create Workspace"}</span>
+                            </Button>
                         </div>
                         {workspaceState.loading ? (
                             <LoadingCircle className="size-5" />
                         ) : workspaceState.myWorkspaces.length > 0 ? (
-                            <div className="flex flex-col gap-4 w-full">
-                                {workspaceState.myWorkspaces.map(
-                                    (item, index) => (
-                                        <WorkspaceItemDetailed
-                                            data={item}
-                                            key={index}
-                                            avatarSize="md"
-                                        />
-                                    )
-                                )}
-                            </div>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-[100px]">
+                                            Name
+                                        </TableHead>
+                                        <TableHead>Description</TableHead>
+                                        <TableHead className="text-right">
+                                            Actions
+                                        </TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {workspaceState.myWorkspaces.map(
+                                        (item, index) => (
+                                            <WorkspaceItemDetailed
+                                                data={item}
+                                                key={index}
+                                                avatarSize="md"
+                                            />
+                                        )
+                                    )}
+                                </TableBody>
+                            </Table>
                         ) : (
                             <h3 className="text-black/50 dark:text-white/50">
                                 You have not created any workspace yet!
                             </h3>
                         )}
                     </div>
+                    <CreateWorkspaceModal
+                        isOpen={showCreateWorkspaceModal}
+                        onClose={() => setShowCreateWorkspaceModal(false)}
+                    />
                 </div>
             </div>
         </>

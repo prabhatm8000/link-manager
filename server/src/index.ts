@@ -1,23 +1,18 @@
 import cookieParser from "cookie-parser";
-import cors from "cors";
 import express, { Express } from "express";
+import { corsConfig, rateLimiter } from "./constants/configs";
 import envVars from "./constants/envVars";
+import consoleColor from "./lib/consoleColor";
 import { connectToDB } from "./lib/mongodb";
 import router from "./routes/router";
 
 const app: Express = express();
 const PORT = envVars.PORT;
-const CLIENT_URL = envVars.CLIENT_URL;
 
+app.use(rateLimiter);
 app.use(express.json());
 app.use(cookieParser());
-app.use(
-    cors({
-        origin: CLIENT_URL,
-        credentials: true,
-    })
-);
-
+app.use(corsConfig);
 app.use("/api/v1", router);
 
 app.listen(PORT, () => {
@@ -26,7 +21,10 @@ app.listen(PORT, () => {
             console.log(err);
             process.exit(1);
         })
-        .finally(() =>
-            console.log(`Connected to DB\nServer running on port ${PORT}`)
-        );
+        .finally(() => {
+            console.log(consoleColor("Connected to database", "BgYellow"));
+            console.log(
+                consoleColor(`Server running on port ${PORT}`, "BgBlue")
+            );
+        });
 });

@@ -1,12 +1,15 @@
 import { useEffect } from "react";
 import { IoIosMoon, IoIosSunny } from "react-icons/io";
 import useTheme from "../hooks/useTheme";
-import Button from "./ui/Button";
+import { Button } from "./ui/button";
 
 const ThemeBtn = () => {
     const { theme, toggleTheme, setTheme } = useTheme();
 
     useEffect(() => {
+        const root = window.document.documentElement;
+        root.classList.remove("light", "dark")
+
         const gettingTheme =
             localStorage.theme === "dark" ||
             (!("theme" in localStorage) &&
@@ -14,23 +17,27 @@ const ThemeBtn = () => {
                 ? "dark"
                 : "light";
 
-                setTheme(gettingTheme);
+        setTheme(gettingTheme);
         document.documentElement.setAttribute("data-theme", gettingTheme);
+        root.classList.add(gettingTheme);
     }, [theme]);
 
     return (
         <Button
-            className="fixed bottom-0 right-0 m-4 text-2xl"
+            className="fixed bottom-0 right-0 m-4 text-2xl px-2 py-4 rounded-full"
             onClick={toggleTheme}
-            variant="primary"
-            roundness="full"
+            variant="default"
         >
             <div
                 className={`transform ${
                     theme === "light" ? "rotate-0" : "rotate-180"
                 } transition-all duration-300 ease-out`}
             >
-                {theme === "light" ? <IoIosMoon /> : <IoIosSunny />}
+                {theme === "light" ? (
+                    <IoIosMoon className="size-5" />
+                ) : (
+                    <IoIosSunny className="size-5" />
+                )}
             </div>
         </Button>
     );

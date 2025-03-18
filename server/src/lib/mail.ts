@@ -21,8 +21,12 @@ const transporter = nodemailer.createTransport({
  * @param senderId Senders userId
  * @returns Invite link `{clientUrl}/invite/{workspaceId}/{userId}/{token}`
  */
-const genarateInviteLink = (workspaceId: string, senderId: string): string => {
-    const payload = { workspaceId, senderId };
+const genarateInviteLink = (
+    workspaceId: string,
+    senderId: string,
+    recipientEmail: string
+): string => {
+    const payload = { workspaceId, senderId, recipientEmail };
     const token = jwt.sign({ payload }, JWT_SECRET, {
         expiresIn: inviteConfig.expiresAt,
     });
@@ -99,7 +103,8 @@ async function sendInviteToJoinWorkspaceMail(
 ) {
     const inviteLink = genarateInviteLink(
         workspace._id.toString(),
-        senderUser._id.toString()
+        senderUser._id.toString(),
+        to
     );
     const mailObj = {
         to,

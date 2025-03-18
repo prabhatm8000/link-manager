@@ -2,9 +2,6 @@ import { type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import Logo from "../../components/ui/Logo";
 import useTheme from "../../hooks/useTheme";
-import CtkToast from "../../components/CtkToast";
-import Button from "../../components/ui/Button";
-import { IoClose } from "react-icons/io5";
 
 const AuthLayout = ({ children }: { children: ReactNode }) => {
     const { theme } = useTheme();
@@ -32,12 +29,6 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
                         className="w-full h-full object-cover"
                     />
                 )}
-            </div>
-            <div className="fixed bottom-0 left-0 flex m-0 p-0 bg-black/5">
-                <span>{"data as string"}</span>
-                <Button className="text-purple-600">
-                    <IoClose />
-                </Button>
             </div>
         </div>
     );

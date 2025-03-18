@@ -5,6 +5,7 @@ import {
     registerAndSendOtp,
     registerAndVerifyOtp,
     resendOtp,
+    updateUser,
     verifyUser,
 } from "../thunks/usersThunk";
 import type { ApiResponseType, IUser, IUserState } from "./types";
@@ -137,6 +138,24 @@ const userSlice = createSlice({
             state.message = null;
         });
         builder.addCase(registerAndVerifyOtp.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error.message || null;
+            state.message = (action.payload as ApiResponseType).message;
+        });
+
+        // update user
+        builder.addCase(updateUser.fulfilled, (state, action) => {
+            state.user = action.payload.data as IUser;
+            state.loading = false;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(updateUser.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(updateUser.rejected, (state, action) => {
             state.loading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType).message;

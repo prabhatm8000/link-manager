@@ -13,6 +13,7 @@ const asyncWrapper = (
             await callback(req, res, next);
             if (next) next();
         } catch (error) {
+            console.log(callback.name);
             catchHandler(error, res);
         }
     };

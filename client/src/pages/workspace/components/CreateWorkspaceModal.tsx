@@ -1,11 +1,11 @@
+import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { IoIosAdd } from "react-icons/io";
-import { TbEdit } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import TitleText from "../../../components/TitleText";
-import Button from "../../../components/ui/Button";
-import Input from "../../../components/ui/Input";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import LoadingCircle from "../../../components/ui/LoadingCircle";
 import Modal from "../../../components/ui/Modal";
 import type {
     IWorkspace,
@@ -16,23 +16,22 @@ import {
     createWorkspace,
     updateWorkspace,
 } from "../../../redux/thunks/workspaceThunks";
-import LoadingCircle from "../../../components/ui/LoadingCircle";
 
 /**
  * workspaceId is used for edit mode, should be passed as a prop
  */
-const CreateWorkspaceBtnWithModal = ({
+const CreateWorkspaceModal = ({
     editMode,
-    dontShowBtnText,
     workspaceId,
+    isOpen,
+    onClose,
 }: {
     editMode?: boolean;
-    dontShowBtnText?: boolean;
     workspaceId?: string;
+    isOpen: boolean;
+    onClose: () => void;
 }) => {
     const mainText = editMode ? "Edit workspace" : "Create workspace";
-    const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] =
-        useState<boolean>(false);
     const [workspace, setWorkspace] = useState<IWorkspace>(); // edit mode only
     const [isChanged, setIsChanged] = useState<boolean>(false); // edit mode only
     const workspaceState: IWorkspaceState = useSelector(
@@ -56,19 +55,19 @@ const CreateWorkspaceBtnWithModal = ({
                     description: workspaceDescription,
                     id: workspaceId as string,
                 })
-            ).then(() => setShowCreateWorkspaceModal(false));
+            ).then(() => onClose());
         } else {
             dispatch(
                 createWorkspace({
                     name: workspaceName,
                     description: workspaceDescription,
                 })
-            ).then(() => setShowCreateWorkspaceModal(false));
+            ).then(() => onClose());
         }
     });
 
     const handleCloseModal = () => {
-        setShowCreateWorkspaceModal(false);
+        onClose();
         setValue("workspaceName", workspace?.name || "");
         setValue("workspaceDescription", workspace?.description || "");
     };
@@ -79,7 +78,7 @@ const CreateWorkspaceBtnWithModal = ({
             const workspace = workspaceState.workspaces.find(
                 (workspace) => workspace._id === workspaceId
             );
-            
+
             if (workspace) {
                 setWorkspace(workspace);
                 setValue("workspaceName", workspace.name);
@@ -103,69 +102,69 @@ const CreateWorkspaceBtnWithModal = ({
 
     return (
         <>
-            <Button
-                onClick={() => setShowCreateWorkspaceModal(true)}
-                variant="secondary"
-                className="flex items-center justify-center gap-2"
-            >
-                {editMode ? <TbEdit /> : <IoIosAdd />}
-                {!dontShowBtnText && <span>{mainText}</span>}
-            </Button>
             <Modal
-                variant="outline"
                 roundness="light"
-                isOpen={showCreateWorkspaceModal}
+                isOpen={isOpen}
                 onClose={handleCloseModal}
+                variant="outline"
             >
-                <div className="flex flex-col gap-2">
-                    <TitleText className="text-xl">{mainText}</TitleText>
+                <div className="flex flex-col gap-8">
+                    <TitleText className="text-xl text-start">{mainText}</TitleText>
                     <form className="flex flex-col gap-4" onSubmit={onSubmit}>
-                        <Input
-                            id="workspaceName"
-                            type="text"
-                            placeholder="Workspace Name"
-                            variant="outline"
-                            className="w-full"
-                            maxLength={25}
-                            {...register("workspaceName", {
-                                required: "Workspace name is required",
-                                minLength: {
-                                    value: 3,
-                                    message:
-                                        "Workspace name must be at least 3 characters",
-                                },
-                                maxLength: {
-                                    value: 25,
-                                    message:
-                                        "Workspace name must not exceed 25 characters",
-                                },
-                            })}
-                        />
-                        {errors.workspaceName && (
-                            <span className="text-red-500">
-                                {errors.workspaceName.message as string}
-                            </span>
-                        )}
-                        <Input
-                            id="workspaceDescription"
-                            type="text"
-                            placeholder="Workspace Description"
-                            variant="outline"
-                            className="w-full"
-                            maxLength={200}
-                            {...register("workspaceDescription", {
-                                maxLength: {
-                                    value: 200,
-                                    message:
-                                        "Workspace description must not exceed 200 characters",
-                                },
-                            })}
-                        />
-                        {errors.workspaceName && (
-                            <span className="text-red-500">
-                                {errors.workspaceName.message as string}
-                            </span>
-                        )}
+                        <div className="flex flex-col gap-1 relative pb-4">
+                            <Label htmlFor="workspaceName">
+                                Workspace Name
+                            </Label>
+                            <Input
+                                id="workspaceName"
+                                type="text"
+                                placeholder="Ex. My Workspace"
+                                className="w-full"
+                                maxLength={25}
+                                {...register("workspaceName", {
+                                    required: "Workspace name is required",
+                                    minLength: {
+                                        value: 3,
+                                        message:
+                                            "Workspace name must be at least 3 characters",
+                                    },
+                                    maxLength: {
+                                        value: 25,
+                                        message:
+                                            "Workspace name must not exceed 25 characters",
+                                    },
+                                })}
+                            />
+                            {errors.workspaceName && (
+                                <span className="text-red-500 text-xs absolute bottom-0">
+                                    {errors.workspaceName.message as string}
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex flex-col gap-1 relative pb-4">
+                            <Label htmlFor="workspaceDescription">
+                                Workspace Description
+                            </Label>
+                            <Input
+                                id="workspaceDescription"
+                                type="text"
+                                placeholder="Ex. My workspace for marketing"
+                                className="w-full"
+                                maxLength={200}
+                                {...register("workspaceDescription", {
+                                    maxLength: {
+                                        value: 200,
+                                        message:
+                                            "Workspace description must not exceed 200 characters",
+                                    },
+                                })}
+                            />
+                            {errors.workspaceName && (
+                                <span className="text-red-500 text-xs absolute bottom-0">
+                                    {errors.workspaceName.message as string}
+                                </span>
+                            )}
+                        </div>
                         <Button
                             type="submit"
                             disabled={
@@ -186,4 +185,4 @@ const CreateWorkspaceBtnWithModal = ({
     );
 };
 
-export default CreateWorkspaceBtnWithModal;
+export default CreateWorkspaceModal;

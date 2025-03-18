@@ -1,5 +1,6 @@
 import axios from "axios";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
+// import { toast } from "react-toastify";
 
 const axiosInstance = axios.create({
     baseURL: import.meta.env.VITE_SERVER_URL,
@@ -15,8 +16,13 @@ const axiosInstance = axios.create({
                 return jsonPayload;
             }
             if (jsonPayload.success) {
-                toast.success(jsonPayload.message);
+                // toast.success(jsonPayload.message);
+                toast.success(jsonPayload.message, {
+                    description: new Date().toLocaleString(),
+                });
+                
             } else {
+                // toast.error(jsonPayload.message);
                 toast.error(jsonPayload.message);
             }
             return jsonPayload;

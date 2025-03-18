@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CiCircleRemove } from "react-icons/ci";
 import { useDispatch, useSelector } from "react-redux";
 import Avatar from "../../../components/Avatar";
-import Button from "../../../components/ui/Button";
+import { Button }from "../../../components/ui/button";
 import LoadingCircle from "../../../components/ui/LoadingCircle";
 import type {
     IUser,
@@ -64,7 +64,7 @@ const PeopleItem = (props: {
                         <Button
                             onClick={handleRemovePeople}
                             className="flex gap-2 px-4 items-center justify-center"
-                            variant="danger"
+                            variant="destructive"
                         >
                             {isRemoving ? (
                                 <LoadingCircle className="size-5" />
