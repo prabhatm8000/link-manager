@@ -1,6 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { MdWorkspacesOutline } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import TitleText from "../../../components/TitleText";
 import { Button } from "../../../components/ui/button";
@@ -109,7 +110,12 @@ const CreateWorkspaceModal = ({
                 variant="outline"
             >
                 <div className="flex flex-col gap-8">
-                    <TitleText className="text-xl text-start">{mainText}</TitleText>
+                    <div className="flex items-center gap-2">
+                        <MdWorkspacesOutline className="size-6" />
+                        <TitleText className="text-xl text-start">
+                            {mainText}
+                        </TitleText>
+                    </div>
                     <form className="flex flex-col gap-4" onSubmit={onSubmit}>
                         <div className="flex flex-col gap-1 relative pb-4">
                             <Label htmlFor="workspaceName">

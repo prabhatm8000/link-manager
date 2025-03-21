@@ -167,7 +167,7 @@ export const removePeople = createAsyncThunk(
     ) => {
         try {
             const res = await axiosInstance.post(
-                `/workspace/people"/${data.workspaceId}`,
+                `/workspace/people/${data.workspaceId}`,
                 {
                     peopleId: data.peopleId,
                 }

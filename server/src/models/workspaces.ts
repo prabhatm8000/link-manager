@@ -11,6 +11,7 @@ export interface IWorkspace extends mongoose.Document {
     createdBy: mongoose.Types.ObjectId;
     people: mongoose.Types.ObjectId[];
     peopleCount: number;
+    linkCount: number;
     isActive: boolean;
 }
 
@@ -31,6 +32,10 @@ const workspaceSchema = new mongoose.Schema(
         },
         people: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
         peopleCount: {
+            type: Number,
+            default: 0,
+        },
+        linkCount: {
             type: Number,
             default: 0,
         },

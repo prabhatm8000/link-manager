@@ -11,7 +11,7 @@ const LoadingView = () => {
             <div className="py-4 h-full flex flex-col items-center justify-center -translate-y-[10%]">
                 <IoIosLink
                     size={100}
-                    className="animate-pulse duration-300 ease-in-out"
+                    className="animate-pulse ease-in-out"
                 />
             </div>
         </div>

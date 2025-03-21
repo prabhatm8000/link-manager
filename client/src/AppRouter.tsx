@@ -2,22 +2,19 @@ import { lazy, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
     BrowserRouter,
-    Navigate,
     Route,
     Routes,
-    useNavigate,
+    useNavigate
 } from "react-router-dom";
-import { ToastContainer, Zoom } from "react-toastify";
+import { toast, Toaster } from "sonner";
 import SuspenseWrapper from "./components/SuspenseWrapper";
 import ThemeBtn from "./components/ThemeBtn";
 import useTheme from "./hooks/useTheme";
-import { handleToastIcons } from "./lib/toastFuncs";
 import LoadingPage from "./pages/LoadingPage";
 import InvitePage from "./pages/invite/InvitePage";
 import type { IUserState } from "./redux/reducers/types";
 import type { AppDispatch } from "./redux/store";
 import { verifyUser } from "./redux/thunks/usersThunk";
-import { toast, Toaster } from "sonner";
 
 const AuthRoutes = lazy(() => import("./pages/auth/AuthRoutes"));
 const LandlingRoutes = lazy(() => import("./pages/landing/LandingRoutes"));
@@ -116,13 +113,6 @@ const AppRouter = () => {
                 />
             </Routes>
             <ThemeBtn />
-            <ToastContainer
-                theme={theme}
-                icon={handleToastIcons}
-                draggable
-                transition={Zoom}
-                limit={5}
-            />
             <Toaster theme={theme} richColors />
         </BrowserRouter>
     );

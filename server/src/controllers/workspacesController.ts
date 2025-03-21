@@ -35,6 +35,7 @@ const getWorkspaceByCreatorId = asyncWrapper(async (req, res) => {
 });
 
 const getAllWorkspacesForUser = asyncWrapper(async (req, res) => {
+    // needs optimization
     const workspaces = await workspacesService.getAllWorkspacesForUser(
         req?.user?._id as string
     );
@@ -126,7 +127,7 @@ const acceptInvite = asyncWrapper(async (req, res) => {
 
 const getPeople = asyncWrapper(async (req, res) => {
     const { id: workspaceId } = req.params;
-    const people = await workspacesService.getPeople(workspaceId);
+    const people = await workspacesService.getPeople(workspaceId, req?.user?._id as string);
     res.status(200).json({ success: true, message: "", data: people });
 });
 

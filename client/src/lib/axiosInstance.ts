@@ -18,7 +18,7 @@ const axiosInstance = axios.create({
             if (jsonPayload.success) {
                 // toast.success(jsonPayload.message);
                 toast.success(jsonPayload.message, {
-                    description: new Date().toLocaleString(),
+                    description: new Date().toLocaleString().split(",").join(" ·"),
                 });
                 
             } else {

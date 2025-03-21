@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { MdWorkspacesOutline } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import TitleText from "../../../components/TitleText";
 import { Button } from "../../../components/ui/button";
@@ -28,9 +29,7 @@ const DeleteWorkspaceModal = ({
     const [workspace, setWorkspace] = useState<IWorkspace>();
     const handleDeleteBtn = () => {
         if (!workspace) return;
-        dispatch(deleteWorkspace(workspace._id)).then(() =>
-            onClose()
-        );
+        dispatch(deleteWorkspace(workspace._id)).then(() => onClose());
     };
 
     useEffect(() => {
@@ -51,8 +50,11 @@ const DeleteWorkspaceModal = ({
                 isOpen={isOpen}
                 onClose={onClose}
             >
-                <div className="flex flex-col items-center gap-4">
+                <div className="flex items-center gap-2 mb-4">
+                    <MdWorkspacesOutline className="size-6" />
                     <TitleText className="text-xl">{mainText}</TitleText>
+                </div>
+                <div className="flex flex-col items-center gap-4">
                     <pre className="text-sm text-center text-black/50 dark:text-white/50">
                         {
                             "Are you sure you want to delete this workspace?\nThis action cannot be undone."

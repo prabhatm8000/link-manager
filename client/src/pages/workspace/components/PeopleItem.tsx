@@ -28,7 +28,7 @@ const PeopleItem = (props: {
         dispatch(
             removePeople({
                 workspaceId: workspaceState?.currentWorkspace?._id as string,
-                memberId: props.people._id,
+                peopleId: props.people._id,
             })
         ).finally(() => setIsRemoving(false));
     };

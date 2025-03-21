@@ -19,8 +19,11 @@ export const disconnectFromDB = () => mongoose.disconnect();
  * @param id 
  * @returns true or throws APIResponseError
  */
-export const validateObjectId = (id: string | number | mongoose.Types.ObjectId): boolean => {
-    const isValid = mongoose.Types.ObjectId.isValid(id);
-    if (!isValid) throw new APIResponseError("Something went wrong", 400, false);
+export const validateObjectId = (...ids: string[] | number[] | mongoose.Types.ObjectId[]): boolean => {
+    if (!ids.length) throw new Error("At least one id is required");
+    for (const id of ids) {
+        const isValid = mongoose.Types.ObjectId.isValid(id);
+        if (!isValid) throw new APIResponseError("Something went wrong", 400, false);
+    }
     return true;
 };

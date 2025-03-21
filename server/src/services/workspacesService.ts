@@ -1,11 +1,48 @@
 import mongoose from "mongoose";
 import { APIResponseError } from "../errors/response";
-import User from "../models/users";
-import Workspace from "../models/workspaces";
 import { validateObjectId } from "../lib/mongodb";
+import User from "../models/users";
+import Workspace, { type IWorkspace } from "../models/workspaces";
 
+// limits for a user
 const MAX_WORKSPACES = 5;
 const MAX_PEOPLE = 20;
+
+/**
+ * check if user is authorized to perform action on workspace
+ * @param ws
+ * @param userId
+ * @returns
+ */
+const authorized = async (
+    ws: IWorkspace | mongoose.Types.ObjectId | string,
+    userId: string
+): Promise<boolean> => {
+    let workspace: IWorkspace | null = null;
+    try {    
+        if (typeof ws === "string" || ws instanceof mongoose.Types.ObjectId) {
+            workspace = await Workspace.findOne({
+                _id: new mongoose.Types.ObjectId(ws),
+            }); // will automatically throw error for invlaid id
+        } else {
+            workspace = ws;
+        }
+    } catch (error: any) {
+        // probably invalid id
+        throw new APIResponseError("Invalid id", 400, false);
+    }
+
+    if (!workspace) {
+        throw new APIResponseError("Workspace not found", 404, false);
+    }
+
+    // length of array will not be more than 20, (as of now)
+    const peopleIds = workspace.people.map((person) => person.toString());
+    if (!peopleIds.includes(userId)) {
+        throw new APIResponseError("Unauthorized", 401, false);
+    }
+    return true;
+};
 
 const createWorkspace = async (workspace: {
     name: string;
@@ -33,7 +70,7 @@ const createWorkspace = async (workspace: {
             name: workspace.name,
             description: workspace.description,
             createdBy: new mongoose.Types.ObjectId(workspace.createdBy),
-            people: [],
+            people: [new mongoose.Types.ObjectId(workspace.createdBy)],
             $session: session,
         });
 
@@ -57,22 +94,22 @@ const createWorkspace = async (workspace: {
 };
 
 const getWorkspaceById = async (workspaceId: string, userId: string) => {
-    validateObjectId(workspaceId);
-    validateObjectId(userId);
+    await authorized(workspaceId, userId);
+
     const result = await Workspace.aggregate([
         {
             $match: {
                 $and: [
-                    {
-                        $or: [
-                            {
-                                people: {
-                                    $in: [new mongoose.Types.ObjectId(userId)],
-                                },
-                            },
-                            { createdBy: new mongoose.Types.ObjectId(userId) },
-                        ],
-                    },
+                    // {
+                    //     $or: [
+                    //         {
+                    //             people: {
+                    //                 $in: [new mongoose.Types.ObjectId(userId)],
+                    //             },
+                    //         },
+                    //         { createdBy: new mongoose.Types.ObjectId(userId) },
+                    //     ],
+                    // },
                     { _id: new mongoose.Types.ObjectId(workspaceId) },
                 ],
             },
@@ -177,8 +214,7 @@ const updateWorkspace = async (
 };
 
 const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
-    validateObjectId(workspaceId);
-    validateObjectId(createdBy);
+    validateObjectId(workspaceId, createdBy);
     const session = await mongoose.startSession();
     try {
         session.startTransaction();
@@ -213,19 +249,14 @@ const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
 };
 
 const addPeople = async (workspaceId: string, userId: string) => {
-    validateObjectId(workspaceId);
-    validateObjectId(userId);
+    validateObjectId(workspaceId, userId);
     const workspace = await Workspace.findById(workspaceId);
     if (!workspace) {
         throw new APIResponseError("Workspace not found", 404, false);
     }
 
     if (workspace.peopleCount >= MAX_PEOPLE) {
-        throw new APIResponseError(
-            "Maximum number reached",
-            400,
-            false
-        );
+        throw new APIResponseError("Maximum number reached", 400, false);
     }
 
     const result = await Workspace.updateOne(
@@ -239,8 +270,8 @@ const addPeople = async (workspaceId: string, userId: string) => {
     return result;
 };
 
-const getPeople = async (workspaceId: string) => {
-    validateObjectId(workspaceId);
+const getPeople = async (workspaceId: string, userId: string) => {
+    await authorized(workspaceId, userId);
     const result = await Workspace.aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(workspaceId) } },
         {
@@ -273,9 +304,8 @@ const removePeople = async (
     peopleId: string,
     userId: string
 ) => {
-    validateObjectId(workspaceId);
-    validateObjectId(peopleId);
-    validateObjectId(userId);
+    validateObjectId(workspaceId, peopleId, userId);
+    await authorized(workspaceId, userId);
     const result = await Workspace.updateOne(
         { _id: workspaceId, createdBy: userId },
         {
@@ -347,6 +377,7 @@ const getInviteData = async (workspaceId: string, senderId: string) => {
 };
 
 const workspacesService = {
+    authorized,
     createWorkspace,
     getWorkspaceById,
     getWorkspaceByCreatorId,
