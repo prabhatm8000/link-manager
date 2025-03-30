@@ -9,9 +9,9 @@ export interface ILinks extends mongoose.Document {
     _id: mongoose.Types.ObjectId;
     destinationUrl: string;
     shortUrlKey: string;
-    tags: string[];
-    comment: string;
-    expirationTime?: Date;
+    tags?: string[];
+    comment?: string;
+    expirationTime?: string[];
     password?: string;
 
     isActive: boolean;
@@ -44,7 +44,7 @@ const linksSchema = new mongoose.Schema(
             type: String,
         },
         expirationTime: {
-            type: Date,
+            type: [String],
         },
         password: {
             type: String,
@@ -89,7 +89,8 @@ linksSchema.methods.comparePassword = async function (password: string) {
 
 linksSchema.set("toJSON", {
     transform: (_, ret) => {
-        delete ret.password;
+        // delete ret.password;
+        ret.hasPassword = !!ret.password;
         return ret;
     }
 });

@@ -8,6 +8,7 @@ import Workspace, { type IWorkspace } from "../models/workspaces";
 const MAX_WORKSPACES = 5;
 const MAX_PEOPLE = 20;
 
+
 /**
  * check if user is authorized to perform action on workspace
  * @param ws
@@ -18,32 +19,49 @@ const authorized = async (
     ws: IWorkspace | mongoose.Types.ObjectId | string,
     userId: string
 ): Promise<boolean> => {
-    let workspace: IWorkspace | null = null;
-    try {    
-        if (typeof ws === "string" || ws instanceof mongoose.Types.ObjectId) {
-            workspace = await Workspace.findOne({
-                _id: new mongoose.Types.ObjectId(ws),
-            }); // will automatically throw error for invlaid id
-        } else {
-            workspace = ws;
+    if (ws instanceof mongoose.Types.ObjectId || typeof ws === "string") {
+        const workspace = await Workspace.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(ws),
+                    people: { $in: [new mongoose.Types.ObjectId(userId)] },
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                },
+            },
+        ]);
+
+        if (workspace.length === 0) {
+            throw new APIResponseError(
+                "Unauthorized or Workspace not found",
+                401,
+                false
+            );
         }
-    } catch (error: any) {
-        // probably invalid id
-        throw new APIResponseError("Invalid id", 400, false);
+    } else {
+        // if ws is an instance of Workspace [don't fetch from db]
+        const peopleIds = ws.people.map((p) => p.toString());
+        if (!peopleIds.includes(userId.toString())) {
+            throw new APIResponseError(
+                "Unauthorized or Workspace not found",
+                401,
+                false
+            );
+        }
     }
 
-    if (!workspace) {
-        throw new APIResponseError("Workspace not found", 404, false);
-    }
-
-    // length of array will not be more than 20, (as of now)
-    const peopleIds = workspace.people.map((person) => person.toString());
-    if (!peopleIds.includes(userId)) {
-        throw new APIResponseError("Unauthorized", 401, false);
-    }
     return true;
 };
 
+
+/**
+ * 
+ * @param workspace 
+ * @returns 
+ */
 const createWorkspace = async (workspace: {
     name: string;
     description: string;
@@ -93,23 +111,18 @@ const createWorkspace = async (workspace: {
     }
 };
 
-const getWorkspaceById = async (workspaceId: string, userId: string) => {
-    await authorized(workspaceId, userId);
 
+/**
+ * authentication required, [checks userId in people]
+ * @param workspaceId
+ * @param userId
+ * @returns workspace
+ */
+const getWorkspaceById = async (workspaceId: string, userId: string) => {
     const result = await Workspace.aggregate([
         {
             $match: {
                 $and: [
-                    // {
-                    //     $or: [
-                    //         {
-                    //             people: {
-                    //                 $in: [new mongoose.Types.ObjectId(userId)],
-                    //             },
-                    //         },
-                    //         { createdBy: new mongoose.Types.ObjectId(userId) },
-                    //     ],
-                    // },
                     { _id: new mongoose.Types.ObjectId(workspaceId) },
                 ],
             },
@@ -143,6 +156,7 @@ const getWorkspaceById = async (workspaceId: string, userId: string) => {
                 "createdByDetails.email": 1,
                 "createdByDetails._id": 1,
                 "createdByDetails.profilePicture": 1,
+                people: 1,
                 name: 1,
                 description: 1,
                 createdBy: 1,
@@ -151,13 +165,21 @@ const getWorkspaceById = async (workspaceId: string, userId: string) => {
         },
     ]);
 
-    if (result.length === 0) {
+    const workspace = result[0];
+    if (!workspace) {
         throw new APIResponseError("Workspace not found", 404, false);
     }
 
-    return result[0];
+    await authorized(workspace, userId);
+    return workspace;
 };
 
+
+/**
+ * authentication required, [checks userId in createdBy]
+ * @param userId 
+ * @returns 
+ */
 const getWorkspaceByCreatorId = async (userId: string) => {
     validateObjectId(userId);
     const result = await Workspace.find({
@@ -167,6 +189,12 @@ const getWorkspaceByCreatorId = async (userId: string) => {
     return result;
 };
 
+
+/**
+ * authentication required, [checks userId in people or createdBy]
+ * @param userId 
+ * @returns 
+ */
 const getAllWorkspacesForUser = async (userId: string) => {
     validateObjectId(userId);
     const result = await Workspace.aggregate([
@@ -200,6 +228,14 @@ const getAllWorkspacesForUser = async (userId: string) => {
     return result;
 };
 
+
+/**
+ * authentication required, [checks userId in createdBy]
+ * @param workspaceId 
+ * @param createdBy 
+ * @param data 
+ * @returns 
+ */
 const updateWorkspace = async (
     workspaceId: string,
     createdBy: string,
@@ -213,6 +249,13 @@ const updateWorkspace = async (
     );
 };
 
+
+/**
+ * authentication required, [checks userId in createdBy]
+ * @param workspaceId 
+ * @param createdBy 
+ * @returns 
+ */
 const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
     validateObjectId(workspaceId, createdBy);
     const session = await mongoose.startSession();
@@ -248,6 +291,13 @@ const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
     }
 };
 
+
+/**
+ * authentication not required, [checked at controller level]
+ * @param workspaceId 
+ * @param userId 
+ * @returns 
+ */
 const addPeople = async (workspaceId: string, userId: string) => {
     validateObjectId(workspaceId, userId);
     const workspace = await Workspace.findById(workspaceId);
@@ -270,6 +320,13 @@ const addPeople = async (workspaceId: string, userId: string) => {
     return result;
 };
 
+
+/**
+ * authentication required, [checks userId in people]
+ * @param workspaceId 
+ * @param userId 
+ * @returns 
+ */
 const getPeople = async (workspaceId: string, userId: string) => {
     await authorized(workspaceId, userId);
     const result = await Workspace.aggregate([
@@ -299,12 +356,23 @@ const getPeople = async (workspaceId: string, userId: string) => {
     return result[0];
 };
 
+
+/**
+ * authentication required, [checks userId in createdBy]
+ * @param workspaceId 
+ * @param peopleId 
+ * @param userId 
+ * @returns 
+ */
 const removePeople = async (
     workspaceId: string,
     peopleId: string,
     userId: string
 ) => {
     validateObjectId(workspaceId, peopleId, userId);
+    if (userId === peopleId) {
+        throw new APIResponseError("You cannot remove yourself", 400, false);
+    }
     await authorized(workspaceId, userId);
     const result = await Workspace.updateOne(
         { _id: workspaceId, createdBy: userId },
@@ -321,6 +389,13 @@ const removePeople = async (
     return result;
 };
 
+
+/**
+ * authentication not required, [checked at controller level]
+ * @param workspaceId 
+ * @param senderId 
+ * @returns 
+ */
 const getInviteData = async (workspaceId: string, senderId: string) => {
     validateObjectId(workspaceId);
     validateObjectId(senderId);

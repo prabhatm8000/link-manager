@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import SideBar, { SideBarHeader } from "./components/SideBar";
+import useTheme from "@/hooks/useTheme";
 
 const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
     const [showSideBar, setShowSideBar] = useState<boolean>(false);
+    const { theme } = useTheme();
     useEffect(() => {
         const workspaceElement = document.getElementById("workspace");
         if (workspaceElement) {
@@ -11,7 +13,8 @@ const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     return (
-        <div className="relative h-screen md:grid grid-cols-[auto_1fr] gap-4">
+        <div className="relative h-screen md:grid grid-cols-[auto_1fr] gap-0">
+            {/* black overlay, when sidebar is open, smaller screen */}
             <div
                 onClick={() => setShowSideBar(false)}
                 className={`${
@@ -28,6 +31,7 @@ const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
                 setShowSideBar={() => setShowSideBar((p) => !p)}
             />
 
+            {/* body */}
             <div className="grid grid-cols-1 grid-rows-[auto_1fr] md:flex md:justify-center h-full w-full ">
                 <div className="block md:hidden p-4">
                     <SideBarHeader
@@ -37,10 +41,20 @@ const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
                 </div>
                 <div
                     id="workspace"
-                    className="h-full w-full p-4 min-w-sm md:max-w-xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl"
+                    className="h-full w-full p-4 min-w-sm 2xl:max-w-7xl"
                 >
                     {children}
                 </div>
+            </div>
+
+            {/* background image */}
+            <div className="fixed -z-10 top-0 left-0 w-full h-full bg-white dark:bg-black opacity-40">
+                <img
+                    src="/backgrounds/auth-light.jpg"
+                    className={`w-full h-full object-cover ${
+                        theme === "dark" ? "invert" : ""
+                    }`}
+                />
             </div>
         </div>
     );

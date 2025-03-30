@@ -8,7 +8,7 @@ import {
     postAcceptInvite,
     removePeople,
     sendInvite,
-    updateWorkspace
+    updateWorkspace,
 } from "../thunks/workspaceThunks";
 import type {
     ApiResponseType,
@@ -33,6 +33,15 @@ const workspaceSlice = createSlice({
     reducers: {
         setCurrentWorkspace: (state, action) => {
             state.currentWorkspace = action.payload;
+        },
+        clearState: (state) => {
+            state.workspaces = [];
+            state.currentWorkspace = null;
+            state.currentWorkspacePeople = [];
+            state.myWorkspaces = [];
+            state.loading = false;
+            state.error = null;
+            state.message = null;
         },
     },
     extraReducers: (builder) => {
@@ -228,4 +237,5 @@ const workspaceSlice = createSlice({
     },
 });
 
+export const workspaceActions = workspaceSlice.actions;
 export default workspaceSlice.reducer;

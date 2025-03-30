@@ -5,12 +5,6 @@ import { getAuthCookie } from "../lib/cookie";
 import type { IUser } from "../models/users";
 import usersService from "../services/usersService";
 
-// declare module "express" {
-//     export interface Request {
-//         user?: IUser;
-//     }
-// }
-
 // adding user to request
 declare global {
     namespace Express {
@@ -39,7 +33,7 @@ const authMiddleware = async (
 
         if (next) next();
     } catch (error) {
-        catchHandler(error, res);
+        catchHandler(error, req, res);
     }
 };
 

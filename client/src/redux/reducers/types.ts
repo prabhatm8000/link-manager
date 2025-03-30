@@ -47,20 +47,27 @@ export interface IWorkspaceState {
 
 export interface ILink {
     _id: string;
-    name: string;
-    tags: string[];
     destinationUrl: string;
     shortUrlKey: string;
-    comment: string;
-    workspaceId: string;
+    tags?: string[];
+    comment?: string;
+    expirationTime?: string[];
+    password?: string;
+
     isActive: boolean;
-    expiresAt?: Date;
+    workspaceId: string;
+    creatorId: string;
+
+    // when populated
     creator?: IUser;
+    hasPassword?: boolean;
 }
 
 export interface ILinkState {
     links: ILink[];
     loading: boolean;
+    deleteLoading: boolean;
+    updateLoading: boolean;
     error: string | null;
     message: string | null;
 }

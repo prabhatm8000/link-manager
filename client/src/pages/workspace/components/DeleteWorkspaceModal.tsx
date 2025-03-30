@@ -55,9 +55,9 @@ const DeleteWorkspaceModal = ({
                     <TitleText className="text-xl">{mainText}</TitleText>
                 </div>
                 <div className="flex flex-col items-center gap-4">
-                    <pre className="text-sm text-center text-black/50 dark:text-white/50">
+                    <pre className="text-sm text-center text-muted-foreground">
                         {
-                            "Are you sure you want to delete this workspace?\nThis action cannot be undone."
+                            "Are you sure you want to delete this workspace and all associated data (links, people, etc.)?\nThis action cannot be undone."
                         }
                     </pre>
                     <Button

@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import TitleText from "../../../components/TitleText";
 import { Button } from "../../../components/ui/button";
-import Card from "../../../components/ui/Card";
 import { Input } from "../../../components/ui/input";
 import type { IUserState } from "../../../redux/reducers/types";
 import type { AppDispatch } from "../../../redux/store";
@@ -14,11 +13,7 @@ import {
 
 import { useEffect, useState } from "react";
 import LoadingCircle from "../../../components/ui/LoadingCircle";
-import {
-    InputOTP,
-    InputOTPGroup,
-    InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 const coolDownTime = 2.5 * 60;
 const AuthOtp = () => {
@@ -59,53 +54,58 @@ const AuthOtp = () => {
     }, [userState.isAuthenticated]);
 
     return (
-        <Card
-            variant="none"
-            className="p-6 flex flex-col gap-8 w-full backdrop-blur-xs"
-        >
-            <TitleText className="text-center">Signup</TitleText>
-            <form className="flex flex-col gap-6" onSubmit={onSubmit}>
-                <p className="text-center">OTP sent to {param.email}</p>
-                <Input
-                    {...register("otp", { required: true })}
-                    id="otp"
-                    type="text"
-                    placeholder="OTP"
-                    className="w-full"
-                    autoComplete="name"
-                />
-                <div className="flex justify-center items-center gap-2">
-                    <span>
-                        {`${Math.floor(coolDownTimer / 60)}:${(
-                            coolDownTimer % 60
-                        )
-                            .toString()
-                            .padStart(2, "0")}`}
-                    </span>
-                    <Button
-                        disabled={userState?.loading || coolDownTimer > 0}
-                        type="button"
-                        variant="link"
-                        onClick={handleResendOtp}
-                        className={
-                            !(userState?.loading || coolDownTimer > 0)
-                                ? "hover:underline"
-                                : ""
-                        }
-                    >
-                        resend
-                    </Button>
-                </div>
+        <Card className="min-w-80 max-w-sm w-full bg-transparent backdrop-blur-xs border-ring/80 ring-ring/50 ring-[3px]">
+            <CardHeader>
+                <CardTitle>
+                    <TitleText className="text-center">Signup</TitleText>
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <form className="flex flex-col gap-6" onSubmit={onSubmit}>
+                    <p className="text-center">OTP sent to {param.email}</p>
+                    <Input
+                        {...register("otp", { required: true })}
+                        id="otp"
+                        type="text"
+                        placeholder="OTP"
+                        className="w-full"
+                        autoComplete="name"
+                    />
+                    <div className="flex justify-center items-center gap-2">
+                        <span>
+                            {`${Math.floor(coolDownTimer / 60)}:${(
+                                coolDownTimer % 60
+                            )
+                                .toString()
+                                .padStart(2, "0")}`}
+                        </span>
+                        <Button
+                            disabled={userState?.loading || coolDownTimer > 0}
+                            type="button"
+                            variant="link"
+                            onClick={handleResendOtp}
+                            className={
+                                !(userState?.loading || coolDownTimer > 0)
+                                    ? "hover:underline"
+                                    : ""
+                            }
+                        >
+                            resend
+                        </Button>
+                    </div>
 
-                <Button
-                    disabled={userState?.loading}
-                    type="submit"
-                    className="mt-2 px-4 flex items-center justify-center gap-2"
-                >
-                    {userState?.loading && <LoadingCircle className="size-5" />}
-                    <span>Verify</span>
-                </Button>
-            </form>
+                    <Button
+                        disabled={userState?.loading}
+                        type="submit"
+                        className="mt-2 px-4 flex items-center justify-center gap-2"
+                    >
+                        {userState?.loading && (
+                            <LoadingCircle className="size-5" />
+                        )}
+                        <span>Verify</span>
+                    </Button>
+                </form>
+            </CardContent>
         </Card>
     );
 };

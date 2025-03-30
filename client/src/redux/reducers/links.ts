@@ -15,23 +15,30 @@ const initialState: ILinkState = {
     loading: false,
     error: null,
     message: null,
+    deleteLoading: false,
+    updateLoading: false,
 };
 
 const linksSlice = createSlice({
     name: "links",
     initialState,
-    reducers: {},
+    reducers: {
+        clearState: (state) => {
+            state.links = [];
+            state.loading = false;
+            state.error = null;
+            state.message = null;
+            state.deleteLoading = false;
+            state.updateLoading = false;
+        },
+    },
     extraReducers: (builder) => {
         // createLink
-        builder.addCase(createLink.pending, (state) => {
-            state.loading = true;
-        });
+        // builder.addCase(createLink.pending, (state) => {});
         builder.addCase(createLink.fulfilled, (state, action) => {
-            state.loading = false;
             state.links.push(action.payload.data);
         });
         builder.addCase(createLink.rejected, (state, action) => {
-            state.loading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType)?.message;
         });
@@ -65,48 +72,52 @@ const linksSlice = createSlice({
 
         // updateLink
         builder.addCase(updateLink.pending, (state) => {
-            state.loading = true;
+            state.updateLoading = true;
         });
         builder.addCase(updateLink.fulfilled, (state, action) => {
-            state.loading = false;
+            state.updateLoading = false;
             state.links = state.links.map((link) =>
-                link._id === action.payload.data._id ? action.payload.data : link
+                link._id === action.payload.data._id
+                    ? action.payload.data
+                    : link
             );
         });
         builder.addCase(updateLink.rejected, (state, action) => {
-            state.loading = false;
+            state.updateLoading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType)?.message;
         });
 
         // deactivateLink
         builder.addCase(deactivateLink.pending, (state) => {
-            state.loading = true;
+            state.updateLoading = true;
         });
         builder.addCase(deactivateLink.fulfilled, (state, action) => {
-            state.loading = false;
+            state.updateLoading = false;
             state.links = state.links.map((link) =>
-                link._id === action.payload.data._id ? action.payload.data : link
+                link._id === action.payload.data._id
+                    ? action.payload.data
+                    : link
             );
         });
         builder.addCase(deactivateLink.rejected, (state, action) => {
-            state.loading = false;
+            state.updateLoading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType)?.message;
         });
 
         // deleteLink
         builder.addCase(deleteLink.pending, (state) => {
-            state.loading = true;
+            state.deleteLoading = true;
         });
         builder.addCase(deleteLink.fulfilled, (state, action) => {
-            state.loading = false;
+            state.deleteLoading = false;
             state.links = state.links.filter(
                 (link) => link._id !== action.payload.data._id
             );
         });
         builder.addCase(deleteLink.rejected, (state, action) => {
-            state.loading = false;
+            state.deleteLoading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType)?.message;
         });
@@ -126,5 +137,5 @@ const linksSlice = createSlice({
     },
 });
 
-export const {} = linksSlice.actions;
+export const linksActions = linksSlice.actions;
 export default linksSlice.reducer;

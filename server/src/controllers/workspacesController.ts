@@ -28,7 +28,7 @@ const getWorkspaceById = asyncWrapper(async (req, res) => {
     res.status(200).json({ success: true, message: "", data: workspace });
 });
 
-const getWorkspaceByCreatorId = asyncWrapper(async (req, res) => {
+const getMyWorkspaces = asyncWrapper(async (req, res) => {
     const userId = req?.user?._id as string;
     const workspaces = await workspacesService.getWorkspaceByCreatorId(userId);
     res.status(200).json({ success: true, message: "", data: workspaces });
@@ -149,7 +149,7 @@ const removePeople = asyncWrapper(async (req, res) => {
 const workspacesController = {
     createWorkspace,
     getWorkspaceById,
-    getWorkspaceByCreatorId,
+    getMyWorkspaces,
     getAllWorkspacesForUser,
     updateWorkspace,
     deleteWorkspace,

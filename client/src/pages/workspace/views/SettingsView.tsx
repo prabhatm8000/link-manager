@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { useSelector } from "react-redux";
-import Avatar from "../../../components/Avatar";
 import LoadingCircle from "../../../components/ui/LoadingCircle";
 import type {
     IUser,
@@ -15,6 +14,14 @@ import InvitePeopleBtnWithModal from "../components/InvitePeopleBtnWithModal";
 import PeopleItem from "../components/PeopleItem";
 import ViewHeader from "../components/ViewHeader";
 import { TbEdit } from "react-icons/tb";
+import {
+    Table,
+    TableBody,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const SettingsView = () => {
     const workspaceState: IWorkspaceState = useSelector(
@@ -34,21 +41,25 @@ const SettingsView = () => {
             />
             <div className="py-4 space-y-8">
                 <div className="flex gap-3">
-                    <Avatar
-                        props={{
-                            alt: workspaceState?.currentWorkspace?.name,
-                        }}
-                        size={"lg"}
-                        title={workspaceState?.currentWorkspace?.name || "W"}
-                    />
+                    <Avatar>
+                        <AvatarImage
+                            src={
+                                ""
+                            }
+                            alt={workspaceState?.currentWorkspace?.name}
+                        />
+                        <AvatarFallback>
+                            {workspaceState?.currentWorkspace?.name?.charAt(0) + "W"}
+                        </AvatarFallback>
+                    </Avatar>
                     <div className="">
                         <h3 className="text-xl line-clamp-1">
                             {workspaceState?.currentWorkspace?.name}
                         </h3>
-                        <div className="text-black/50 dark:text-white/50">
+                        <div className="text-muted-foreground">
                             {`Created By: ${workspaceState?.currentWorkspace?.createdByDetails?.email}`}
                         </div>
-                        <div className="text-black/50 dark:text-white/50">
+                        <div className="text-muted-foreground">
                             {workspaceState?.currentWorkspace?.description}
                         </div>
                     </div>
@@ -56,10 +67,10 @@ const SettingsView = () => {
 
                 {userState?.user?._id ===
                     workspaceState?.currentWorkspace?.createdBy && (
-                    <div className="grid grid-cols-2 sm:flex justify-center sm:justify-end gap-3">
+                    <div className="flex justify-end gap-3">
                         <Button
                             onClick={() => setShowCreateWorkspaceModal(true)}
-                            variant={"ghost"}
+                            variant={"secondary"}
                             className="flex gap-2 items-center justify-start hover:bg-foreground/10 dark:hover:bg-foreground/10"
                         >
                             <TbEdit />
@@ -67,7 +78,7 @@ const SettingsView = () => {
                         </Button>
                         <Button
                             className="flex gap-2 items-center justify-start text-red-500 hover:text-red-500 hover:bg-red-200 dark:hover:bg-red-950"
-                            variant="ghost"
+                            variant="secondary"
                             onClick={() => setShowDeleteWorkspaceModal(true)}
                         >
                             <AiOutlineDelete />
@@ -87,8 +98,8 @@ const SettingsView = () => {
                     onClose={() => setShowDeleteWorkspaceModal(false)}
                 />
 
-                <div className="flex justify-center flex-col sm:flex-row sm:justify-between gap-3">
-                    <h3 className="text-black/50 dark:text-white/50">People</h3>
+                <div className="flex justify-between items-center gap-3">
+                    <h3 className="text-muted-foreground">People</h3>
                     {userState?.user?._id ===
                         workspaceState?.currentWorkspace?.createdBy && (
                         <InvitePeopleBtnWithModal />
@@ -98,15 +109,28 @@ const SettingsView = () => {
                 {workspaceState?.loading ? (
                     <LoadingCircle className="size-5" />
                 ) : workspaceState?.currentWorkspace.peopleDetails?.length ? (
-                    <div>
-                        {workspaceState?.currentWorkspace.peopleDetails?.map(
-                            (people: IUser, index) => (
-                                <PeopleItem key={index} people={people} />
-                            )
-                        )}
-                    </div>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[100px]">
+                                    Name
+                                </TableHead>
+                                <TableHead>Email</TableHead>
+                                <TableHead className="text-right">
+                                    Actions
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {workspaceState?.currentWorkspace.peopleDetails?.map(
+                                (people: IUser, index) => (
+                                    <PeopleItem key={index} people={people} />
+                                )
+                            )}
+                        </TableBody>
+                    </Table>
                 ) : (
-                    <div className="text-black/50 dark:text-white/50">
+                    <div className="text-muted-foreground">
                         No people in this workspace
                     </div>
                 )}

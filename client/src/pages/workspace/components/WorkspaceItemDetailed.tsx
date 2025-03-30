@@ -12,10 +12,10 @@ import { SlOptionsVertical } from "react-icons/sl";
 import { TbEdit } from "react-icons/tb";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
-import Avatar from "../../../components/Avatar";
 import type { IUserState, IWorkspace } from "../../../redux/reducers/types";
 import CreateWorkspaceModal from "./CreateWorkspaceModal";
 import DeleteWorkspaceModal from "./DeleteWorkspaceModal";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const WorkspaceItemDetailed = (props: {
     data: IWorkspace;
@@ -39,11 +39,15 @@ const WorkspaceItemDetailed = (props: {
         <TableRow className="group">
             <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
-                    <Avatar
-                        props={{ alt: props.data?.name }}
-                        size={props.avatarSize || "lg"}
-                        title={props.data?.name || "W"}
-                    />
+                    <Avatar>
+                        <AvatarImage
+                            src={""}
+                            alt={props.data?.name}
+                        />
+                        <AvatarFallback>
+                            {props.data?.name?.charAt(0) + "W"}
+                        </AvatarFallback>
+                    </Avatar>
                     <span>{props.data.name}</span>
                 </div>
             </TableCell>

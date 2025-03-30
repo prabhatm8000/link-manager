@@ -14,19 +14,20 @@ const asyncWrapper = (
             if (next) next();
         } catch (error) {
             console.log(callback.name);
-            catchHandler(error, res);
+            catchHandler(error, req, res);
         }
+        res.end();
     };
 };
 
-export const catchHandler = (error: any, res: Response) => {
+export const catchHandler = (error: any, req: Request, res: Response) => {
     if (error instanceof APIResponseError) {
         res.status(error.status).json({
             success: error.success,
             message: error.message,
         });
     } else {
-        console.log(error);
+        console.log(req.url, error);
         res.status(500).json({
             success: false,
             message: "Internal Server Error",

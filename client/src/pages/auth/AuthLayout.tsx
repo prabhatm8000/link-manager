@@ -14,11 +14,11 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
             </div>
 
             <div className="flex justify-center items-center w-full h-full">
-                <div className="flex justify-center min-w-sm">{children}</div>
+                {children}
             </div>
 
             <div className="fixed -z-10 top-0 left-0 w-full h-full bg-white dark:bg-black">
-                {theme === "dark" ? (
+                {/* {theme === "dark" ? (
                     <img
                         src="/backgrounds/auth-dark.jpg"
                         className="w-full h-full object-cover"
@@ -28,7 +28,20 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
                         src="/backgrounds/auth-light.jpg"
                         className="w-full h-full object-cover"
                     />
-                )}
+                )} */}
+
+                {/* <img
+                    src="/backgrounds/auth-light.jpg"
+                    className={`w-full h-full object-cover ${
+                        theme === "dark" ? "invert" : ""
+                    }`}
+                /> */}
+                <img
+                    src="/backgrounds/auth-dark.jpg"
+                    className={`w-full h-full object-cover ${
+                        theme === "dark" ? "" : "invert"
+                    }`}
+                />
             </div>
         </div>
     );

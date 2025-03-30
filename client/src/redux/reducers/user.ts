@@ -22,7 +22,16 @@ const initialState: IUserState = {
 const userSlice = createSlice({
     name: "user",
     initialState,
-    reducers: {},
+    reducers: {
+        clearState: (state) => {
+            state.user = null;
+            state.isAuthenticated = false;
+            state.loading = false;
+            state.error = null;
+            state.message = null;
+            state.isOtpSent = false;
+        },
+    },
     extraReducers: (builder) => {
         // verifyUser
         builder.addCase(verifyUser.fulfilled, (state, action) => {

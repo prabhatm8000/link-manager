@@ -1,27 +1,51 @@
+import ArrayInput from "@/components/ArrayInput";
+import QRCode from "@/components/QRCode";
+import CommingSoon from "@/components/ui/CommingSoon";
 import { Label } from "@/components/ui/label";
+import LoadingCircle from "@/components/ui/LoadingCircle";
 import { Textarea } from "@/components/ui/textarea";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import TOAST_MESSAGES from "@/constants/toastMessages";
+import type { ILink, IWorkspaceState } from "@/redux/reducers/types";
+import { Info } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { IoIosLink } from "react-icons/io";
 import { IoAdd, IoCalendarOutline } from "react-icons/io5";
 import { RiLockPasswordLine } from "react-icons/ri";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
 import TitleText from "../../../components/TitleText";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import Modal from "../../../components/ui/Modal";
 import { AppDispatch } from "../../../redux/store";
-import { generateShortLinkKey } from "../../../redux/thunks/linksThunks";
-import QRCode from "@/components/QrCode";
-import { BiWorld } from "react-icons/bi";
+import {
+    createLink,
+    generateShortLinkKey,
+    updateLink,
+} from "../../../redux/thunks/linksThunks";
 
 type LinkFormType = {
-    name: string;
     destinationUrl: string;
     shortUrlKey: string;
-    tags?: string;
+    tags?: string[];
     comment?: string;
-    expirationTime?: string;
+    expirationTime?: string | string[];
     password?: string;
+};
+
+const initState: LinkFormType = {
+    destinationUrl: "some-url",
+    shortUrlKey: "dfdfdfdfdfdfdf",
+    tags: ["helo", "world"],
+    comment: "ooooooooooooha,",
+    expirationTime: "1, 2, 3",
+    password: "",
 };
 
 const bottomOptionsInit = [
@@ -42,18 +66,29 @@ const bottomOptionsInit = [
 const CreateLinkModal = ({
     isOpen,
     onClose,
+    editMode = false,
+    formDataForEdit,
 }: {
     isOpen: boolean;
     onClose: () => void;
+    editMode?: boolean;
+    formDataForEdit?: ILink;
 }) => {
     const [bottomOptions, setBottomOptions] = useState(bottomOptionsInit);
+    const [formSubmitLoading, setFormSubmitLoading] = useState<boolean>(false);
     const dispatch = useDispatch<AppDispatch>();
+    const workspaceState: IWorkspaceState = useSelector(
+        (state: any) => state.workspace
+    );
     const {
         register,
         handleSubmit,
         setValue,
         formState: { errors },
-    } = useForm<LinkFormType>();
+        reset,
+        getValues,
+    } = useForm<LinkFormType>({ values: initState });
+    const [tags, setTags] = useState<string[]>(getValues("tags") || []);
 
     const handleOptionClick = (option: (typeof bottomOptionsInit)[0]) => {
         setBottomOptions((prevOptions) => {
@@ -68,8 +103,75 @@ const CreateLinkModal = ({
     };
 
     const onSubmit = handleSubmit((data) => {
-        console.log(data);
+        const workspaceId = workspaceState?.currentWorkspace?._id;
+        if (!workspaceId) return toast.error(TOAST_MESSAGES.NoCurrentWorkspace);
+        setFormSubmitLoading(true);
+        const expirationTimeArray = Array.isArray(data.expirationTime)
+            ? data.expirationTime
+            : data.expirationTime?.split(",").map((d) => d.trim());
+
+        return Promise.resolve()
+            .then(async () => {
+                if (editMode) {
+                    await dispatch(
+                        updateLink({
+                            ...data,
+                            tags,
+                            expirationTime: expirationTimeArray,
+                            workspaceId,
+                            linkId: formDataForEdit?._id as string,
+                        })
+                    );
+                } else {
+                    await dispatch(
+                        createLink({
+                            ...data,
+                            tags,
+                            expirationTime: expirationTimeArray,
+                            workspaceId,
+                        })
+                    );
+                }
+            })
+            .then(() => {
+                setFormSubmitLoading(false);
+                reset();
+                onClose();
+            });
+
+        // if (!editMode) {
+        //     dispatch(
+        //         createLink({
+        //             ...data,
+        //             tags,
+        //             expirationTime: expirationTimeArray,
+        //             workspaceId,
+        //         })
+        //     ).then(() => {
+        //         setFormSubmitLoading(false);
+        //         reset();
+        //         onClose();
+        //     });
+        // } else {
+        //     dispatch(
+        //         createLink({
+        //             ...data,
+        //             tags,
+        //             expirationTime: expirationTimeArray,
+        //             workspaceId,
+        //         })
+        //     ).then(() => {
+        //         setFormSubmitLoading(false);
+        //         reset();
+        //         onClose();
+        //     });
+        // }
     });
+
+    const handleClose = () => {
+        if (editMode) reset();
+        onClose();
+    }
 
     const generateShortLinkKeyCall = async (): Promise<string> => {
         const resultAction = await dispatch(generateShortLinkKey({ size: 10 }));
@@ -80,60 +182,82 @@ const CreateLinkModal = ({
     };
 
     useEffect(() => {
+        if (editMode) return;
         generateShortLinkKeyCall().then((shortUrlKey) =>
             setValue("shortUrlKey", shortUrlKey)
         );
     }, []);
+
+    // populating the field for editmode
+    useEffect(() => {
+        if (!editMode) return;
+        if (!formDataForEdit) return;
+
+        setValue("destinationUrl", formDataForEdit.destinationUrl);
+        setValue("shortUrlKey", formDataForEdit.shortUrlKey);
+        setValue("comment", formDataForEdit.comment);
+        setValue("tags", formDataForEdit.tags);
+        setTags(formDataForEdit.tags || []);
+
+        if (formDataForEdit.expirationTime) {
+            setValue(
+                "expirationTime",
+                formDataForEdit.expirationTime?.map((d) => d).join(",")
+            );
+            
+            // show expiration
+            setBottomOptions((prevOptions) => {
+                const newOptions = prevOptions.map((prevOption) => {
+                    if (prevOption.key === "expirationTime") {
+                        return { ...prevOption, show: true };
+                    }
+                    return prevOption;
+                });
+                return newOptions;
+            })
+        }
+
+        if (formDataForEdit.password) {
+            setValue("password", formDataForEdit.password);
+
+            // show password
+            setBottomOptions((prevOptions) => {
+                const newOptions = prevOptions.map((prevOption) => {
+                    if (prevOption.key === "password") {
+                        return { ...prevOption, show: true };
+                    }
+                    return prevOption;
+                });
+                return newOptions;
+            })
+        }
+    }, [editMode, formDataForEdit]);
+
     return (
         <>
             <Modal
                 variant="outline"
                 roundness="light"
                 isOpen={isOpen}
-                onClose={onClose}
+                onClose={handleClose}
                 className="w-[calc(100%-40px)] max-w-4xl space-y-8 overflow-y-auto"
             >
                 <div className="flex items-center gap-2">
-                    <BiWorld className="size-6" />
-                    <TitleText className="text-xl">New Link</TitleText>
+                    <IoIosLink className="size-6" />
+                    <TitleText className="text-xl">
+                        {editMode ? "Edit Link" : "New Link"}
+                    </TitleText>
                 </div>
 
                 <form onSubmit={onSubmit} className="flex flex-col gap-4">
                     <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-8">
                         <section className="flex flex-col gap-4">
                             <div className="flex flex-col gap-1 relative pb-4">
-                                <Label htmlFor="link-name">*Name</Label>
-                                <Input
-                                    id="link-name"
-                                    type="text"
-                                    placeholder="Ex. Example Link"
-                                    className="w-full"
-                                    {...register("name", {
-                                        required: "Name is required",
-                                        minLength: {
-                                            value: 3,
-                                            message:
-                                                "Name must be at least 3 characters",
-                                        },
-                                        maxLength: {
-                                            value: 25,
-                                            message:
-                                                "Name must not exceed 25 characters",
-                                        },
-                                    })}
-                                />
-                                {errors.name && (
-                                    <span className="text-red-500 text-sm absolute bottom-0">
-                                        {errors.name.message as string}
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className="flex flex-col gap-1 relative pb-4">
                                 <Label htmlFor="link-destinationUrl">
                                     *Destination URL
                                 </Label>
                                 <Input
+                                    disabled={editMode}
                                     id="link-destinationUrl"
                                     type="text"
                                     placeholder="Ex. https://example.com"
@@ -157,7 +281,7 @@ const CreateLinkModal = ({
                                     *Short Link
                                 </Label>
                                 <div className="flex gap-1 items-center w-full">
-                                    <span className="text-black/50 dark:text-white/50">
+                                    <span className="text-muted-foreground">
                                         {import.meta.env.VITE_CLIENT_URL || ""}
                                     </span>
                                     <Input
@@ -165,6 +289,7 @@ const CreateLinkModal = ({
                                         type="text"
                                         placeholder="Short Link"
                                         className="w-full"
+                                        maxLength={10}
                                         {...register("shortUrlKey", {
                                             required: "Short URL is required",
                                         })}
@@ -179,7 +304,7 @@ const CreateLinkModal = ({
 
                             <div className="flex flex-col gap-1 relative pb-4">
                                 <Label htmlFor="link-tags">Tags</Label>
-                                <Input
+                                {/* <Input
                                     id="link-tags"
                                     type="text"
                                     placeholder="Ex. marketing, sales, etc."
@@ -187,6 +312,17 @@ const CreateLinkModal = ({
                                     {...register("tags", {
                                         required: "Tags are required",
                                     })}
+                                /> */}
+                                <ArrayInput
+                                    inputProps={{
+                                        id: "link-tags",
+                                        type: "text",
+                                        placeholder:
+                                            "Ex. marketing, sales, etc.",
+                                        className: "w-full",
+                                    }}
+                                    arrayValues={tags}
+                                    setArrayValues={setTags}
                                 />
                                 {errors.tags && (
                                     <span className="text-red-500 text-sm absolute bottom-0">
@@ -203,7 +339,6 @@ const CreateLinkModal = ({
                                     className="w-full h-24"
                                     style={{ resize: "none" }}
                                     {...register("comment", {
-                                        required: "Comment is required",
                                         maxLength: {
                                             value: 250,
                                             message:
@@ -225,11 +360,28 @@ const CreateLinkModal = ({
                             ) && (
                                 <div className="flex flex-col gap-1 relative pb-4">
                                     <Label htmlFor="link-expiration-time">
-                                        Expiration Time
+                                        <span>Expiration Time</span>
+                                        <Tooltip>
+                                            <TooltipTrigger
+                                                type="button"
+                                                className="w-fit"
+                                            >
+                                                <Info className="w-4 h-4" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p className="text-center">
+                                                    can be any of the following,
+                                                    even multiple <br />{" "}
+                                                    separated by comma: 1min,
+                                                    1h, 1d, 1w, 1m, 1y
+                                                </p>
+                                            </TooltipContent>
+                                        </Tooltip>
                                     </Label>
                                     <Input
                                         id="link-expiration-time"
-                                        type="datetime-local"
+                                        type="text"
+                                        placeholder="Ex. 1min, 1h, 1d, 1w, 1m, 1y"
                                         className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
                                         {...register("expirationTime", {
                                             required:
@@ -252,8 +404,25 @@ const CreateLinkModal = ({
                                     option.key === "password" && option.show
                             ) && (
                                 <div className="flex flex-col gap-1 relative pb-4">
+                                    <CommingSoon text="*not super secure [as of now]" />
                                     <Label htmlFor="link-password">
-                                        Password
+                                        <span>Password</span>
+                                        <Tooltip>
+                                            <TooltipTrigger
+                                                type="button"
+                                                className="w-fit"
+                                            >
+                                                <Info className="w-4 h-4" />
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p className="text-center">
+                                                    Not super secure [as of now]
+                                                    why? you ask. <br />
+                                                    there is no hashing, it's
+                                                    just like an access key
+                                                </p>
+                                            </TooltipContent>
+                                        </Tooltip>
                                     </Label>
                                     <Input
                                         id="link-password"
@@ -301,11 +470,18 @@ const CreateLinkModal = ({
                             ))}
                         </div>
                         <Button
+                            disabled={formSubmitLoading}
                             className="flex items-center gap-2"
                             type="submit"
                         >
-                            <IoAdd />
-                            <span>Create Link</span>
+                            {formSubmitLoading ? (
+                                <LoadingCircle className="size-5" />
+                            ) : (
+                                <IoAdd className="size-5" />
+                            )}
+                            <span>
+                                {editMode ? "Update Link" : "Create Link"}
+                            </span>
                         </Button>
                     </div>
                 </form>

@@ -1,4 +1,4 @@
-import Avatar from "../../../components/Avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { IWorkspace } from "../../../redux/reducers/types";
 
 const WorkspaceItem = (props: {
@@ -13,11 +13,13 @@ const WorkspaceItem = (props: {
             onClick={() => props?.setActiveWorkspace?.(props.data)}
             title={props.data?.name}
         >
-            <Avatar
-                props={{ alt: props.data?.name }}
-                size={props.avatarSize || "lg"}
-                title={props.data?.name || "W"}
-            />
+            <Avatar>
+                <AvatarImage
+                    src={""}
+                    alt={props.data?.name}
+                />
+                <AvatarFallback>{props.data?.name?.charAt(0) + "W"}</AvatarFallback>
+            </Avatar>
             <span>{props.data?.name}</span>
         </div>
     );

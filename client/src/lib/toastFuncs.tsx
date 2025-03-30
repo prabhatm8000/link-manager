@@ -2,7 +2,7 @@ import { GoUnlink } from "react-icons/go";
 import { IoIosLink, IoMdInformation } from "react-icons/io";
 import { IoAlertSharp } from "react-icons/io5";
 
-export const handleToastIcons = ({ type, theme }: { type: string; theme: string }) => {
+export const handleToastIcons = ({ type }: { type: string; theme: string }) => {
     switch (type) {
         case "info":
             return <IoMdInformation className="stroke-indigo-400" />;

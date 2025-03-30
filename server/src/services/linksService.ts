@@ -42,7 +42,7 @@ const createLink = async (link: {
     shortUrlKey: string;
     tags?: string[];
     comment?: string;
-    expirationTime?: Date;
+    expirationTime?: string[];
     password?: string;
 
     workspaceId: string;
@@ -80,10 +80,15 @@ const createLink = async (link: {
             { session }
         );
 
+        const populatedLink = await getOneLinkBy({
+            linkId: newLink._id.toString(),
+            userId: link.creatorId.toString(),
+            session,
+        });
         await session.commitTransaction();
         await session.endSession();
 
-        return newLink.toJSON();
+        return populatedLink;
     } catch (error) {
         await session.abortTransaction();
         throw error;
@@ -94,10 +99,12 @@ const getOneLinkBy = async ({
     linkId,
     shortUrlKey,
     userId,
+    session,
 }: {
     userId: string;
     linkId?: string;
     shortUrlKey?: string;
+    session?: ClientSession;
 }): Promise<ILinks> => {
     if (!linkId && !shortUrlKey) {
         throw new APIResponseError(
@@ -106,43 +113,47 @@ const getOneLinkBy = async ({
             false
         );
     }
-    const link = await Links.aggregate([
-        {
-            $match: {
-                _id: new mongoose.Types.ObjectId(linkId),
-                shortUrlKey: shortUrlKey || { $exists: true },
-            },
-        },
-        {
-            $lookup: {
-                from: "users",
-                localField: "creatorId",
-                foreignField: "_id",
-                as: "creator",
-            },
-        },
-        {
-            $unwind: "$creator",
-        },
-        {
-            $project: {
-                _id: 1,
-                destinationUrl: 1,
-                shortUrlKey: 1,
-                tags: 1,
-                comment: 1,
-                expirationTime: 1,
-                isActive: 1,
-                password: 1,
-                creator: {
-                    _id: "$creator._id",
-                    name: "$creator.name",
-                    email: "$creator.email",
-                    profilePicture: "$creator.profilePicture",
+    const link = await Links.aggregate(
+        [
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(linkId),
+                    shortUrlKey: shortUrlKey || { $exists: true },
                 },
             },
-        },
-    ]);
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "creatorId",
+                    foreignField: "_id",
+                    as: "creator",
+                },
+            },
+            {
+                $unwind: "$creator",
+            },
+            {
+                $project: {
+                    _id: 1,
+                    destinationUrl: 1,
+                    shortUrlKey: 1,
+                    tags: 1,
+                    comment: 1,
+                    expirationTime: 1,
+                    isActive: 1,
+                    password: 1,
+                    workspaceId: 1,
+                    creator: {
+                        _id: "$creator._id",
+                        name: "$creator.name",
+                        email: "$creator.email",
+                        profilePicture: "$creator.profilePicture",
+                    },
+                },
+            },
+        ],
+        { session }
+    );
 
     if (link.length === 0) {
         throw new APIResponseError("Link not found", 404, false);
@@ -186,6 +197,10 @@ const getLinksByWorkspaceId = async (
                 name: 1,
                 destinationUrl: 1,
                 shortUrlKey: 1,
+                tags: 1,
+                comment: 1,
+                expirationTime: 1,
+                isActive: 1,
                 creator: {
                     _id: "$creator._id",
                     name: "$creator.name",
@@ -219,7 +234,12 @@ const updateLink = async (
     if (!updatedLink) {
         throw new APIResponseError("Link not found", 404, false);
     }
-    return updatedLink;
+    
+    const populatedLink = await getOneLinkBy({
+        linkId: updatedLink._id.toString(),
+        userId: updatedLink.creatorId.toString(),
+    });
+    return populatedLink;
 };
 
 const deactivateLink = async (
@@ -244,7 +264,7 @@ const deleteLink = async (
     linkId: string,
     userId: string,
     options?: { session?: ClientSession }
-): Promise<boolean> => {
+) => {
     const existingLink = await Links.findById(linkId);
     if (!existingLink) {
         throw new APIResponseError("Link not found", 404, false);
@@ -257,7 +277,7 @@ const deleteLink = async (
     if (!link) {
         throw new APIResponseError("Link not found", 404, false);
     }
-    return true;
+    return link;
 };
 
 const deleteAllLinksByWorkspaceId = async (

@@ -1,47 +1,92 @@
-import type React from "react";
-import { handleRoundness } from "./classUtity";
+import * as React from "react"
 
-interface CardProps extends React.ComponentPropsWithoutRef<"div"> {
-    variant?:
-        | "primary"
-        | "outline"
-        | "secondary"
-        | "danger"
-        | "danger-outline"
-        | "none";
-    roundness?: "full" | "light" | "";
-    children?: React.ReactNode;
+import { cn } from "@/lib/utils"
+
+function Card({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card"
+      className={cn(
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+        className
+      )}
+      {...props}
+    />
+  )
 }
 
-const handleVariant = (variant: CardProps["variant"]) => {
-    switch (variant) {
-        case "danger":
-            return "bg-red-500 dark:bg-red-900";
-        case "danger-outline":
-            return "bg-white/50 border border-red-500 dark:bg-black/50 dark:border-red-400";
-        case "outline":
-            return "bg-transparent border border-black/50 dark:border-white/50";
-        case "primary":
-            return "bg-black text-white dark:bg-white dark:text-black";
-        case "secondary":
-            return "bg-black/30 dark:bg-white/30";
-        default:
-            return "";
-    }
-};
+function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-header"
+      className={cn(
+        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
+        className
+      )}
+      {...props}
+    />
+  )
+}
 
-const Card: React.FC<CardProps> = (props: CardProps) => {
-    const classes = `${handleVariant(props.variant)} ${handleRoundness(
-        props.roundness
-    )}`;
-    return (
-        <div
-            {...props}
-            className={`${classes} p-4 outline-none ${props.className}`}
-        >
-            {props?.children}
-        </div>
-    );
-};
+function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-title"
+      className={cn("leading-none font-semibold", className)}
+      {...props}
+    />
+  )
+}
 
-export default Card;
+function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-description"
+      className={cn("text-muted-foreground text-sm", className)}
+      {...props}
+    />
+  )
+}
+
+function CardAction({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-action"
+      className={cn(
+        "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardContent({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-content"
+      className={cn("px-6", className)}
+      {...props}
+    />
+  )
+}
+
+function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-footer"
+      className={cn("flex items-center px-6 [.border-t]:pt-6", className)}
+      {...props}
+    />
+  )
+}
+
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardAction,
+  CardDescription,
+  CardContent,
+}

@@ -1,3 +1,5 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import LoadingCircle from "@/components/ui/LoadingCircle";
 import { useEffect, useState, type JSX } from "react";
 import { HiCursorClick } from "react-icons/hi";
 import {
@@ -7,13 +9,12 @@ import {
     IoIosMenu,
     IoIosSettings,
 } from "react-icons/io";
-import { IoAnalytics } from "react-icons/io5";
+import { IoAnalytics, IoPersonOutline } from "react-icons/io5";
 import { TbSelector } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useSearchParams } from "react-router-dom";
-import Avatar from "../../../components/Avatar";
 import TitleText from "../../../components/TitleText";
-import { Button }from "../../../components/ui/button";
+import { Button } from "../../../components/ui/button";
 import type {
     IUserState,
     IWorkspace,
@@ -84,8 +85,9 @@ export const SideBarHeader = ({
             {handleShow ? (
                 <Button
                     variant={show ? "destructive" : "outline"}
-                    className="md:hidden transition-all duration-300 ease-out"
+                    className="md:hidden transition-all duration-300 ease-out z-50"
                     onClick={handleShow}
+                    size={"icon"}
                 >
                     <div
                         className={`transform ${
@@ -100,16 +102,15 @@ export const SideBarHeader = ({
                     </div>
                 </Button>
             ) : (
-                <Avatar
-                    props={{
-                        src: userState?.user?.profilePicture || undefined,
-                        alt: userState?.user?.name,
-                        className: "w-12 h-12 cursor-pointer md:hidden",
-                        onClick: () => handleTabChange("profile"),
-                    }}
-                    title={userState?.user?.name || "U"}
-                    size="md"
-                />
+                <Avatar onClick={() => handleTabChange("profile")}>
+                    <AvatarImage
+                        src={userState?.user?.profilePicture || ""}
+                        alt={userState?.user?.name || ""}
+                    />
+                    <AvatarFallback>
+                        {userState?.user?.name?.charAt(0)}
+                    </AvatarFallback>
+                </Avatar>
             )}
         </div>
     );
@@ -127,6 +128,7 @@ const tabs: { title: string; value: SideBarTabType; icon: JSX.Element }[] = [
     { title: "Links", value: "links", icon: <IoIosLink /> },
     { title: "Events", value: "events", icon: <HiCursorClick /> },
     { title: "Analytics", value: "analytics", icon: <IoAnalytics /> },
+    { title: "Profile", value: "profile", icon: <IoPersonOutline /> },
     { title: "Settings", value: "settings", icon: <IoIosSettings /> },
 ];
 const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
@@ -143,8 +145,16 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
         (searchParams.get("tab") as SideBarTabType) || "links"
     );
     const handleActiveWorkspaceChange = (workspace: IWorkspace) => {
-        setShowWorkspaces(false);
-        setSelectedWorkspaceId(workspace._id);
+        // setShowWorkspaces(false);
+        // setSelectedWorkspaceId(workspace._id);
+
+        // doning a window reload on workspace change, [probably to remove state]
+        if (workspace._id === selectedWorkspaceId) return;
+        setSearchParams((prev) => {
+            prev.set("workspaceId", workspace._id);
+            return prev;
+        });
+        window.location.reload();
     };
     const handleTabChange = (tab: SideBarTabType) => {
         setSearchParams((prev) => {
@@ -154,6 +164,7 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
         setShowSideBar();
     };
 
+    // seting workspace and tab
     useEffect(() => {
         let workspaceId = searchParams.get("workspaceId") || "";
         let tab = (searchParams.get("tab") as SideBarTabType) || "links";
@@ -164,12 +175,14 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
         setCurrentTab(tab);
     }, [searchParams, workspaceState.workspaces]);
 
+    // fetching workspaces
     useEffect(() => {
         if (!workspaceState.loading) {
             dispatch(getAllWorkspaces());
         }
     }, []);
 
+    // fetching current workspace
     useEffect(() => {
         if (selectedWorkspaceId) {
             dispatch(getWorkspaceById(selectedWorkspaceId)).then(() => {
@@ -201,16 +214,18 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
                     onClick={() => handleTabChange("profile")}
                     className="flex gap-2 items-center justify-center w-full"
                 >
-                    No workspace. Create one!
+                    {workspaceState.loading ? (
+                        <LoadingCircle className="size-5" />
+                    ) : (
+                        "No workspace. Create one!"
+                    )}
                 </Button>
             )}
 
             {/* select workspaces or tab */}
             {showWorkspaces ? (
                 <div>
-                    <h4 className="text-black/50 dark:text-white/50">
-                        Workspaces
-                    </h4>
+                    <h4 className="text-muted-foreground">Workspaces</h4>
                     <div className="flex flex-col gap-2 max-h-80 h-80 overflow-y-auto">
                         {workspaceState.workspaces.map((workspace, index) => (
                             <WorkspaceItem
@@ -232,7 +247,7 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
                     </div>
                 </div>
             ) : (
-                <div className="flex flex-col text-black/50 dark:text-white/50 font-semibold text-sm">
+                <div className="flex flex-col text-muted-foreground font-semibold text-sm">
                     {tabs.map((tab, index) => (
                         <Button
                             key={index}

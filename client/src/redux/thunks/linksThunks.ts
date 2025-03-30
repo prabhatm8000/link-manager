@@ -21,12 +21,14 @@ export const createLink = createAsyncThunk(
     "links/create",
     async (
         data: {
-            name: string;
-            tags: string[];
             destinationUrl: string;
             shortUrlKey: string;
-            creatorId: string;
             workspaceId: string;
+
+            tags?: string[];
+            comment?: string;
+            expirationTime?: string[];
+            password?: string;
         },
         { rejectWithValue, fulfillWithValue }
     ) => {
@@ -58,9 +60,13 @@ export const updateLink = createAsyncThunk(
     async (
         data: {
             linkId: string;
-            name: string;
-            tags: string[];
-            destinationUrl: string;
+            workspaceId: string;
+            shortUrlKey: string;
+
+            tags?: string[];
+            comment?: string;
+            expirationTime?: string[];
+            password?: string;
         },
         { rejectWithValue, fulfillWithValue }
     ) => {

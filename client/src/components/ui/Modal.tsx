@@ -38,13 +38,14 @@ const Modal = ({ isOpen, ...props }: IModalProps) => {
         >
             <div
                 onClick={(e) => e.stopPropagation()}
-                className={`relative min-w-96 bg-white p-4 rounded-lg max-h-[calc(100vh-4rem)] ${getVariantClasses(
+                className={`relative min-w-96 bg-white p-4 rounded-lg max-h-[calc(100vh-4rem)] overflow-auto ${getVariantClasses(
                     props.variant
                 )} ${getRoundnessClasses(props.roundness)} ${props.className}`}
             >
                 <Button
                     onClick={props.onClose}
                     variant="destructive"
+                    size={"icon"}
                     className="absolute top-0 right-0 m-2"
                 >
                     <IoClose className="size-5" />

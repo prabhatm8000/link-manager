@@ -11,7 +11,7 @@ workspacesRouter
     .post(workspacesController.createWorkspace)
     .get(workspacesController.getAllWorkspacesForUser);
 
-workspacesRouter.get("/my", workspacesController.getWorkspaceByCreatorId);
+workspacesRouter.get("/my", workspacesController.getMyWorkspaces);
 
 workspacesRouter.post(
     "/invite/:workspaceId",

@@ -63,7 +63,7 @@ const getLinkByShortUrlKey = asyncWrapper(
 );
 
 const getLinksByWorkspaceId = asyncWrapper(
-    async (req: Request, res: Response) => {
+    async (req: Request, res: Response) => {        
         const { workspaceId } = req.params;
         if (!workspaceId) {
             throw new APIResponseError("Workspace ID is required", 400, false);
@@ -124,7 +124,7 @@ const deleteLink = asyncWrapper(async (req: Request, res: Response) => {
     const link = await linksService.deleteLink(linkId, req.user?._id.toString() || "");
     res.status(200).json({
         success: true,
-        message: "Link deleted successfully",
+        message: "Link annihilated!",
         data: link,
     });
 });

@@ -11,7 +11,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { MdAdd } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
-import Avatar from "../../../components/Avatar";
 import LogoutBtn from "../../../components/LogoutBtn";
 import { Button } from "../../../components/ui/button";
 import CommingSoon from "../../../components/ui/CommingSoon";
@@ -26,6 +25,7 @@ import { getMyWorkspaces } from "../../../redux/thunks/workspaceThunks";
 import ViewHeader from "../components/ViewHeader";
 import WorkspaceItemDetailed from "../components/WorkspaceItemDetailed";
 import CreateWorkspaceModal from "../components/CreateWorkspaceModal";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const ProfileView = () => {
     const userState: IUserState = useSelector((state: any) => state.user);
@@ -75,26 +75,27 @@ const ProfileView = () => {
                     {/* user info */}
                     <div className="w-full grid grid-cols-[1fr_auto] gap-2 items-center">
                         <div className="grid grid-cols-[1fr_auto] gap-2 w-fit">
-                            <Avatar
-                                props={{
-                                    src:
+                            <Avatar>
+                                <AvatarImage
+                                    src={
                                         userState?.user?.profilePicture ||
-                                        undefined,
-                                    alt: userState?.user?.name,
-                                    className: "w-12 h-12",
-                                }}
-                                title={userState?.user?.name || "U"}
-                                size="lg"
-                            />
+                                        undefined
+                                    }
+                                    alt={userState?.user?.name}
+                                />
+                                <AvatarFallback>
+                                    {userState?.user?.name?.charAt(0)}
+                                </AvatarFallback>
+                            </Avatar>
                             <div className="w-fit">
                                 <h3 className="text-lg font-semibold line-clamp-1">
                                     {userState?.user?.name}
                                 </h3>
-                                <h4 className="text-sm text-black/50 dark:text-white/50 line-clamp-1">
+                                <h4 className="text-sm text-muted-foreground line-clamp-1">
                                     {userState?.user?.email}
                                 </h4>
                                 {userState?.user?.lastLogin && (
-                                    <h4 className="text-sm text-black/50 dark:text-white/50 line-clamp-1">
+                                    <h4 className="text-sm text-muted-foreground line-clamp-1">
                                         {new Date(
                                             userState?.user?.lastLogin
                                         ).toLocaleString()}
@@ -172,8 +173,8 @@ const ProfileView = () => {
 
                     {/* my workspaces */}
                     <div className="flex flex-col gap-3">
-                        <div className="flex justify-center flex-col sm:flex-row sm:justify-between gap-3">
-                            <h3 className="text-black/50 dark:text-white/50">
+                        <div className="flex justify-between items-center gap-3">
+                            <h3 className="text-muted-foreground">
                                 My Workspaces
                             </h3>
                             <Button
@@ -187,6 +188,7 @@ const ProfileView = () => {
                                 <span>{"Create Workspace"}</span>
                             </Button>
                         </div>
+
                         {workspaceState.loading ? (
                             <LoadingCircle className="size-5" />
                         ) : workspaceState.myWorkspaces.length > 0 ? (
@@ -215,7 +217,7 @@ const ProfileView = () => {
                                 </TableBody>
                             </Table>
                         ) : (
-                            <h3 className="text-black/50 dark:text-white/50">
+                            <h3 className="text-muted-foreground">
                                 You have not created any workspace yet!
                             </h3>
                         )}

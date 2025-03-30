@@ -13,7 +13,7 @@ const SideBarUsageBars = ({ data }: IUsageBarProps) => {
     return (
         <div className="w-full py-4">
             <CommingSoon />
-            <h5 className="text-black/50 dark:text-white/50 py-2">Usage</h5>
+            <h5 className="text-muted-foreground py-2">Usage</h5>
             <div className="flex flex-col gap-4 text-sm">
                 {data.map((item, index) => (
                     <div key={index} className="flex flex-col gap-1">

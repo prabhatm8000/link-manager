@@ -1,9 +1,11 @@
+import configs from "@/constants/configs";
 import axios from "axios";
 import { toast } from "sonner";
 // import { toast } from "react-toastify";
 
 const axiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_SERVER_URL,
+    baseURL:
+        configs.mode === "dev" ? configs.devBaseUrl : configs.serverBaseUrl, // same server for both [as]
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",
@@ -18,9 +20,11 @@ const axiosInstance = axios.create({
             if (jsonPayload.success) {
                 // toast.success(jsonPayload.message);
                 toast.success(jsonPayload.message, {
-                    description: new Date().toLocaleString().split(",").join(" ·"),
+                    description: new Date()
+                        .toLocaleString()
+                        .split(",")
+                        .join(" ·"),
                 });
-                
             } else {
                 // toast.error(jsonPayload.message);
                 toast.error(jsonPayload.message);

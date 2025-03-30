@@ -33,7 +33,7 @@ const verifyOtpMiddleware = async (
 
         if (next) next();
     } catch (error) {
-        catchHandler(error, res);
+        catchHandler(error, req, res);
     }
 };
 

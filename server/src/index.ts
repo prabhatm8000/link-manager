@@ -5,17 +5,45 @@ import envVars from "./constants/envVars";
 import consoleColor from "./lib/consoleColor";
 import { connectToDB } from "./lib/mongodb";
 import router from "./routes/router";
+import path from "path";
 
 const app: Express = express();
-const PORT = envVars.PORT;
+const PORT = parseInt(envVars.PORT as string);
+
+// for prod, ui files will be served by express, so it'll be [same-site]
+if (envVars.NODE_ENV === "dev") {
+    app.use(corsConfig);
+
+    // log requests
+    app.use(function(req, res, next) {
+        console.log(
+            consoleColor(
+                `${req.method} ${req.protocol}://${req.get(
+                    "host"
+                )}${req.originalUrl}`,
+                "FgCyan"
+            )
+        );
+        next();
+    })
+}
 
 app.use(rateLimiter);
 app.use(express.json());
 app.use(cookieParser());
-app.use(corsConfig);
 app.use("/api/v1", router);
 
-app.listen(PORT, () => {
+app.use(express.static(path.join(__dirname, "../../client/dist"), {
+    maxAge: "1y",   // browser cache ui files
+    etag: true      // force cache use
+}));
+
+// for prod, serving ui files
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../../client/dist", "index.html"));
+});
+
+app.listen(PORT, "0.0.0.0", () => {
     connectToDB()
         .catch((err) => {
             console.log(err);
