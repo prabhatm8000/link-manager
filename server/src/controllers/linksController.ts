@@ -1,7 +1,10 @@
 import type { Request, Response } from "express";
-import linksService from "../services/linksService";
-import asyncWrapper from "../lib/asyncWrapper";
+import StatusMessagesMark4 from "../constants/messages";
 import { APIResponseError } from "../errors/response";
+import asyncWrapper from "../lib/asyncWrapper";
+import linksService from "../services/linksService";
+
+const statusMessages = new StatusMessagesMark4("link");
 
 const generateShortLinkKey = asyncWrapper(
     async (req: Request, res: Response) => {
@@ -26,7 +29,15 @@ const createLink = asyncWrapper(async (req: Request, res: Response) => {
         password,
     } = req.body;
     if (!tags || !destinationUrl || !shortUrlKey || !workspaceId) {
-        throw new APIResponseError("All fields are required", 400, false);
+        throw new APIResponseError(
+            statusMessages.getMessage(
+                "All fields are required",
+                "error",
+                "create"
+            ),
+            400,
+            false
+        );
     }
 
     const link = await linksService.createLink({
@@ -42,7 +53,11 @@ const createLink = asyncWrapper(async (req: Request, res: Response) => {
     });
     res.status(201).json({
         success: true,
-        message: "Link added",
+        message: statusMessages.getMessage(
+            "Link created successfully",
+            "success",
+            "create"
+        ),
         data: link,
     });
 });
@@ -51,9 +66,20 @@ const getLinkByShortUrlKey = asyncWrapper(
     async (req: Request, res: Response) => {
         const { shortUrlKey } = req.params;
         if (!shortUrlKey) {
-            throw new APIResponseError("Short URL key is required", 400, false);
+            throw new APIResponseError(
+                statusMessages.getMessage(
+                    "Short URL key is required",
+                    "error",
+                    "other"
+                ),
+                400,
+                false
+            );
         }
-        const link = await linksService.getOneLinkBy({ shortUrlKey, userId: req.user?._id.toString() || "" });
+        const link = await linksService.getOneLinkBy({
+            shortUrlKey,
+            userId: req.user?._id.toString() || "",
+        });
         res.status(200).json({
             success: true,
             message: "",
@@ -63,12 +89,23 @@ const getLinkByShortUrlKey = asyncWrapper(
 );
 
 const getLinksByWorkspaceId = asyncWrapper(
-    async (req: Request, res: Response) => {        
+    async (req: Request, res: Response) => {
         const { workspaceId } = req.params;
         if (!workspaceId) {
-            throw new APIResponseError("Workspace ID is required", 400, false);
+            throw new APIResponseError(
+                statusMessages.getMessage(
+                    "Workspace ID is required",
+                    "error",
+                    "other"
+                ),
+                400,
+                false
+            );
         }
-        const links = await linksService.getLinksByWorkspaceId(workspaceId, req.user?._id.toString() || "");
+        const links = await linksService.getLinksByWorkspaceId(
+            workspaceId,
+            req.user?._id.toString() || ""
+        );
         res.status(200).json({
             success: true,
             message: "",
@@ -80,9 +117,16 @@ const getLinksByWorkspaceId = asyncWrapper(
 const getLinkById = asyncWrapper(async (req: Request, res: Response) => {
     const { linkId } = req.params;
     if (!linkId) {
-        throw new APIResponseError("Link ID is required", 400, false);
+        throw new APIResponseError(
+            statusMessages.getMessage("Link ID is required", "error", "other"),
+            400,
+            false
+        );
     }
-    const link = await linksService.getOneLinkBy({ linkId, userId: req.user?._id.toString() || "" });
+    const link = await linksService.getOneLinkBy({
+        linkId,
+        userId: req.user?._id.toString() || "",
+    });
     res.status(200).json({
         success: true,
         message: "",
@@ -93,12 +137,24 @@ const getLinkById = asyncWrapper(async (req: Request, res: Response) => {
 const updateLink = asyncWrapper(async (req: Request, res: Response) => {
     const { linkId } = req.params;
     if (!linkId) {
-        throw new APIResponseError("Link ID is required", 400, false);
+        throw new APIResponseError(
+            statusMessages.getMessage("Link ID is required", "error", "update"),
+            400,
+            false
+        );
     }
-    const link = await linksService.updateLink(linkId, req.body, req.user?._id.toString() || "");
+    const link = await linksService.updateLink(
+        linkId,
+        req.body,
+        req.user?._id.toString() || ""
+    );
     res.status(200).json({
         success: true,
-        message: "Link updated successfully",
+        message: statusMessages.getMessage(
+            "Link updated successfully",
+            "success",
+            "update"
+        ),
         data: link,
     });
 });
@@ -106,12 +162,23 @@ const updateLink = asyncWrapper(async (req: Request, res: Response) => {
 const deactivateLink = asyncWrapper(async (req: Request, res: Response) => {
     const { linkId } = req.params;
     if (!linkId) {
-        throw new APIResponseError("Link ID is required", 400, false);
+        throw new APIResponseError(
+            statusMessages.getMessage("Link ID is required", "error", "other"),
+            400,
+            false
+        );
     }
-    const link = await linksService.deactivateLink(linkId, req.user?._id.toString() || "");
+    const link = await linksService.deactivateLink(
+        linkId,
+        req.user?._id.toString() || ""
+    );
     res.status(200).json({
         success: true,
-        message: "Link deactivated successfully",
+        message: statusMessages.getMessage(
+            "Link deactivated successfully",
+            "success",
+            "other"
+        ),
         data: link,
     });
 });
@@ -119,12 +186,23 @@ const deactivateLink = asyncWrapper(async (req: Request, res: Response) => {
 const deleteLink = asyncWrapper(async (req: Request, res: Response) => {
     const { linkId } = req.params;
     if (!linkId) {
-        throw new APIResponseError("Link ID is required", 400, false);
+        throw new APIResponseError(
+            statusMessages.getMessage("Link ID is required", "error", "other"),
+            400,
+            false
+        );
     }
-    const link = await linksService.deleteLink(linkId, req.user?._id.toString() || "");
+    const link = await linksService.deleteLink(
+        linkId,
+        req.user?._id.toString() || ""
+    );
     res.status(200).json({
         success: true,
-        message: "Link annihilated!",
+        message: statusMessages.getMessage(
+            "Link deleted successfully",
+            "success",
+            "other"
+        ),
         data: link,
     });
 });

@@ -4,36 +4,51 @@ import asyncWrapper from "../lib/asyncWrapper";
 import { removeAuthCookie, setAuthCookie, setOtpCookie } from "../lib/cookie";
 import usersService from "../services/usersService";
 import otpService from "../services/otpsService";
+import StatusMessagesMark4 from "../constants/messages";
+
+const statusMessages = new StatusMessagesMark4("user");
 
 const registerAndSendOtp = asyncWrapper(async (req: Request, res: Response) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-        throw new APIResponseError("Missing required fields", 400, false);
+        throw new APIResponseError(
+            statusMessages.getMessage("Name, email and password are required", "error", "create"),
+            400,
+            false
+        );
     }
 
     const user = await usersService.getUserByEmail(email);
     if (user) {
-        throw new APIResponseError("User already exists", 400, false);
+        throw new APIResponseError(
+            statusMessages.getMessage("User with this email already exists", "error", "create"),
+            400,
+            false
+        );
     }
 
     await otpService.genarateAndSendOtpViaMail(email);
     setOtpCookie(res, { email, name, password });
 
-    res.status(200).json({ success: true, message: "OTP sent successfully" });
+    res.status(200).json({
+        success: true,
+        message: statusMessages.getMessage("OTP sent to your email, please verify", "success", "create"),
+    });
 });
 
 const resendOtp = asyncWrapper(async (req: Request, res: Response) => {
-    // from middleware
     const { name, email, password } = req.body;
     await otpService.genarateAndSendOtpViaMail(email);
     setOtpCookie(res, { email, name, password });
-    res.status(200).json({ success: true, message: "OTP sent successfully" });
+    res.status(200).json({
+        success: true,
+        message: statusMessages.getMessage("OTP resent to your email, please verify", "success", "other"),
+    });
 });
 
 const registerAndVerifyOtp = asyncWrapper(
     async (req: Request, res: Response) => {
-        // from middleware
         const { name, email, password } = req.body;
 
         const user = await usersService.createUser({
@@ -46,7 +61,7 @@ const registerAndVerifyOtp = asyncWrapper(
 
         res.status(200).json({
             success: true,
-            message: "Signed in successfully",
+            message: statusMessages.getMessage("User created and logged in successfully", "success", "create"),
             data: user,
         });
     }
@@ -57,14 +72,18 @@ const login = asyncWrapper(async (req: Request, res: Response) => {
     const user = await usersService.login({ email, password });
 
     if (!user) {
-        throw new APIResponseError("Invalid credentials", 401, false);
+        throw new APIResponseError(
+            statusMessages.getMessage("Invalid email or password", "error", "other"),
+            401,
+            false
+        );
     }
 
     setAuthCookie(res, user);
 
     res.status(200).json({
         success: true,
-        message: "Logged in",
+        message: statusMessages.getMessage("Logged in successfully", "success", "other"),
         data: user,
     });
 });
@@ -73,16 +92,19 @@ const logout = asyncWrapper(async (req: Request, res: Response) => {
     removeAuthCookie(res);
     res.status(200).json({
         success: true,
-        message: "Logged out",
+        message: statusMessages.getMessage("Logged out successfully", "success", "other"),
     });
 });
 
 const verify = asyncWrapper(async (req: Request, res: Response) => {
-    // from middleware
     const user = req.user;
 
     if (!user) {
-        throw new APIResponseError("User not found", 404, false);
+        throw new APIResponseError(
+            statusMessages.getMessage("User not found", "error", "other"),
+            404,
+            false
+        );
     }
 
     res.status(200).json({
@@ -95,15 +117,19 @@ const verify = asyncWrapper(async (req: Request, res: Response) => {
 const updateUser = asyncWrapper(async (req: Request, res: Response) => {
     const data = req.body;
     const id = req?.user?._id as string;
-    const user = await usersService.updateUser(id, {name: data?.name});
+    const user = await usersService.updateUser(id, { name: data?.name });
 
     if (!user) {
-        throw new APIResponseError("User not found", 404, false);
+        throw new APIResponseError(
+            statusMessages.getMessage("User not found", "error", "update"),
+            404,
+            false
+        );
     }
 
     res.status(200).json({
         success: true,
-        message: "Updated",
+        message: statusMessages.getMessage("User updated successfully", "success", "update"),
         data: user,
     });
 });
@@ -113,12 +139,16 @@ const deactivateUser = asyncWrapper(async (req: Request, res: Response) => {
     const user = await usersService.deactivateUser(id);
 
     if (!user) {
-        throw new APIResponseError("User not found", 404, false);
+        throw new APIResponseError(
+            statusMessages.getMessage("User not found", "error", "delete"),
+            404,
+            false
+        );
     }
 
     res.status(200).json({
         success: true,
-        message: "Deactivated successfully",
+        message: statusMessages.getMessage("User deactivated successfully", "success", "delete"),
         data: user,
     });
 });
@@ -133,4 +163,5 @@ const usersController = {
     updateUser,
     deactivateUser,
 };
+
 export default usersController;
