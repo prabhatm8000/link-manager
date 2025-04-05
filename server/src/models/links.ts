@@ -1,30 +1,6 @@
 import mongoose from "mongoose";
-import type { IUser } from "./users";
 import bcrypt from "bcrypt";
-
-/**
- * links and related events will follow plan of workspace
- */
-export interface ILinks extends mongoose.Document {
-    _id: mongoose.Types.ObjectId;
-    destinationUrl: string;
-    shortUrlKey: string;
-    tags?: string[];
-    comment?: string;
-    expirationTime?: string[];
-    password?: string;
-
-    isActive: boolean;
-    workspaceId: mongoose.Types.ObjectId;
-    creatorId: mongoose.Types.ObjectId;
-
-    // when populated
-    creator?: IUser;
-    hasPassword?: boolean;
-
-    // methods
-    comparePassword: (password: string) => Promise<boolean>;
-}
+import type { ILinks } from "../types/link";
 
 const linksSchema = new mongoose.Schema(
     {

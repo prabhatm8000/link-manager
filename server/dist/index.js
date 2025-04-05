@@ -12,14 +12,26 @@ const mongodb_1 = require("./lib/mongodb");
 const router_1 = __importDefault(require("./routes/router"));
 const path_1 = __importDefault(require("path"));
 const app = (0, express_1.default)();
-const PORT = envVars_1.default.PORT;
+const PORT = parseInt(envVars_1.default.PORT);
+// for prod, ui files will be served by express, so it'll be [same-site]
+if (envVars_1.default.NODE_ENV === "dev") {
+    app.use(configs_1.corsConfig);
+    // log requests
+    app.use(function (req, res, next) {
+        console.log((0, consoleColor_1.default)(`${req.method} ${req.protocol}://${req.get("host")}${req.originalUrl}`, "FgCyan"));
+        next();
+    });
+}
 app.use(configs_1.rateLimiter);
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
-app.use(configs_1.corsConfig);
 app.use("/api/v1", router_1.default);
-app.use(express_1.default.static(path_1.default.join(__dirname, "../../client/dist")));
-app.get("/*", (req, res) => {
+app.use(express_1.default.static(path_1.default.join(__dirname, "../../client/dist"), {
+    maxAge: "1y", // browser cache ui files
+    etag: true // force cache use
+}));
+// for prod, serving ui files
+app.get("*", (req, res) => {
     res.sendFile(path_1.default.join(__dirname, "../../client/dist", "index.html"));
 });
 app.listen(PORT, "0.0.0.0", () => {

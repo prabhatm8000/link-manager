@@ -1,11 +1,6 @@
 import { lazy, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-    BrowserRouter,
-    Route,
-    Routes,
-    useNavigate
-} from "react-router-dom";
+import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 import SuspenseWrapper from "./components/SuspenseWrapper";
 import ThemeBtn from "./components/ThemeBtn";
@@ -113,7 +108,13 @@ const AppRouter = () => {
                 />
             </Routes>
             <ThemeBtn />
-            <Toaster theme={theme} richColors />
+            <Toaster
+                theme={theme}
+                richColors
+                duration={10 * 1000}
+                swipeDirections={["bottom", "left", "right", "top"]}
+                closeButton
+            />
         </BrowserRouter>
     );
 };

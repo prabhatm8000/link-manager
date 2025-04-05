@@ -48,6 +48,7 @@ export interface IWorkspaceState {
 export interface ILink {
     _id: string;
     destinationUrl: string;
+    shortUrl: string;
     shortUrlKey: string;
     tags?: string[];
     comment?: string;

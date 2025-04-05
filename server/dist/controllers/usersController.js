@@ -17,28 +17,34 @@ const asyncWrapper_1 = __importDefault(require("../lib/asyncWrapper"));
 const cookie_1 = require("../lib/cookie");
 const usersService_1 = __importDefault(require("../services/usersService"));
 const otpsService_1 = __importDefault(require("../services/otpsService"));
+const messages_1 = __importDefault(require("../constants/messages"));
+const statusMessages = new messages_1.default("user");
 const registerAndSendOtp = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
-        throw new response_1.APIResponseError("Missing required fields", 400, false);
+        throw new response_1.APIResponseError(statusMessages.getMessage("Name, email and password are required", "error", "create"), 400, false);
     }
     const user = yield usersService_1.default.getUserByEmail(email);
     if (user) {
-        throw new response_1.APIResponseError("User already exists", 400, false);
+        throw new response_1.APIResponseError(statusMessages.getMessage("User with this email already exists", "error", "create"), 400, false);
     }
     yield otpsService_1.default.genarateAndSendOtpViaMail(email);
     (0, cookie_1.setOtpCookie)(res, { email, name, password });
-    res.status(200).json({ success: true, message: "OTP sent successfully" });
+    res.status(200).json({
+        success: true,
+        message: statusMessages.getMessage("OTP sent to your email, please verify", "success", "create"),
+    });
 }));
 const resendOtp = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // from middleware
     const { name, email, password } = req.body;
     yield otpsService_1.default.genarateAndSendOtpViaMail(email);
     (0, cookie_1.setOtpCookie)(res, { email, name, password });
-    res.status(200).json({ success: true, message: "OTP sent successfully" });
+    res.status(200).json({
+        success: true,
+        message: statusMessages.getMessage("OTP resent to your email, please verify", "success", "other"),
+    });
 }));
 const registerAndVerifyOtp = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // from middleware
     const { name, email, password } = req.body;
     const user = yield usersService_1.default.createUser({
         name,
@@ -48,7 +54,7 @@ const registerAndVerifyOtp = (0, asyncWrapper_1.default)((req, res) => __awaiter
     (0, cookie_1.setAuthCookie)(res, user);
     res.status(200).json({
         success: true,
-        message: "Signed in successfully",
+        message: statusMessages.getMessage("User created and logged in successfully", "success", "create"),
         data: user,
     });
 }));
@@ -56,12 +62,12 @@ const login = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0
     const { email, password } = req.body;
     const user = yield usersService_1.default.login({ email, password });
     if (!user) {
-        throw new response_1.APIResponseError("Invalid credentials", 401, false);
+        throw new response_1.APIResponseError(statusMessages.getMessage("Invalid email or password", "error", "other"), 401, false);
     }
     (0, cookie_1.setAuthCookie)(res, user);
     res.status(200).json({
         success: true,
-        message: "Logged in",
+        message: statusMessages.getMessage("Logged in successfully", "success", "other"),
         data: user,
     });
 }));
@@ -69,14 +75,13 @@ const logout = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 
     (0, cookie_1.removeAuthCookie)(res);
     res.status(200).json({
         success: true,
-        message: "Logged out",
+        message: statusMessages.getMessage("Logged out successfully", "success", "other"),
     });
 }));
 const verify = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // from middleware
     const user = req.user;
     if (!user) {
-        throw new response_1.APIResponseError("User not found", 404, false);
+        throw new response_1.APIResponseError(statusMessages.getMessage("User not found", "error", "other"), 404, false);
     }
     res.status(200).json({
         success: true,
@@ -90,11 +95,11 @@ const updateUser = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, v
     const id = (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a._id;
     const user = yield usersService_1.default.updateUser(id, { name: data === null || data === void 0 ? void 0 : data.name });
     if (!user) {
-        throw new response_1.APIResponseError("User not found", 404, false);
+        throw new response_1.APIResponseError(statusMessages.getMessage("User not found", "error", "update"), 404, false);
     }
     res.status(200).json({
         success: true,
-        message: "Updated",
+        message: statusMessages.getMessage("User updated successfully", "success", "update"),
         data: user,
     });
 }));
@@ -103,11 +108,11 @@ const deactivateUser = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 
     const id = (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a._id;
     const user = yield usersService_1.default.deactivateUser(id);
     if (!user) {
-        throw new response_1.APIResponseError("User not found", 404, false);
+        throw new response_1.APIResponseError(statusMessages.getMessage("User not found", "error", "delete"), 404, false);
     }
     res.status(200).json({
         success: true,
-        message: "Deactivated successfully",
+        message: statusMessages.getMessage("User deactivated successfully", "success", "delete"),
         data: user,
     });
 }));

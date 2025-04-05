@@ -12,15 +12,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const messages_1 = __importDefault(require("../constants/messages"));
 const response_1 = require("../errors/response");
 const asyncWrapper_1 = __importDefault(require("../lib/asyncWrapper"));
 const mail_1 = require("../lib/mail");
 const workspacesService_1 = __importDefault(require("../services/workspacesService"));
+const statusMessages = new messages_1.default("workspace");
 const createWorkspace = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { name, description } = req.body;
     if (!name || !description) {
-        throw new response_1.APIResponseError("Missing required fields", 400, false);
+        throw new response_1.APIResponseError(statusMessages.getMessage("Name and description are required", "error", "create"), 400, false);
     }
     const workspace = yield workspacesService_1.default.createWorkspace({
         createdBy: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a._id, // there is a middleware, so req.user is always defined
@@ -29,7 +31,7 @@ const createWorkspace = (0, asyncWrapper_1.default)((req, res) => __awaiter(void
     });
     res.status(201).json({
         success: true,
-        message: "Workspace created",
+        message: statusMessages.getMessage("Workspace created", "success", "create"),
         data: workspace,
     });
 }));
@@ -63,7 +65,7 @@ const updateWorkspace = (0, asyncWrapper_1.default)((req, res) => __awaiter(void
     });
     res.status(200).json({
         success: true,
-        message: "Workspace updated",
+        message: statusMessages.getMessage("Workspace updated", "success", "update"),
         data: workspace,
     });
 }));
@@ -74,7 +76,7 @@ const deleteWorkspace = (0, asyncWrapper_1.default)((req, res) => __awaiter(void
     const workspace = yield workspacesService_1.default.deleteWorkspace(id, createdBy);
     res.status(200).json({
         success: true,
-        message: "Workspace deleted",
+        message: statusMessages.getMessage("Workspace deleted", "success", "delete"),
         data: workspace,
     });
 }));
@@ -83,23 +85,23 @@ const sendInviteToJoinWorkspace = (0, asyncWrapper_1.default)((req, res) => __aw
     const { email } = req.body;
     const user = req.user;
     if (!user) {
-        throw new response_1.APIResponseError("Unauthorized", 401, false);
+        throw new response_1.APIResponseError(statusMessages.getMessage("Unauthorized", "error", "other"), 401, false);
     }
     const workspace = yield workspacesService_1.default.getWorkspaceById(workspaceId, user._id.toString());
     if (!workspace) {
-        throw new response_1.APIResponseError("Workspace not found", 404, false);
+        throw new response_1.APIResponseError(statusMessages.getMessage("Workspace not found", "error", "other"), 404, false);
     }
     yield (0, mail_1.sendInviteToJoinWorkspaceMail)(email, workspace, user);
     res.status(200).json({
         success: true,
-        message: "Invite sent successfully",
+        message: statusMessages.getMessage("Invite sent successfully", "success", "other"),
     });
 }));
 const getAcceptInvite = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // token validation and verification in middleware
     const { senderId, workspaceId } = req.params;
     if (!senderId || !workspaceId) {
-        throw new response_1.APIResponseError("Bad request", 404, false);
+        throw new response_1.APIResponseError(statusMessages.getMessage("Bad request", "error", "other"), 404, false);
     }
     const data = yield workspacesService_1.default.getInviteData(workspaceId, senderId);
     res.status(200).json({
@@ -113,12 +115,12 @@ const acceptInvite = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0,
     const { workspaceId } = req.params;
     const user = req.user;
     if (!user || !workspaceId) {
-        throw new response_1.APIResponseError("Bad request", 404, false);
+        throw new response_1.APIResponseError(statusMessages.getMessage("Bad request", "error", "other"), 404, false);
     }
     yield workspacesService_1.default.addPeople(workspaceId, user._id.toString());
     res.status(201).json({
         success: true,
-        message: "Invite accepted",
+        message: statusMessages.getMessage("Invite accepted", "success", "other"),
     });
 }));
 const getPeople = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -134,7 +136,7 @@ const removePeople = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0,
     yield workspacesService_1.default.removePeople(workspaceId, peopleId, (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a._id);
     res.status(200).json({
         success: true,
-        message: "People removed",
+        message: statusMessages.getMessage("People removed", "success", "other"),
         data: { peopleId, workspaceId },
     });
 }));

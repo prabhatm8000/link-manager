@@ -1,5 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import { APIResponseError } from "../errors/response";
+import StatusMessagesMark4 from "../constants/messages";
+
+const statusMessages = new StatusMessagesMark4();
 
 const asyncWrapper = (
     callback: (
@@ -30,7 +33,7 @@ export const catchHandler = (error: any, req: Request, res: Response) => {
         console.log(req.url, error);
         res.status(500).json({
             success: false,
-            message: "Internal Server Error",
+            message: statusMessages.getRandomInternalServerErrorMessage(),
         });
     }
 };

@@ -1,13 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-
-export interface IOtp extends mongoose.Document {
-    email: string;
-    otp: string;
-    createdAt: Date;
-    expiresAt: Date;
-    compareOtp(otp: string): Promise<boolean>;
-}
+import type { IOtp } from "../types/otp";
 
 const otpSchema = new mongoose.Schema<IOtp>(
     {

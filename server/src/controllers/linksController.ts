@@ -3,17 +3,18 @@ import StatusMessagesMark4 from "../constants/messages";
 import { APIResponseError } from "../errors/response";
 import asyncWrapper from "../lib/asyncWrapper";
 import linksService from "../services/linksService";
+import tagsService from "../services/tagsService";
 
 const statusMessages = new StatusMessagesMark4("link");
 
-const generateShortLinkKey = asyncWrapper(
+const generateShortUrlKey = asyncWrapper(
     async (req: Request, res: Response) => {
         const { size } = req.body;
-        const shortLinkKey = await linksService.generateShortLinkKey(size);
+        const ShortUrlKey = await linksService.generateShortUrlKey(size);
         res.status(200).json({
             success: true,
             message: "",
-            data: shortLinkKey,
+            data: ShortUrlKey,
         });
     }
 );
@@ -64,7 +65,7 @@ const createLink = asyncWrapper(async (req: Request, res: Response) => {
 
 const getLinkByShortUrlKey = asyncWrapper(
     async (req: Request, res: Response) => {
-        const { shortUrlKey } = req.params;
+        const { shortUrlKey, workspaceId } = req.params;
         if (!shortUrlKey) {
             throw new APIResponseError(
                 statusMessages.getMessage(
@@ -79,6 +80,7 @@ const getLinkByShortUrlKey = asyncWrapper(
         const link = await linksService.getOneLinkBy({
             shortUrlKey,
             userId: req.user?._id.toString() || "",
+            workspaceId,
         });
         res.status(200).json({
             success: true,
@@ -91,6 +93,7 @@ const getLinkByShortUrlKey = asyncWrapper(
 const getLinksByWorkspaceId = asyncWrapper(
     async (req: Request, res: Response) => {
         const { workspaceId } = req.params;
+        const q = req.query.q as string;
         if (!workspaceId) {
             throw new APIResponseError(
                 statusMessages.getMessage(
@@ -104,7 +107,8 @@ const getLinksByWorkspaceId = asyncWrapper(
         }
         const links = await linksService.getLinksByWorkspaceId(
             workspaceId,
-            req.user?._id.toString() || ""
+            req.user?._id.toString() || "",
+            q
         );
         res.status(200).json({
             success: true,
@@ -115,7 +119,7 @@ const getLinksByWorkspaceId = asyncWrapper(
 );
 
 const getLinkById = asyncWrapper(async (req: Request, res: Response) => {
-    const { linkId } = req.params;
+    const { linkId, workspaceId } = req.params;
     if (!linkId) {
         throw new APIResponseError(
             statusMessages.getMessage("Link ID is required", "error", "other"),
@@ -126,6 +130,7 @@ const getLinkById = asyncWrapper(async (req: Request, res: Response) => {
     const link = await linksService.getOneLinkBy({
         linkId,
         userId: req.user?._id.toString() || "",
+        workspaceId,
     });
     res.status(200).json({
         success: true,
@@ -207,8 +212,30 @@ const deleteLink = asyncWrapper(async (req: Request, res: Response) => {
     });
 });
 
+const tagsSuggestions = asyncWrapper(async (req: Request, res: Response) => {
+    const { workspaceId, q } = req.body;
+    if (!workspaceId) {
+        throw new APIResponseError(
+            statusMessages.getMessage(
+                "Workspace ID is required",
+                "error",
+                "other"
+            ),
+            400,
+            false
+        );
+    }
+
+    const suggestions = await tagsService.searchTags(workspaceId, q);
+    res.status(200).json({
+        success: true,
+        message: "",
+        data: suggestions,
+    });
+});
+
 const linksController = {
-    generateShortLinkKey,
+    generateShortUrlKey,
     createLink,
     getLinkByShortUrlKey,
     getLinksByWorkspaceId,
@@ -216,6 +243,7 @@ const linksController = {
     updateLink,
     deactivateLink,
     deleteLink,
+    tagsSuggestions,
 };
 
 export default linksController;

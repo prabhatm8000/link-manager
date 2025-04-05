@@ -1,6 +1,13 @@
 import { APIResponseError } from "../errors/response";
-import User, { type IUser } from "../models/users";
+import User from "../models/users";
+import type { IUsersService } from "../types/user";
 
+/**
+ * 
+ * @param email
+ * @param password
+ * @returns 
+ */
 const login = async ({
     email,
     password,
@@ -24,6 +31,12 @@ const login = async ({
     return user.toJSON();
 };
 
+
+/**
+ * 
+ * @param: {name: string, email: string, password: string, profilePicture: string}
+ * @returns 
+ */
 const createUser = async ({
     name,
     email,
@@ -44,16 +57,32 @@ const createUser = async ({
     return user.toJSON();
 };
 
+/**
+ * authentication required, [id is checked in the auth middleware]
+ * @param id 
+ * @returns 
+ */
 const getUserById = async (id: string) => {
     const user = await User.findById(id);
     return user?.toJSON();
 };
 
+/**
+ * 
+ * @param email 
+ * @returns 
+ */
 const getUserByEmail = async (email: string) => {
     const user = await User.findOne({ email });
     return user?.toJSON();
 }
 
+/**
+ * authentication required, [id is checked in the auth middleware]
+ * @param id 
+ * @param data 
+ * @returns 
+ */
 const updateUser = async (
     id: string,
     data: {
@@ -67,6 +96,11 @@ const updateUser = async (
     return user?.toJSON();
 };
 
+/**
+ * authentication required, [id is checked in the auth middleware]
+ * @param id 
+ * @returns 
+ */
 const deactivateUser = async (id: string) => {
     const user = await User.findByIdAndUpdate(
         id,
@@ -78,7 +112,7 @@ const deactivateUser = async (id: string) => {
     return user?.toJSON();
 };
 
-const usersService = {
+const usersService: IUsersService = {
     login,
     createUser,
     getUserById,
@@ -86,4 +120,5 @@ const usersService = {
     updateUser,
     deactivateUser,
 };
+
 export default usersService;

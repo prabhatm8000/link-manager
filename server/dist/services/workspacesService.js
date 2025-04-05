@@ -24,15 +24,28 @@ const MAX_PEOPLE = 20;
  * check if user is authorized to perform action on workspace
  * @param ws
  * @param userId
+ * @param checkAll - if true[default], checks user in people and createdBy, else only in people
  * @returns
  */
-const authorized = (ws, userId) => __awaiter(void 0, void 0, void 0, function* () {
+const authorized = (ws_1, userId_1, ...args_1) => __awaiter(void 0, [ws_1, userId_1, ...args_1], void 0, function* (ws, userId, checkAll = true) {
     if (ws instanceof mongoose_1.default.Types.ObjectId || typeof ws === "string") {
         const workspace = yield workspaces_1.default.aggregate([
             {
                 $match: {
-                    _id: new mongoose_1.default.Types.ObjectId(ws),
-                    people: { $in: [new mongoose_1.default.Types.ObjectId(userId)] },
+                    $and: [
+                        {
+                            _id: new mongoose_1.default.Types.ObjectId(ws),
+                        },
+                        {
+                            people: {
+                                $in: [new mongoose_1.default.Types.ObjectId(userId)],
+                            },
+                        },
+                        {
+                            isActive: true,
+                        },
+                        (checkAll ? { createdBy: new mongoose_1.default.Types.ObjectId(userId) } : {}),
+                    ],
                 },
             },
             {
@@ -49,6 +62,9 @@ const authorized = (ws, userId) => __awaiter(void 0, void 0, void 0, function* (
         // if ws is an instance of Workspace [don't fetch from db]
         const peopleIds = ws.people.map((p) => p.toString());
         if (!peopleIds.includes(userId.toString())) {
+            throw new response_1.APIResponseError("Unauthorized or Workspace not found", 401, false);
+        }
+        else if (checkAll && ws.createdBy.toString() !== userId.toString()) {
             throw new response_1.APIResponseError("Unauthorized or Workspace not found", 401, false);
         }
     }
@@ -102,6 +118,16 @@ const getWorkspaceById = (workspaceId, userId) => __awaiter(void 0, void 0, void
         {
             $match: {
                 $and: [
+                    {
+                        $or: [
+                            {
+                                people: {
+                                    $in: [new mongoose_1.default.Types.ObjectId(userId)],
+                                },
+                            },
+                            { createdBy: new mongoose_1.default.Types.ObjectId(userId) },
+                        ],
+                    },
                     { _id: new mongoose_1.default.Types.ObjectId(workspaceId) },
                 ],
             },
@@ -147,7 +173,6 @@ const getWorkspaceById = (workspaceId, userId) => __awaiter(void 0, void 0, void
     if (!workspace) {
         throw new response_1.APIResponseError("Workspace not found", 404, false);
     }
-    yield authorized(workspace, userId);
     return workspace;
 });
 /**
@@ -268,9 +293,24 @@ const addPeople = (workspaceId, userId) => __awaiter(void 0, void 0, void 0, fun
  * @returns
  */
 const getPeople = (workspaceId, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    yield authorized(workspaceId, userId);
     const result = yield workspaces_1.default.aggregate([
-        { $match: { _id: new mongoose_1.default.Types.ObjectId(workspaceId) } },
+        {
+            $match: {
+                $and: [
+                    {
+                        $or: [
+                            {
+                                people: {
+                                    $in: [new mongoose_1.default.Types.ObjectId(userId)],
+                                },
+                            },
+                            { createdBy: new mongoose_1.default.Types.ObjectId(userId) },
+                        ],
+                    },
+                    { _id: new mongoose_1.default.Types.ObjectId(workspaceId) },
+                ],
+            },
+        },
         {
             $lookup: {
                 from: "users",
@@ -288,13 +328,13 @@ const getPeople = (workspaceId, userId) => __awaiter(void 0, void 0, void 0, fun
             },
         },
     ]);
-    if (result.length === 0) {
-        throw new response_1.APIResponseError("Workspace not found", 404, false);
+    if (!result.length) {
+        throw new response_1.APIResponseError("Workspace not found or unauthorized", 404, false);
     }
-    return result[0];
+    return result[0].people;
 });
 /**
- * authentication required, [checks userId in createdBy]
+ * authentication required, [checks userId in createdBy with authorized]
  * @param workspaceId
  * @param peopleId
  * @param userId
@@ -302,6 +342,9 @@ const getPeople = (workspaceId, userId) => __awaiter(void 0, void 0, void 0, fun
  */
 const removePeople = (workspaceId, peopleId, userId) => __awaiter(void 0, void 0, void 0, function* () {
     (0, mongodb_1.validateObjectId)(workspaceId, peopleId, userId);
+    if (userId === peopleId) {
+        throw new response_1.APIResponseError("You cannot remove yourself", 400, false);
+    }
     yield authorized(workspaceId, userId);
     const result = yield workspaces_1.default.updateOne({ _id: workspaceId, createdBy: userId }, {
         $pull: { people: new mongoose_1.default.Types.ObjectId(peopleId) },

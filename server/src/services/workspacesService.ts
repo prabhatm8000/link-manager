@@ -2,65 +2,18 @@ import mongoose from "mongoose";
 import { APIResponseError } from "../errors/response";
 import { validateObjectId } from "../lib/mongodb";
 import User from "../models/users";
-import Workspace, { type IWorkspace } from "../models/workspaces";
+import Workspace from "../models/workspaces";
+import type { IWorkspaceService } from "../types/workspace";
+import linksService from "./linksService";
 
 // limits for a user
 const MAX_WORKSPACES = 5;
 const MAX_PEOPLE = 20;
 
-
 /**
- * check if user is authorized to perform action on workspace
- * @param ws
- * @param userId
+ * [user is already authenticated]
+ * @param workspace
  * @returns
- */
-const authorized = async (
-    ws: IWorkspace | mongoose.Types.ObjectId | string,
-    userId: string
-): Promise<boolean> => {
-    if (ws instanceof mongoose.Types.ObjectId || typeof ws === "string") {
-        const workspace = await Workspace.aggregate([
-            {
-                $match: {
-                    _id: new mongoose.Types.ObjectId(ws),
-                    people: { $in: [new mongoose.Types.ObjectId(userId)] },
-                },
-            },
-            {
-                $project: {
-                    _id: 1,
-                },
-            },
-        ]);
-
-        if (workspace.length === 0) {
-            throw new APIResponseError(
-                "Unauthorized or Workspace not found",
-                401,
-                false
-            );
-        }
-    } else {
-        // if ws is an instance of Workspace [don't fetch from db]
-        const peopleIds = ws.people.map((p) => p.toString());
-        if (!peopleIds.includes(userId.toString())) {
-            throw new APIResponseError(
-                "Unauthorized or Workspace not found",
-                401,
-                false
-            );
-        }
-    }
-
-    return true;
-};
-
-
-/**
- * 
- * @param workspace 
- * @returns 
  */
 const createWorkspace = async (workspace: {
     name: string;
@@ -111,7 +64,6 @@ const createWorkspace = async (workspace: {
     }
 };
 
-
 /**
  * authentication required, [checks userId in people]
  * @param workspaceId
@@ -123,6 +75,16 @@ const getWorkspaceById = async (workspaceId: string, userId: string) => {
         {
             $match: {
                 $and: [
+                    {
+                        $or: [
+                            {
+                                people: {
+                                    $in: [new mongoose.Types.ObjectId(userId)],
+                                },
+                            },
+                            { createdBy: new mongoose.Types.ObjectId(userId) },
+                        ],
+                    },
                     { _id: new mongoose.Types.ObjectId(workspaceId) },
                 ],
             },
@@ -152,6 +114,7 @@ const getWorkspaceById = async (workspaceId: string, userId: string) => {
                 "peopleDetails.email": 1,
                 "peopleDetails._id": 1,
                 "peopleDetails.profilePicture": 1,
+
                 "createdByDetails.name": 1,
                 "createdByDetails.email": 1,
                 "createdByDetails._id": 1,
@@ -161,6 +124,7 @@ const getWorkspaceById = async (workspaceId: string, userId: string) => {
                 description: 1,
                 createdBy: 1,
                 isActive: 1,
+                linkCount: 1,
             },
         },
     ]);
@@ -170,15 +134,13 @@ const getWorkspaceById = async (workspaceId: string, userId: string) => {
         throw new APIResponseError("Workspace not found", 404, false);
     }
 
-    await authorized(workspace, userId);
     return workspace;
 };
 
-
 /**
  * authentication required, [checks userId in createdBy]
- * @param userId 
- * @returns 
+ * @param userId
+ * @returns
  */
 const getWorkspaceByCreatorId = async (userId: string) => {
     validateObjectId(userId);
@@ -189,11 +151,10 @@ const getWorkspaceByCreatorId = async (userId: string) => {
     return result;
 };
 
-
 /**
  * authentication required, [checks userId in people or createdBy]
- * @param userId 
- * @returns 
+ * @param userId
+ * @returns
  */
 const getAllWorkspacesForUser = async (userId: string) => {
     validateObjectId(userId);
@@ -228,13 +189,12 @@ const getAllWorkspacesForUser = async (userId: string) => {
     return result;
 };
 
-
 /**
  * authentication required, [checks userId in createdBy]
- * @param workspaceId 
- * @param createdBy 
- * @param data 
- * @returns 
+ * @param workspaceId
+ * @param createdBy
+ * @param data
+ * @returns
  */
 const updateWorkspace = async (
     workspaceId: string,
@@ -249,12 +209,11 @@ const updateWorkspace = async (
     );
 };
 
-
 /**
  * authentication required, [checks userId in createdBy]
- * @param workspaceId 
- * @param createdBy 
- * @returns 
+ * @param workspaceId
+ * @param createdBy
+ * @returns
  */
 const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
     validateObjectId(workspaceId, createdBy);
@@ -273,6 +232,9 @@ const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
             { $inc: { workspaceCreatedCount: -1 } },
             { session }
         );
+        await linksService.deleteAllLinksByWorkspaceId(workspaceId, createdBy, {
+            session,
+        });
         await session.commitTransaction();
         if (!result) {
             throw new APIResponseError("Workspace not found", 404, false);
@@ -291,12 +253,11 @@ const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
     }
 };
 
-
 /**
  * authentication not required, [checked at controller level]
- * @param workspaceId 
- * @param userId 
- * @returns 
+ * @param workspaceId
+ * @param userId
+ * @returns
  */
 const addPeople = async (workspaceId: string, userId: string) => {
     validateObjectId(workspaceId, userId);
@@ -320,17 +281,31 @@ const addPeople = async (workspaceId: string, userId: string) => {
     return result;
 };
 
-
 /**
  * authentication required, [checks userId in people]
- * @param workspaceId 
- * @param userId 
- * @returns 
+ * @param workspaceId
+ * @param userId
+ * @returns
  */
 const getPeople = async (workspaceId: string, userId: string) => {
-    await authorized(workspaceId, userId);
     const result = await Workspace.aggregate([
-        { $match: { _id: new mongoose.Types.ObjectId(workspaceId) } },
+        {
+            $match: {
+                $and: [
+                    {
+                        $or: [
+                            {
+                                people: {
+                                    $in: [new mongoose.Types.ObjectId(userId)],
+                                },
+                            },
+                            { createdBy: new mongoose.Types.ObjectId(userId) },
+                        ],
+                    },
+                    { _id: new mongoose.Types.ObjectId(workspaceId) },
+                ],
+            },
+        },
         {
             $lookup: {
                 from: "users",
@@ -349,20 +324,23 @@ const getPeople = async (workspaceId: string, userId: string) => {
         },
     ]);
 
-    if (result.length === 0) {
-        throw new APIResponseError("Workspace not found", 404, false);
+    if (!result.length) {
+        throw new APIResponseError(
+            "Workspace not found or unauthorized",
+            404,
+            false
+        );
     }
 
-    return result[0];
+    return result[0].people;
 };
 
-
 /**
- * authentication required, [checks userId in createdBy]
- * @param workspaceId 
- * @param peopleId 
- * @param userId 
- * @returns 
+ * authentication required, [checks userId in createdBy with authorized]
+ * @param workspaceId
+ * @param peopleId
+ * @param userId
+ * @returns
  */
 const removePeople = async (
     workspaceId: string,
@@ -373,7 +351,7 @@ const removePeople = async (
     if (userId === peopleId) {
         throw new APIResponseError("You cannot remove yourself", 400, false);
     }
-    await authorized(workspaceId, userId);
+    await Workspace.authorized(workspaceId, userId);
     const result = await Workspace.updateOne(
         { _id: workspaceId, createdBy: userId },
         {
@@ -389,12 +367,11 @@ const removePeople = async (
     return result;
 };
 
-
 /**
  * authentication not required, [checked at controller level]
- * @param workspaceId 
- * @param senderId 
- * @returns 
+ * @param workspaceId
+ * @param senderId
+ * @returns
  */
 const getInviteData = async (workspaceId: string, senderId: string) => {
     validateObjectId(workspaceId);
@@ -444,6 +421,7 @@ const getInviteData = async (workspaceId: string, senderId: string) => {
         workspace,
         senderDetails: {
             _id: senderDetails._id,
+            id: senderDetails._id.toString(),
             name: senderDetails.name,
             email: senderDetails.email,
             profilePicture: senderDetails.profilePicture,
@@ -451,8 +429,7 @@ const getInviteData = async (workspaceId: string, senderId: string) => {
     };
 };
 
-const workspacesService = {
-    authorized,
+const workspacesService: IWorkspaceService = {
     createWorkspace,
     getWorkspaceById,
     getWorkspaceByCreatorId,

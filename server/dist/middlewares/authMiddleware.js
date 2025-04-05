@@ -29,7 +29,7 @@ const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
             next();
     }
     catch (error) {
-        (0, asyncWrapper_1.catchHandler)(error, res);
+        (0, asyncWrapper_1.catchHandler)(error, req, res);
     }
 });
 exports.default = authMiddleware;

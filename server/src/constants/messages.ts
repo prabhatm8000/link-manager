@@ -66,20 +66,47 @@ const statusMessages = {
     },
 };
 
-class StatusMessagesMark4 {
-    entity: keyof (typeof statusMessages)["success"];
+const messagesForInternalServerError = [
+    "Our hamsters running the servers took a break. Please hold.",
+    "The Matrix glitched. Agents are on it.",
+    "This page is playing hide and seek with our backend. Spoiler: It's winning.",
+    "Our server tried to divide by zero. We're dealing with the fallout.",
+    "Everything was fine… until it wasn't",
+    "Error 500: We poked the beast. It's angry.",
+    "The answer lies within… but our server won't tell us.",
+    "A glitch in the matrix? Maybe. Or just bad code.",
+];
 
-    constructor(entity: keyof (typeof statusMessages)["success"]) {
-        this.entity = entity;
+class StatusMessagesMark4 {
+    entity: keyof (typeof statusMessages)["success"] | "shit";
+
+    constructor(entity?: keyof (typeof statusMessages)["success"]) {
+        this.entity = entity || "shit";
     }
 
     getMessage = (
         description: string,
         type: "success" | "error",
-        operation: "update" | "create" | "delete" | "other"
+        operation: "update" | "create" | "delete" | "other",
+        entity?: keyof (typeof statusMessages)["success"]
     ) => {
-        const title = statusMessages[type][this.entity][operation];
+        if (this.entity === "shit") {
+            throw new Error("entity not passed!");
+        }
+        const key = entity || this.entity;
+        const title = statusMessages[type][key][operation];
         return { title, description };
+    };
+
+    getRandomInternalServerErrorMessage = () => {
+        const randomIndex = Math.floor(
+            Math.random() * messagesForInternalServerError.length
+        );
+        const title = messagesForInternalServerError[randomIndex];
+        return {
+            title,
+            description: "Internal Server Error.",
+        };
     };
 }
 

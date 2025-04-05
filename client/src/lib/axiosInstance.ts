@@ -3,6 +3,24 @@ import axios from "axios";
 import { toast } from "sonner";
 // import { toast } from "react-toastify";
 
+const handleAndShowToast = (jsonPayload: any) => {
+    const message = jsonPayload.message;
+    const title = message?.title || message;
+    const description =
+        message?.description ||
+        new Date().toLocaleString().split(",").join(" ·");
+
+    if (jsonPayload.success) {
+        toast.success(title, {
+            description,
+        });
+    } else {
+        toast.error(title, {
+            description,
+        });
+    }
+};
+
 const axiosInstance = axios.create({
     baseURL:
         configs.mode === "dev" ? configs.devBaseUrl : configs.serverBaseUrl, // same server for both [as]
@@ -17,18 +35,7 @@ const axiosInstance = axios.create({
             if (!jsonPayload.message) {
                 return jsonPayload;
             }
-            if (jsonPayload.success) {
-                // toast.success(jsonPayload.message);
-                toast.success(jsonPayload.message, {
-                    description: new Date()
-                        .toLocaleString()
-                        .split(",")
-                        .join(" ·"),
-                });
-            } else {
-                // toast.error(jsonPayload.message);
-                toast.error(jsonPayload.message);
-            }
+            handleAndShowToast(jsonPayload);
             return jsonPayload;
         } catch (error) {
             return jsonPayload;

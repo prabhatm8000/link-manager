@@ -7,6 +7,10 @@ const envVars = {
         process.env.NODE_ENV === "dev"
             ? process.env.DEV_CLIENT_URL
             : process.env.PROD_CLIENT_URL,
+    SERVER_URL:
+        process.env.NODE_ENV === "dev"
+            ? process.env.DEV_SERVER_URL
+            : process.env.PROD_SERVER_URL,
     JWT_SECRET: process.env.JWT_SECRET,
     PORT: process.env.PORT,
     MONGODB_URI: process.env.MONGODB_URI,

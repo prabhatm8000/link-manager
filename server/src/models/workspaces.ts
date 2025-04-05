@@ -1,19 +1,6 @@
 import mongoose from "mongoose";
-
-/**
- * workspace will follow plan of user who created it
- */
-export interface IWorkspace extends mongoose.Document {
-    _id: mongoose.Types.ObjectId;
-    name: string;
-    description: string;
-    // workspace will follow plan of user who created it
-    createdBy: mongoose.Types.ObjectId;
-    people: mongoose.Types.ObjectId[];
-    peopleCount: number;
-    linkCount: number;
-    isActive: boolean;
-}
+import { APIResponseError } from "../errors/response";
+import type { IWorkspace, IWorkspaceModel } from "../types/workspace";
 
 const workspaceSchema = new mongoose.Schema(
     {
@@ -49,6 +36,75 @@ const workspaceSchema = new mongoose.Schema(
     }
 );
 
-const Workspace = mongoose.model<IWorkspace>("Workspace", workspaceSchema);
+workspaceSchema.statics.authorized = async function(
+    ws: IWorkspace | mongoose.Types.ObjectId | string,
+    userId: string,
+    checkAll: boolean = true
+): Promise<boolean> {
+    if (ws instanceof mongoose.Types.ObjectId || typeof ws === "string") {
+        const workspace = await this.aggregate([
+            {
+                $match: {
+                    $and: [
+                        {
+                            _id: new mongoose.Types.ObjectId(ws),
+                        },
+                        {
+                            people: {
+                                $in: [new mongoose.Types.ObjectId(userId)],
+                            },
+                        },
+                        {
+                            isActive: true,
+                        },
+                        checkAll
+                            ? {
+                                  createdBy: new mongoose.Types.ObjectId(
+                                      userId
+                                  ),
+                              }
+                            : {},
+                    ],
+                },
+            },
+            {
+                $project: {
+                    _id: 1,
+                },
+            },
+        ]);
+
+        if (workspace.length === 0) {
+            throw new APIResponseError(
+                "Unauthorized or Workspace not found",
+                401,
+                false
+            );
+        }
+    } else {
+        // if ws is an instance of Workspace [don't fetch from db]
+        const peopleIds = ws.people.map((p) => p.toString());
+        if (!peopleIds.includes(userId.toString())) {
+            throw new APIResponseError(
+                "Unauthorized or Workspace not found",
+                401,
+                false
+            );
+        } else if (checkAll && ws.createdBy.toString() !== userId.toString()) {
+            throw new APIResponseError(
+                "Unauthorized or Workspace not found",
+                401,
+                false
+            );
+        }
+    }
+
+    return true;
+};
+
+const Workspace = mongoose.model<IWorkspace, IWorkspaceModel>(
+    "Workspace",
+    workspaceSchema
+);
 
 export default Workspace;

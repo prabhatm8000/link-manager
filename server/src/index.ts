@@ -1,11 +1,11 @@
 import cookieParser from "cookie-parser";
 import express, { Express } from "express";
+import path from "path";
 import { corsConfig, rateLimiter } from "./constants/configs";
 import envVars from "./constants/envVars";
 import consoleColor from "./lib/consoleColor";
 import { connectToDB } from "./lib/mongodb";
 import router from "./routes/router";
-import path from "path";
 
 const app: Express = express();
 const PORT = parseInt(envVars.PORT as string);
@@ -31,7 +31,7 @@ if (envVars.NODE_ENV === "dev") {
 app.use(rateLimiter);
 app.use(express.json());
 app.use(cookieParser());
-app.use("/api/v1", router);
+app.use(router);
 
 app.use(express.static(path.join(__dirname, "../../client/dist"), {
     maxAge: "1y",   // browser cache ui files

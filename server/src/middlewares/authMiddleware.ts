@@ -2,8 +2,8 @@ import type { NextFunction, Request, Response } from "express";
 import { APIResponseError } from "../errors/response";
 import { catchHandler } from "../lib/asyncWrapper";
 import { getAuthCookie } from "../lib/cookie";
-import type { IUser } from "../models/users";
 import usersService from "../services/usersService";
+import type { IUser } from "../types/user";
 
 // adding user to request
 declare global {

@@ -1,17 +1,6 @@
-import mongoose from "mongoose";
 import bcrypt from "bcrypt";
-
-export interface IUser extends mongoose.Document {
-    _id: string | mongoose.Types.ObjectId;
-    name: string;
-    email: string;
-    password?: string;
-    profilePicture?: string;
-    isActive?: boolean;
-    lastLogin?: Date;
-    workspaceCreatedCount?: number;
-    comparePassword(password: string): Promise<boolean>;
-}
+import mongoose from "mongoose";
+import type { IUser } from "../types/user";
 
 const userSchema = new mongoose.Schema(
     {

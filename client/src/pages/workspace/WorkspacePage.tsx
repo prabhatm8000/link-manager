@@ -1,14 +1,14 @@
-import { useSearchParams } from "react-router-dom";
-import type { SideBarTabType } from "./components/SideBar";
-import ProfileView from "./views/ProfileView";
-import LinksView from "./views/LinksView";
-import EventsView from "./views/EventsView";
-import AnalyticsView from "./views/AnalyticsView";
-import SettingsView from "./views/SettingsView";
-import NoWorkspaceView from "./views/NoWorkspaceView";
-import type { IWorkspaceState } from "../../redux/reducers/types";
 import { useSelector } from "react-redux";
-import LoadingView from "./views/LoadingView";
+import { useSearchParams } from "react-router-dom";
+import type { IWorkspaceState } from "../../redux/reducers/types";
+import type { SideBarTabType } from "./components/SideBar";
+import AnalyticsView from "./views/Analytics/AnalyticsView";
+import EventsView from "./views/Events/EventsView";
+import LinksView from "./views/Links/LinksView";
+import LoadingView from "./views/Others/LoadingView";
+import NoWorkspaceView from "./views/Others/NoWorkspaceView";
+import ProfileView from "./views/Profile/ProfileView";
+import SettingsView from "./views/Settings/SettingsView";
 
 const WorkspacePage = () => {
     const [searchParams, _] = useSearchParams();

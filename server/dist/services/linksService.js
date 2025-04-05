@@ -41,6 +41,11 @@ const generateShortLinkKey = (...args_1) => __awaiter(void 0, [...args_1], void 
     }
     return key;
 });
+/**
+ * authentication required, [checks userId in workspace]
+ * @param link
+ * @returns
+ */
 const createLink = (link) => __awaiter(void 0, void 0, void 0, function* () {
     const session = yield mongoose_1.default.startSession();
     session.startTransaction();
@@ -52,26 +57,37 @@ const createLink = (link) => __awaiter(void 0, void 0, void 0, function* () {
         if (workspace.linkCount >= MAX_LINKS) {
             throw new response_1.APIResponseError("Maximum limit of links reached for this workspace", 400, false);
         }
-        yield workspacesService_1.default.authorized(workspace, link.creatorId);
         const newLink = new links_1.default(link);
         yield newLink.save({ session });
         yield tagsService_1.default.addTags(link.workspaceId, link.tags || []);
         yield workspaces_1.default.findByIdAndUpdate(link.workspaceId, {
             $inc: { linkCounts: 1 },
         }, { session });
+        const populatedLink = yield getOneLinkBy({
+            linkId: newLink._id.toString(),
+            userId: link.creatorId.toString(),
+            workspaceId: link.workspaceId,
+            session,
+        });
         yield session.commitTransaction();
         yield session.endSession();
-        return newLink.toJSON();
+        return populatedLink;
     }
     catch (error) {
         yield session.abortTransaction();
         throw error;
     }
 });
-const getOneLinkBy = (_a) => __awaiter(void 0, [_a], void 0, function* ({ linkId, shortUrlKey, userId, }) {
+/**
+ * authentication required, [checks userId in workspace]
+ * @param params
+ * @returns
+ */
+const getOneLinkBy = (_a) => __awaiter(void 0, [_a], void 0, function* ({ linkId, shortUrlKey, userId, workspaceId, session, }) {
     if (!linkId && !shortUrlKey) {
         throw new response_1.APIResponseError("Link ID or Short URL key is required", 400, false);
     }
+    yield workspacesService_1.default.authorized(workspaceId, userId);
     const link = yield links_1.default.aggregate([
         {
             $match: {
@@ -100,6 +116,7 @@ const getOneLinkBy = (_a) => __awaiter(void 0, [_a], void 0, function* ({ linkId
                 expirationTime: 1,
                 isActive: 1,
                 password: 1,
+                workspaceId: 1,
                 creator: {
                     _id: "$creator._id",
                     name: "$creator.name",
@@ -108,18 +125,23 @@ const getOneLinkBy = (_a) => __awaiter(void 0, [_a], void 0, function* ({ linkId
                 },
             },
         },
-    ]);
+    ], { session });
     if (link.length === 0) {
         throw new response_1.APIResponseError("Link not found", 404, false);
     }
     const res = link[0];
-    yield workspacesService_1.default.authorized(res.workspaceId, userId);
     if (res.password) {
         res["hasPassword"] = true;
         delete res.password;
     }
     return res;
 });
+/**
+ * authentication required, [checks userId in workspace]
+ * @param workspaceId
+ * @param userId
+ * @returns
+ */
 const getLinksByWorkspaceId = (workspaceId, userId) => __awaiter(void 0, void 0, void 0, function* () {
     yield workspacesService_1.default.authorized(workspaceId, userId);
     const links = yield links_1.default.aggregate([
@@ -165,6 +187,13 @@ const getLinksByWorkspaceId = (workspaceId, userId) => __awaiter(void 0, void 0,
     ]);
     return links;
 });
+/**
+ * authentication required, [checks userId in workspace]
+ * @param linkId
+ * @param link
+ * @param userId
+ * @returns
+ */
 const updateLink = (linkId, link, userId) => __awaiter(void 0, void 0, void 0, function* () {
     const existingLink = yield links_1.default.findById(linkId);
     if (!existingLink) {
@@ -177,8 +206,19 @@ const updateLink = (linkId, link, userId) => __awaiter(void 0, void 0, void 0, f
     if (!updatedLink) {
         throw new response_1.APIResponseError("Link not found", 404, false);
     }
-    return updatedLink;
+    const populatedLink = yield getOneLinkBy({
+        linkId: updatedLink._id.toString(),
+        userId: updatedLink.creatorId.toString(),
+        workspaceId: updatedLink.workspaceId.toString(),
+    });
+    return populatedLink;
 });
+/**
+ * authentication required, [checks userId in workspace]
+ * @param linkId
+ * @param userId
+ * @returns
+ */
 const deactivateLink = (linkId, userId) => __awaiter(void 0, void 0, void 0, function* () {
     const existingLink = yield links_1.default.findById(linkId);
     if (!existingLink) {
@@ -189,8 +229,20 @@ const deactivateLink = (linkId, userId) => __awaiter(void 0, void 0, void 0, fun
     if (!link) {
         throw new response_1.APIResponseError("Link not found", 404, false);
     }
-    return true;
+    const populatedLink = yield getOneLinkBy({
+        linkId: link._id.toString(),
+        userId: link.creatorId.toString(),
+        workspaceId: link.workspaceId.toString(),
+    });
+    return populatedLink;
 });
+/**
+ * authentication required, [checks userId in workspace]
+ * @param linkId
+ * @param userId
+ * @param options
+ * @returns
+ */
 const deleteLink = (linkId, userId, options) => __awaiter(void 0, void 0, void 0, function* () {
     const existingLink = yield links_1.default.findById(linkId);
     if (!existingLink) {
@@ -203,8 +255,15 @@ const deleteLink = (linkId, userId, options) => __awaiter(void 0, void 0, void 0
     if (!link) {
         throw new response_1.APIResponseError("Link not found", 404, false);
     }
-    return true;
+    return link;
 });
+/**
+ * authentication required, [checks userId in workspace]
+ * @param workspaceId
+ * @param userId
+ * @param options
+ * @returns
+ */
 const deleteAllLinksByWorkspaceId = (workspaceId, userId, options) => __awaiter(void 0, void 0, void 0, function* () {
     yield workspacesService_1.default.authorized(workspaceId, userId);
     const links = yield links_1.default.deleteMany({ workspaceId: new mongoose_1.default.Types.ObjectId(workspaceId) }, { session: options ? options.session : null });

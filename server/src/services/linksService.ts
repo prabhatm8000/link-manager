@@ -1,14 +1,17 @@
 import mongoose, { type ClientSession } from "mongoose";
+import envVars from "../constants/envVars";
 import { APIResponseError } from "../errors/response";
-import Links, { type ILinks } from "../models/links";
+import Links from "../models/links";
 import Workspace from "../models/workspaces";
+import type { ILinks, ILinksService } from "../types/link";
+import type { IWorkspace } from "../types/workspace";
 import tagsService from "./tagsService";
 import workspacesService from "./workspacesService";
 
 // limits for workspace
 const MAX_LINKS = 20;
 
-const generateShortLinkKey = async (size: number = 10): Promise<string> => {
+const generateShortUrlKey = async (size: number = 10): Promise<string> => {
     const chars =
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let isUnique = false;
@@ -37,6 +40,15 @@ const generateShortLinkKey = async (size: number = 10): Promise<string> => {
     return key;
 };
 
+const generateUrlWithShortUrlKey = (shortUrlKey: string): string => {
+    return `${envVars.SERVER_URL}/${shortUrlKey}`;
+};
+
+/**
+ * authentication required, [checks userId in workspace]
+ * @param link
+ * @returns
+ */
 const createLink = async (link: {
     destinationUrl: string;
     shortUrlKey: string;
@@ -66,8 +78,6 @@ const createLink = async (link: {
             );
         }
 
-        await workspacesService.authorized(workspace, link.creatorId);
-
         const newLink = new Links(link);
 
         await newLink.save({ session });
@@ -83,6 +93,7 @@ const createLink = async (link: {
         const populatedLink = await getOneLinkBy({
             linkId: newLink._id.toString(),
             userId: link.creatorId.toString(),
+            workspaceId: link.workspaceId,
             session,
         });
         await session.commitTransaction();
@@ -95,15 +106,22 @@ const createLink = async (link: {
     }
 };
 
+/**
+ * authentication required, [checks userId in workspace]
+ * @param params
+ * @returns
+ */
 const getOneLinkBy = async ({
     linkId,
     shortUrlKey,
     userId,
+    workspaceId,
     session,
 }: {
     userId: string;
     linkId?: string;
     shortUrlKey?: string;
+    workspaceId: string | IWorkspace;
     session?: ClientSession;
 }): Promise<ILinks> => {
     if (!linkId && !shortUrlKey) {
@@ -113,6 +131,8 @@ const getOneLinkBy = async ({
             false
         );
     }
+    await Workspace.authorized(workspaceId, userId);
+
     const link = await Links.aggregate(
         [
             {
@@ -160,20 +180,66 @@ const getOneLinkBy = async ({
     }
 
     const res = link[0];
-    await workspacesService.authorized(res.workspaceId, userId);
 
     if (res.password) {
         res["hasPassword"] = true;
         delete res.password;
     }
+    res["shortUrl"] = generateUrlWithShortUrlKey(res.shortUrlKey);
     return res;
 };
 
+/**
+ * authentication not required, [probably for redirecting :D, don't use anywhere else]
+ * @param shortUrlKey 
+ * @returns 
+ */
+const justTheDestinationUrl = async (
+    shortUrlKey: string
+): Promise<{ _id: string; destinationUrl: string, password?: string }> => {
+    const link = await Links.aggregate([
+        {
+            $match: {
+                shortUrlKey: shortUrlKey,
+            },
+        },
+        {
+            $project: {
+                _id: 1,
+                destinationUrl: 1,
+                password: 1,
+            },
+        },
+    ]);
+    if (link.length === 0) {
+        throw new APIResponseError("Link not found", 404, false);
+    }
+    return link[0];
+};
+
+/**
+ * authentication required, [checks userId in workspace]
+ * @param workspaceId
+ * @param userId
+ * @param q - search query [search in shortUrlKey and tags and creator email or name]
+ * @returns
+ */
 const getLinksByWorkspaceId = async (
     workspaceId: string,
-    userId: string
+    userId: string,
+    q?: string
 ): Promise<ILinks[]> => {
-    await workspacesService.authorized(workspaceId, userId);
+    await Workspace.authorized(workspaceId, userId);
+    const matchStage: any = {};
+    if (q) {
+        matchStage["$or"] = [
+            { shortUrlKey: { $regex: q, $options: "i" } },
+            { tags: { $regex: q, $options: "i" } },
+            { "creator.email": { $regex: q, $options: "i" } },
+            { "creator.name": { $regex: q, $options: "i" } },
+        ];
+    }
+
     const links = await Links.aggregate([
         {
             $match: {
@@ -192,15 +258,20 @@ const getLinksByWorkspaceId = async (
             $unwind: "$creator",
         },
         {
+            $match: {
+                ...matchStage,
+            },
+        },
+        {
             $project: {
                 _id: 1,
-                name: 1,
                 destinationUrl: 1,
                 shortUrlKey: 1,
                 tags: 1,
                 comment: 1,
                 expirationTime: 1,
                 isActive: 1,
+                password: 1,
                 creator: {
                     _id: "$creator._id",
                     name: "$creator.name",
@@ -215,9 +286,23 @@ const getLinksByWorkspaceId = async (
             },
         },
     ]);
+    links.forEach((link) => {
+        if (link.password) {
+            link["hasPassword"] = true;
+            delete link.password;
+        }
+        link["shortUrl"] = generateUrlWithShortUrlKey(link.shortUrlKey);
+    });
     return links;
 };
 
+/**
+ * authentication required, [checks userId in workspace]
+ * @param linkId
+ * @param link
+ * @param userId
+ * @returns
+ */
 const updateLink = async (
     linkId: string,
     link: ILinks,
@@ -227,39 +312,56 @@ const updateLink = async (
     if (!existingLink) {
         throw new APIResponseError("Link not found", 404, false);
     }
-    await workspacesService.authorized(existingLink.workspaceId, userId);
+    await Workspace.authorized(existingLink.workspaceId, userId);
     const updatedLink = await Links.findByIdAndUpdate(linkId, link, {
         new: true,
     });
     if (!updatedLink) {
         throw new APIResponseError("Link not found", 404, false);
     }
-    
+
     const populatedLink = await getOneLinkBy({
         linkId: updatedLink._id.toString(),
         userId: updatedLink.creatorId.toString(),
+        workspaceId: updatedLink.workspaceId.toString(),
     });
     return populatedLink;
 };
 
-const deactivateLink = async (
-    linkId: string,
-    userId: string
-): Promise<boolean> => {
+/**
+ * authentication required, [checks userId in workspace]
+ * @param linkId
+ * @param userId
+ * @returns
+ */
+const deactivateLink = async (linkId: string, userId: string) => {
     const existingLink = await Links.findById(linkId);
     if (!existingLink) {
         throw new APIResponseError("Link not found", 404, false);
     }
-    await workspacesService.authorized(existingLink.workspaceId, userId);
+    await Workspace.authorized(existingLink.workspaceId, userId);
 
     const link = await Links.findByIdAndUpdate(linkId, { isActive: false });
 
     if (!link) {
         throw new APIResponseError("Link not found", 404, false);
     }
-    return true;
+
+    const populatedLink = await getOneLinkBy({
+        linkId: link._id.toString(),
+        userId: link.creatorId.toString(),
+        workspaceId: link.workspaceId.toString(),
+    });
+    return populatedLink;
 };
 
+/**
+ * authentication required, [checks userId in workspace]
+ * @param linkId
+ * @param userId
+ * @param options
+ * @returns
+ */
 const deleteLink = async (
     linkId: string,
     userId: string,
@@ -269,7 +371,7 @@ const deleteLink = async (
     if (!existingLink) {
         throw new APIResponseError("Link not found", 404, false);
     }
-    await workspacesService.authorized(existingLink.workspaceId, userId);
+    await Workspace.authorized(existingLink.workspaceId, userId);
 
     const link = await Links.findByIdAndDelete(linkId, {
         session: options ? options.session : null,
@@ -280,12 +382,19 @@ const deleteLink = async (
     return link;
 };
 
+/**
+ * authentication required, [checks userId in workspace]
+ * @param workspaceId
+ * @param userId
+ * @param options
+ * @returns
+ */
 const deleteAllLinksByWorkspaceId = async (
     workspaceId: string,
     userId: string,
     options?: { session?: ClientSession }
 ): Promise<boolean> => {
-    await workspacesService.authorized(workspaceId, userId);
+    await Workspace.authorized(workspaceId, userId);
     const links = await Links.deleteMany(
         { workspaceId: new mongoose.Types.ObjectId(workspaceId) },
         { session: options ? options.session : null }
@@ -293,11 +402,13 @@ const deleteAllLinksByWorkspaceId = async (
     return true;
 };
 
-const linksService = {
-    generateShortLinkKey,
+const linksService: ILinksService = {
+    generateShortUrlKey,
+    generateUrlWithShortUrlKey,
     createLink,
     getOneLinkBy,
     getLinksByWorkspaceId,
+    justTheDestinationUrl,
     updateLink,
     deactivateLink,
     deleteLink,

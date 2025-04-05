@@ -9,6 +9,10 @@ const genarateOtp = (size: number = 6): string => {
         .slice(0, size);
 };
 
+/**
+ * it generates otp and sends it via email
+ * @param email 
+ */
 const genarateAndSendOtpViaMail = async (email: string) => {
     const otp = genarateOtp(otpConfig.size);
     const expiresAt = new Date(Date.now() + otpConfig.expiresAt);
@@ -35,6 +39,12 @@ const genarateAndSendOtpViaMail = async (email: string) => {
 };
 
 
+/**
+ * basically compares the otp
+ * @param email 
+ * @param otp 
+ * @returns 
+ */
 const verifyOtp = async (email: string, otp: string): Promise<boolean> => {
     const otpObj = await Otp.findOne({ email });
 

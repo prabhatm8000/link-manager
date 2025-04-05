@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Tags from "../models/tags";
+import type { ITagsService } from "../types/tag";
 
 const MAX_TAG_LENGTH = 20;
 
@@ -22,7 +23,7 @@ const addTags = async (workspaceId: string, tags: string[]) => {
 };
 
 const deleteTags = async (workspaceId: string) => {
-    return Tags.findOneAndDelete({
+    await Tags.findOneAndDelete({
         workspaceId: new mongoose.Types.ObjectId(workspaceId),
     });
 };
@@ -34,5 +35,38 @@ const getTags = async (workspaceId: string) => {
     return tags;
 };
 
-const tagsService = { addTags, getTags, deleteTags };
+const searchTags = async (workspaceId: string, q: string) => {
+    const result = await Tags.aggregate([
+        {
+            $match: {
+                workspaceId: new mongoose.Types.ObjectId(workspaceId),
+            },
+        },
+        {
+            $unwind: "$tags",
+        },
+        {
+            $match: {
+                tags: {
+                    $regex: q,
+                    $options: "i",
+                },
+            },
+        },
+        {
+            $limit: 5,
+        },
+        {
+            $project: {
+                tags: 1,
+            },
+        },
+    ]);
+
+    const suggestions = result.map((tag) => tag.tags);
+
+    return suggestions;
+};
+
+const tagsService: ITagsService = { addTags, getTags, deleteTags, searchTags };
 export default tagsService;

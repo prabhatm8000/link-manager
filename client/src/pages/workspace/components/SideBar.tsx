@@ -200,7 +200,7 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
                 <Button
                     onClick={() => setShowWorkspaces((p) => !p)}
                     className="flex items-center justify-between w-full"
-                    variant="ghost"
+                    variant={showWorkspaces ? "outline" :"ghost"}
                 >
                     <WorkspaceItem
                         data={workspaceState.currentWorkspace}
@@ -236,14 +236,16 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
                                 setActiveWorkspace={handleActiveWorkspaceChange}
                             />
                         ))}
-                        <Button
-                            variant="ghost"
-                            onClick={() => handleTabChange("profile")}
-                            className="flex gap-2 items-center justify-center w-full"
-                        >
-                            <IoIosAdd className="size-5" />
-                            <span>Create workspace</span>
-                        </Button>
+                        {currentTab !== "profile" && (
+                            <Button
+                                variant="ghost"
+                                onClick={() => handleTabChange("profile")}
+                                className="flex gap-2 items-center justify-center w-full"
+                            >
+                                <IoIosAdd className="size-5" />
+                                <span>Create workspace</span>
+                            </Button>
+                        )}
                     </div>
                 </div>
             ) : (

@@ -2,7 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { ApiResponseType } from "../reducers/types";
 import axiosInstance from "../../lib/axiosInstance";
 
-export const generateShortLinkKey = createAsyncThunk(
+export const generateShortUrlKey = createAsyncThunk(
     "links/generate-short-link-key",
     async (data: { size?: number }, { rejectWithValue, fulfillWithValue }) => {
         try {
@@ -43,10 +43,10 @@ export const createLink = createAsyncThunk(
 
 export const getLinksByWorkspaceId = createAsyncThunk(
     "links/get-by-workspace-id",
-    async (workspaceId: string, { rejectWithValue, fulfillWithValue }) => {
+    async (data: {workspaceId: string, q?: string}, { rejectWithValue, fulfillWithValue }) => {
         try {
             const res = await axiosInstance.get(
-                `/link/workspace/${workspaceId}`
+                `/link/workspace/${data.workspaceId}?q=${data.q}`
             );
             return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
@@ -121,6 +121,36 @@ export const getLinkById = createAsyncThunk(
         try {
             const res = await axiosInstance.get(`/link/${linkId}`);
             return fulfillWithValue(res.data as ApiResponseType);
+        } catch (error: any) {
+            return rejectWithValue(error.response.data as ApiResponseType);
+        }
+    }
+);
+
+export const getTagsSuggestions = createAsyncThunk(
+    "links/get-tags-suggestions",
+    async (
+        data: { workspaceId: string; q: string },
+        { rejectWithValue, fulfillWithValue }
+    ) => {
+        try {
+            const res = await axiosInstance.post("/link/getTagsSuggestions", data)
+            return fulfillWithValue(res.data as ApiResponseType)
+        } catch (error: any) {
+            return rejectWithValue(error.response.data as ApiResponseType);
+        }
+    }
+);
+
+export const searchLinks = createAsyncThunk(
+    "links/search",
+    async (
+        data: { workspaceId: string; q: string },
+        { rejectWithValue, fulfillWithValue }
+    ) => {
+        try {
+            const res = await axiosInstance.post("/search", data)
+            return fulfillWithValue(res.data as ApiResponseType)
         } catch (error: any) {
             return rejectWithValue(error.response.data as ApiResponseType);
         }

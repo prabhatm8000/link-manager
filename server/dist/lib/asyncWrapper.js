@@ -8,9 +8,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.catchHandler = void 0;
 const response_1 = require("../errors/response");
+const messages_1 = __importDefault(require("../constants/messages"));
+const statusMessages = new messages_1.default();
 const asyncWrapper = (callback) => {
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         try {
@@ -20,11 +25,12 @@ const asyncWrapper = (callback) => {
         }
         catch (error) {
             console.log(callback.name);
-            (0, exports.catchHandler)(error, res);
+            (0, exports.catchHandler)(error, req, res);
         }
+        res.end();
     });
 };
-const catchHandler = (error, res) => {
+const catchHandler = (error, req, res) => {
     if (error instanceof response_1.APIResponseError) {
         res.status(error.status).json({
             success: error.success,
@@ -32,10 +38,10 @@ const catchHandler = (error, res) => {
         });
     }
     else {
-        console.log(error);
+        console.log(req.url, error);
         res.status(500).json({
             success: false,
-            message: "Internal Server Error",
+            message: statusMessages.getRandomInternalServerErrorMessage(),
         });
     }
 };

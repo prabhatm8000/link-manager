@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import envVars from "../constants/envVars";
-import type { IUser } from "../models/users";
-import type { IWorkspace } from "../models/workspaces";
+import type { IUser } from "../types/user";
+import type { IWorkspace } from "../types/workspace";
 import { inviteConfig, otpConfig } from "../constants/configs";
 import jwt from "jsonwebtoken";
 
@@ -98,12 +98,12 @@ async function sendPasswordResetEmail(to: string, resetToken: string) {
 
 async function sendInviteToJoinWorkspaceMail(
     to: string,
-    workspace: IWorkspace,
+    workspace: Pick<IWorkspace, "id" | "name">,
     senderUser: IUser
 ) {
     const inviteLink = genarateInviteLink(
-        workspace._id.toString(),
-        senderUser._id.toString(),
+        workspace.id,
+        senderUser.id,
         to
     );
     const mailObj = {

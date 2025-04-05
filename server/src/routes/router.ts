@@ -1,11 +1,19 @@
 import { Router } from "express";
-import usersRouter from "./usersRouter";
-import workspacesRouter from "./workspacesRouter";
-import linksRouter from "./linksRouter";
-const router = Router();
+import linksRouter from "./api/linksRouter";
+import usersRouter from "./api/usersRouter";
+import workspacesRouter from "./api/workspacesRouter";
+import linkRedirectRouter from "./redirect/linkRedirectRouter";
 
-router.use("/user", usersRouter);
-router.use("/workspace", workspacesRouter);
-router.use("/link", linksRouter);
+const apiRouter = Router();
+apiRouter.use("/user", usersRouter);
+apiRouter.use("/workspace", workspacesRouter);
+apiRouter.use("/link", linksRouter);
+
+const redirectRouter = Router();
+redirectRouter.use("/", linkRedirectRouter);
+
+const router = Router();
+router.use("/api/v1", apiRouter);
+router.use("/", redirectRouter);
 
 export default router;
