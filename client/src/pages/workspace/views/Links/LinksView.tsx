@@ -59,6 +59,7 @@ const LinksView = () => {
         setShowModals((p) => {
             return { ...p, [modalKey]: state || !p[modalKey] };
         });
+        if (!state) setSelectedLink(null);
     };
 
     // #region modal handlers
@@ -84,7 +85,6 @@ const LinksView = () => {
         {
             label: "Edit",
             icon: <TbEdit />,
-
             onClick: handleEditBtn,
         },
         {

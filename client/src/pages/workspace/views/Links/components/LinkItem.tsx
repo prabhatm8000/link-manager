@@ -55,18 +55,18 @@ const LinkItem = ({
                             {tag}
                         </span>
                     ))}
-                    {link?.tags?.length && link?.tags?.length > 3 && (
+                    {link?.tags?.length && link?.tags?.length > 3 ? (
                         <span>...</span>
-                    )}
+                    ): "-"}
                 </div>
             </TableCell>
             <TableCell>
                 <span
                     className={`${
-                        link?.isActive ? "bg-green-500" : "bg-red-500"
+                        link?.status === "active" ? "bg-green-500" : "bg-red-500"
                     } rounded-full px-3 py-1 text-xs font-semibold mr-2 text-white`}
                 >
-                    {link?.isActive ? "Active" : "Inactive"}
+                    {link?.status.charAt(0).toUpperCase() + link?.status.slice(1)}
                 </span>
             </TableCell>
             <TableCell className="text-right">

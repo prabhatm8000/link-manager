@@ -1,10 +1,9 @@
-import useTheme from "@/hooks/useTheme";
 import { useEffect, useState } from "react";
 import SideBar, { SideBarHeader } from "./components/SideBar";
 
 const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
     const [showSideBar, setShowSideBar] = useState<boolean>(false);
-    const { theme } = useTheme();
+    // const { theme } = useTheme();
     useEffect(() => {
         const workspaceElement = document.getElementById("workspace");
         if (workspaceElement) {

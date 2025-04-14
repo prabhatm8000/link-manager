@@ -83,7 +83,7 @@ const CreateLinkModal = ({
     const [formSubmitLoading, setFormSubmitLoading] = useState<boolean>(false);
     const [generatingShortUrlKey, setGeneratingShortUrlKey] =
         useState<boolean>(false);
-    const [fetchingMetadata, setFetchingMetadata] = useState<boolean>(false);
+    const [_, setFetchingMetadata] = useState<boolean>(false);
     const dispatch = useDispatch<AppDispatch>();
     const workspaceState: IWorkspaceState = useSelector(
         (state: any) => state.workspace
@@ -209,7 +209,6 @@ const CreateLinkModal = ({
         setTags(formDataForEdit.tags || []);
 
         if (formDataForEdit.expirationTime) {
-
             // show expiration
             setBottomOptions((prevOptions) => {
                 const newOptions = prevOptions.map((prevOption) => {
@@ -395,11 +394,23 @@ const CreateLinkModal = ({
                                     <div className="flex gap-1 items-center w-full">
                                         <Input
                                             type="text"
-                                            value={watch("expirationTime") ? new Date(watch("expirationTime") || "").toLocaleString() : ""}
-                                            placeholder="Ex. 1min, 1h, 1d, 1w, 1m, 1y"
+                                            value={
+                                                watch("expirationTime")
+                                                    ? new Date(
+                                                          watch(
+                                                              "expirationTime"
+                                                          ) || ""
+                                                      ).toLocaleString()
+                                                    : ""
+                                            }
+                                            placeholder="Ex. 4/15/2025, 5:19:00 PM"
                                             className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
                                         />
-                                        <span>
+                                        <Button
+                                            type="button"
+                                            variant={"outline"}
+                                            size={"icon"}
+                                        >
                                             <Label htmlFor="link-expiration-time">
                                                 <IoCalendarOutline className="size-5" />
                                                 <input
@@ -418,7 +429,7 @@ const CreateLinkModal = ({
                                                     )}
                                                 />
                                             </Label>
-                                        </span>
+                                        </Button>
                                     </div>
                                     {errors.expirationTime && (
                                         <span className="text-red-500 text-sm absolute bottom-0">

@@ -56,14 +56,14 @@ const LinkDetailsModal = ({
         {
             label: "Status",
             type: "text",
-            value: link.isActive ? (
+            value: link.status === "active" ? (
                 <span className="inline-block bg-green-500 text-foreground rounded-full px-3 py-1 text-xs font-semibold">
                     {" "}
                     Active
                 </span>
             ) : (
                 <span className="inline-block bg-red-500 text-foreground rounded-full px-3 py-1 text-xs font-semibold">
-                    Inactive
+                    {link.status.charAt(0).toUpperCase() + link.status.slice(1)}
                 </span>
             ),
         },
@@ -156,7 +156,7 @@ const LinkDetailsModal = ({
                                             ))}
                                         </p>
                                     ) : (
-                                        <p>{item.value || "-"}</p>
+                                        <p>{typeof item.value === "string" && item.value ? item.value : new String(item.value)}</p>
                                     )}
                                 </div>
                             ))}

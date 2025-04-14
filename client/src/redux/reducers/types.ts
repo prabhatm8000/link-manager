@@ -61,7 +61,7 @@ export interface ILink {
     expirationTime?: Date;
     password?: string;
 
-    isActive: boolean;
+    status: "active" | "inactive" | "expired";
     workspaceId: string;
     creatorId: string;
 

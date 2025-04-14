@@ -1,1 +1,0 @@
-import{j as s}from"./index-D_kBh24d.js";import{N as t,R as e,d as a}from"./AppRouter-BCJl_qAS.js";const r=()=>s.jsx("div",{className:"",children:s.jsx(t,{})}),i=()=>s.jsx(e,{children:s.jsx(a,{path:"*",element:s.jsx(r,{})})});export{i as default};
