@@ -1,14 +1,22 @@
+export interface LinkMetadata {
+    title: string;
+    description: string;
+    favicon: string;
+    previewImg: string;
+}
+
 /**
  * links and related events will follow plan of workspace
- */
+*/
 export interface ILinks extends mongoose.Document {
     _id: mongoose.Types.ObjectId;
     id: string;
     destinationUrl: string;
     shortUrlKey: string;
+    metadata?: LinkMetadata;
     tags?: string[];
     comment?: string;
-    expirationTime?: string[];
+    expirationTime?: Date;
     password?: string;
 
     isActive: boolean;
@@ -22,6 +30,7 @@ export interface ILinks extends mongoose.Document {
     // methods
     comparePassword: (password: string) => Promise<boolean>;
 }
+
 
 export interface ILinksService {
     /**
@@ -45,9 +54,10 @@ export interface ILinksService {
     createLink: (link: {
         destinationUrl: string;
         shortUrlKey: string;
+        metadata?: LinkMetadata;
         tags?: string[];
         comment?: string;
-        expirationTime?: string[];
+        expirationTime?: Date;
         password?: string;
         workspaceId: string;
         creatorId: string;
@@ -84,7 +94,13 @@ export interface ILinksService {
      * @param shortUrlKey
      * @returns
      */
-    justTheDestinationUrl: (shortUrlKey: string) => Promise<{_id: string, destinationUrl: string, password?: string}>;
+    justTheDestinationUrl: (shortUrlKey: string) => Promise<{
+        _id: string;
+        shortUrl: string;
+        destinationUrl: string;
+        password?: string;
+        metadata?: LinkMetadata;
+    }>;
 
     /**
      * authentication required, [checks userId in workspace]

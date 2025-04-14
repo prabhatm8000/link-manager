@@ -3,7 +3,7 @@ import envVars from "../constants/envVars";
 import { APIResponseError } from "../errors/response";
 import Links from "../models/links";
 import Workspace from "../models/workspaces";
-import type { ILinks, ILinksService } from "../types/link";
+import type { ILinks, ILinksService, LinkMetadata } from "../types/link";
 import type { IWorkspace } from "../types/workspace";
 import tagsService from "./tagsService";
 import workspacesService from "./workspacesService";
@@ -52,9 +52,10 @@ const generateUrlWithShortUrlKey = (shortUrlKey: string): string => {
 const createLink = async (link: {
     destinationUrl: string;
     shortUrlKey: string;
+    metadata?: LinkMetadata;
     tags?: string[];
     comment?: string;
-    expirationTime?: string[];
+    expirationTime?: Date;
     password?: string;
 
     workspaceId: string;
@@ -157,6 +158,7 @@ const getOneLinkBy = async ({
                     _id: 1,
                     destinationUrl: 1,
                     shortUrlKey: 1,
+                    metadata: 1,
                     tags: 1,
                     comment: 1,
                     expirationTime: 1,
@@ -191,12 +193,18 @@ const getOneLinkBy = async ({
 
 /**
  * authentication not required, [probably for redirecting :D, don't use anywhere else]
- * @param shortUrlKey 
- * @returns 
+ * @param shortUrlKey
+ * @returns
  */
 const justTheDestinationUrl = async (
     shortUrlKey: string
-): Promise<{ _id: string; destinationUrl: string, password?: string }> => {
+): Promise<{
+    _id: string;
+    destinationUrl: string;
+    shortUrl: string;
+    password?: string;
+    metadata?: LinkMetadata;
+}> => {
     const link = await Links.aggregate([
         {
             $match: {
@@ -207,6 +215,7 @@ const justTheDestinationUrl = async (
             $project: {
                 _id: 1,
                 destinationUrl: 1,
+                metadata: 1,
                 password: 1,
             },
         },
@@ -214,6 +223,7 @@ const justTheDestinationUrl = async (
     if (link.length === 0) {
         throw new APIResponseError("Link not found", 404, false);
     }
+    link[0]["shortUrl"] = generateUrlWithShortUrlKey(shortUrlKey);
     return link[0];
 };
 
@@ -263,6 +273,11 @@ const getLinksByWorkspaceId = async (
             },
         },
         {
+            $sort: {
+                createdAt: -1,
+            },
+        },
+        {
             $project: {
                 _id: 1,
                 destinationUrl: 1,
@@ -278,11 +293,6 @@ const getLinksByWorkspaceId = async (
                     email: "$creator.email",
                     profilePicture: "$creator.profilePicture",
                 },
-            },
-        },
-        {
-            $sort: {
-                createdAt: -1,
             },
         },
     ]);
@@ -313,9 +323,22 @@ const updateLink = async (
         throw new APIResponseError("Link not found", 404, false);
     }
     await Workspace.authorized(existingLink.workspaceId, userId);
-    const updatedLink = await Links.findByIdAndUpdate(linkId, link, {
-        new: true,
-    });
+    // no shortUrlKey update
+    const updatedLink = await Links.findByIdAndUpdate(
+        linkId,
+        {
+            destinationUrl: link.destinationUrl,
+            metadata: link.metadata,
+            tags: link.tags,
+            comment: link.comment,
+            expirationTime: link.expirationTime,
+            password: link.password,
+            isActive: link.isActive,
+        },
+        {
+            new: true,
+        }
+    );
     if (!updatedLink) {
         throw new APIResponseError("Link not found", 404, false);
     }

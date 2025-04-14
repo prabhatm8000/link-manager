@@ -13,9 +13,14 @@ const userSchema = new mongoose.Schema(
             required: true,
             unique: true,
         },
+        // not required for authType: google
         password: {
             type: String,
-            required: true,
+        },
+        authType: {
+            type: String,
+            enum: ["local", "google"],
+            default: "local",
         },
         profilePicture: {
             type: String,
@@ -40,7 +45,7 @@ const userSchema = new mongoose.Schema(
 userSchema.index({ email: 1 }, { unique: true });
 
 userSchema.pre("save", async function (next) {
-    if (this.isModified("password")) {
+    if (this.password && this.isModified("password")) {
         this.password = await bcrypt.hash(this.password, 10);
     }
     next();

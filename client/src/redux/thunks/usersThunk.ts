@@ -18,8 +18,9 @@ export const login = createAsyncThunk(
     "user/login",
     async (
         data: {
-            email: string;
-            password: string;
+            email?: string;
+            password?: string;
+            credential?: string;
         },
         { rejectWithValue, fulfillWithValue }
     ) => {

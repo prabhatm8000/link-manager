@@ -17,61 +17,12 @@ const response_1 = require("../errors/response");
 const mongodb_1 = require("../lib/mongodb");
 const users_1 = __importDefault(require("../models/users"));
 const workspaces_1 = __importDefault(require("../models/workspaces"));
+const linksService_1 = __importDefault(require("./linksService"));
 // limits for a user
 const MAX_WORKSPACES = 5;
 const MAX_PEOPLE = 20;
 /**
- * check if user is authorized to perform action on workspace
- * @param ws
- * @param userId
- * @param checkAll - if true[default], checks user in people and createdBy, else only in people
- * @returns
- */
-const authorized = (ws_1, userId_1, ...args_1) => __awaiter(void 0, [ws_1, userId_1, ...args_1], void 0, function* (ws, userId, checkAll = true) {
-    if (ws instanceof mongoose_1.default.Types.ObjectId || typeof ws === "string") {
-        const workspace = yield workspaces_1.default.aggregate([
-            {
-                $match: {
-                    $and: [
-                        {
-                            _id: new mongoose_1.default.Types.ObjectId(ws),
-                        },
-                        {
-                            people: {
-                                $in: [new mongoose_1.default.Types.ObjectId(userId)],
-                            },
-                        },
-                        {
-                            isActive: true,
-                        },
-                        (checkAll ? { createdBy: new mongoose_1.default.Types.ObjectId(userId) } : {}),
-                    ],
-                },
-            },
-            {
-                $project: {
-                    _id: 1,
-                },
-            },
-        ]);
-        if (workspace.length === 0) {
-            throw new response_1.APIResponseError("Unauthorized or Workspace not found", 401, false);
-        }
-    }
-    else {
-        // if ws is an instance of Workspace [don't fetch from db]
-        const peopleIds = ws.people.map((p) => p.toString());
-        if (!peopleIds.includes(userId.toString())) {
-            throw new response_1.APIResponseError("Unauthorized or Workspace not found", 401, false);
-        }
-        else if (checkAll && ws.createdBy.toString() !== userId.toString()) {
-            throw new response_1.APIResponseError("Unauthorized or Workspace not found", 401, false);
-        }
-    }
-    return true;
-});
-/**
- *
+ * [user is already authenticated]
  * @param workspace
  * @returns
  */
@@ -166,6 +117,7 @@ const getWorkspaceById = (workspaceId, userId) => __awaiter(void 0, void 0, void
                 description: 1,
                 createdBy: 1,
                 isActive: 1,
+                linkCount: 1,
             },
         },
     ]);
@@ -251,6 +203,9 @@ const deleteWorkspace = (workspaceId, createdBy) => __awaiter(void 0, void 0, vo
             createdBy: new mongoose_1.default.Types.ObjectId(createdBy),
         }, { session });
         yield users_1.default.findByIdAndUpdate(createdBy, { $inc: { workspaceCreatedCount: -1 } }, { session });
+        yield linksService_1.default.deleteAllLinksByWorkspaceId(workspaceId, createdBy, {
+            session,
+        });
         yield session.commitTransaction();
         if (!result) {
             throw new response_1.APIResponseError("Workspace not found", 404, false);
@@ -345,7 +300,7 @@ const removePeople = (workspaceId, peopleId, userId) => __awaiter(void 0, void 0
     if (userId === peopleId) {
         throw new response_1.APIResponseError("You cannot remove yourself", 400, false);
     }
-    yield authorized(workspaceId, userId);
+    yield workspaces_1.default.authorized(workspaceId, userId);
     const result = yield workspaces_1.default.updateOne({ _id: workspaceId, createdBy: userId }, {
         $pull: { people: new mongoose_1.default.Types.ObjectId(peopleId) },
         $inc: { peopleCount: -1 },
@@ -405,6 +360,7 @@ const getInviteData = (workspaceId, senderId) => __awaiter(void 0, void 0, void 
         workspace,
         senderDetails: {
             _id: senderDetails._id,
+            id: senderDetails._id.toString(),
             name: senderDetails.name,
             email: senderDetails.email,
             profilePicture: senderDetails.profilePicture,
@@ -412,7 +368,6 @@ const getInviteData = (workspaceId, senderId) => __awaiter(void 0, void 0, void 
     };
 });
 const workspacesService = {
-    authorized,
     createWorkspace,
     getWorkspaceById,
     getWorkspaceByCreatorId,

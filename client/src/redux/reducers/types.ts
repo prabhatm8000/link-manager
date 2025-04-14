@@ -50,9 +50,15 @@ export interface ILink {
     destinationUrl: string;
     shortUrl: string;
     shortUrlKey: string;
+    metadata?: {
+        title: string;
+        description: string;
+        favicon: string;
+        previewImg: string;
+    };
     tags?: string[];
     comment?: string;
-    expirationTime?: string[];
+    expirationTime?: Date;
     password?: string;
 
     isActive: boolean;

@@ -16,14 +16,15 @@ const messages_1 = __importDefault(require("../constants/messages"));
 const response_1 = require("../errors/response");
 const asyncWrapper_1 = __importDefault(require("../lib/asyncWrapper"));
 const linksService_1 = __importDefault(require("../services/linksService"));
+const tagsService_1 = __importDefault(require("../services/tagsService"));
 const statusMessages = new messages_1.default("link");
-const generateShortLinkKey = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const generateShortUrlKey = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { size } = req.body;
-    const shortLinkKey = yield linksService_1.default.generateShortLinkKey(size);
+    const ShortUrlKey = yield linksService_1.default.generateShortUrlKey(size);
     res.status(200).json({
         success: true,
         message: "",
-        data: shortLinkKey,
+        data: ShortUrlKey,
     });
 }));
 const createLink = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -57,7 +58,7 @@ const getLinkByShortUrlKey = (0, asyncWrapper_1.default)((req, res) => __awaiter
     const link = yield linksService_1.default.getOneLinkBy({
         shortUrlKey,
         userId: ((_a = req.user) === null || _a === void 0 ? void 0 : _a._id.toString()) || "",
-        workspaceId
+        workspaceId,
     });
     res.status(200).json({
         success: true,
@@ -68,10 +69,11 @@ const getLinkByShortUrlKey = (0, asyncWrapper_1.default)((req, res) => __awaiter
 const getLinksByWorkspaceId = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { workspaceId } = req.params;
+    const q = req.query.q;
     if (!workspaceId) {
         throw new response_1.APIResponseError(statusMessages.getMessage("Workspace ID is required", "error", "other"), 400, false);
     }
-    const links = yield linksService_1.default.getLinksByWorkspaceId(workspaceId, ((_a = req.user) === null || _a === void 0 ? void 0 : _a._id.toString()) || "");
+    const links = yield linksService_1.default.getLinksByWorkspaceId(workspaceId, ((_a = req.user) === null || _a === void 0 ? void 0 : _a._id.toString()) || "", q);
     res.status(200).json({
         success: true,
         message: "",
@@ -87,7 +89,7 @@ const getLinkById = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, 
     const link = yield linksService_1.default.getOneLinkBy({
         linkId,
         userId: ((_a = req.user) === null || _a === void 0 ? void 0 : _a._id.toString()) || "",
-        workspaceId
+        workspaceId,
     });
     res.status(200).json({
         success: true,
@@ -134,8 +136,20 @@ const deleteLink = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, v
         data: link,
     });
 }));
+const tagsSuggestions = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { workspaceId, q } = req.body;
+    if (!workspaceId) {
+        throw new response_1.APIResponseError(statusMessages.getMessage("Workspace ID is required", "error", "other"), 400, false);
+    }
+    const suggestions = yield tagsService_1.default.searchTags(workspaceId, q);
+    res.status(200).json({
+        success: true,
+        message: "",
+        data: suggestions,
+    });
+}));
 const linksController = {
-    generateShortLinkKey,
+    generateShortUrlKey,
     createLink,
     getLinkByShortUrlKey,
     getLinksByWorkspaceId,
@@ -143,5 +157,6 @@ const linksController = {
     updateLink,
     deactivateLink,
     deleteLink,
+    tagsSuggestions,
 };
 exports.default = linksController;

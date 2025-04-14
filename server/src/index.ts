@@ -1,6 +1,5 @@
 import cookieParser from "cookie-parser";
 import express, { Express } from "express";
-import path from "path";
 import { corsConfig, rateLimiter } from "./constants/configs";
 import envVars from "./constants/envVars";
 import consoleColor from "./lib/consoleColor";
@@ -32,16 +31,6 @@ app.use(rateLimiter);
 app.use(express.json());
 app.use(cookieParser());
 app.use(router);
-
-app.use(express.static(path.join(__dirname, "../../client/dist"), {
-    maxAge: "1y",   // browser cache ui files
-    etag: true      // force cache use
-}));
-
-// for prod, serving ui files
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../../client/dist", "index.html"));
-});
 
 app.listen(PORT, "0.0.0.0", () => {
     connectToDB()

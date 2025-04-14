@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
-import { APIResponseError } from "../errors/response";
 import StatusMessagesMark4 from "../constants/messages";
+import { APIResponseError } from "../errors/response";
 
 const statusMessages = new StatusMessagesMark4();
 
@@ -14,12 +14,11 @@ const asyncWrapper = (
     return async (req: Request, res: Response, next?: NextFunction) => {
         try {
             await callback(req, res, next);
-            if (next) next();
+            if (!res.headersSent && next) next();
         } catch (error) {
             console.log(callback.name);
             catchHandler(error, req, res);
         }
-        res.end();
     };
 };
 

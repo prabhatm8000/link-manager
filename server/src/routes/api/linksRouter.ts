@@ -5,24 +5,28 @@ import authMiddleware from "../../middlewares/authMiddleware";
 const linksRouter = Router();
 linksRouter.use(authMiddleware);
 
-linksRouter.route("/generate-short-link-key").post(linksController.generateShortUrlKey);
+linksRouter.post(
+    "/generate-short-link-key",
+    linksController.generateShortUrlKey
+);
 
-linksRouter.route("/").post(linksController.createLink);
+linksRouter.get("/metadata", linksController.getMetadata);
+
+linksRouter.post("/", linksController.createLink);
 
 linksRouter
-    .route("/workspace/:workspaceId")
-    .get(linksController.getLinksByWorkspaceId);
+    .get("/workspace/:workspaceId", linksController.getLinksByWorkspaceId);
 
-linksRouter.route("/:linkId").get(linksController.getLinkById);
+linksRouter.get("/:linkId", linksController.getLinkById);
 
-linksRouter.route("/:linkId").patch(linksController.updateLink);
+linksRouter.patch("/:linkId", linksController.updateLink);
 
-linksRouter.route("/:linkId").delete(linksController.deleteLink);
+linksRouter.delete("/:linkId", linksController.deleteLink);
 
-linksRouter.route("/:linkId/deactivate").patch(linksController.deactivateLink);
+linksRouter.patch("/:linkId/deactivate", linksController.deactivateLink);
 
-linksRouter.route("/:shortUrlKey").get(linksController.getLinkByShortUrlKey);
+linksRouter.get("/:shortUrlKey", linksController.getLinkByShortUrlKey);
 
-linksRouter.route("/getTagsSuggestions").post(linksController.tagsSuggestions);
+linksRouter.post("/getTagsSuggestions", linksController.tagsSuggestions);
 
 export default linksRouter;

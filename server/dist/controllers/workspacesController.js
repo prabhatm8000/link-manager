@@ -91,7 +91,7 @@ const sendInviteToJoinWorkspace = (0, asyncWrapper_1.default)((req, res) => __aw
     if (!workspace) {
         throw new response_1.APIResponseError(statusMessages.getMessage("Workspace not found", "error", "other"), 404, false);
     }
-    yield (0, mail_1.sendInviteToJoinWorkspaceMail)(email, workspace, user);
+    yield (0, mail_1.sendInviteToJoinWorkspaceMail)(email, { name: workspace.name, id: workspace._id }, user);
     res.status(200).json({
         success: true,
         message: statusMessages.getMessage("Invite sent successfully", "success", "other"),

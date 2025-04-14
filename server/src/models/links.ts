@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import mongoose from "mongoose";
 import type { ILinks } from "../types/link";
 
 const linksSchema = new mongoose.Schema(
@@ -10,8 +10,24 @@ const linksSchema = new mongoose.Schema(
         },
         shortUrlKey: {
             type: String,
-            required: true, 
+            required: true,
             unique: true,
+        },
+        metadata: {
+            type: {
+                title: {
+                    type: String,
+                },
+                description: {
+                    type: String,
+                },
+                favicon: {
+                    type: String,
+                },
+                previewImg: {
+                    type: String,
+                },
+            },
         },
         tags: {
             type: [String],
@@ -20,7 +36,7 @@ const linksSchema = new mongoose.Schema(
             type: String,
         },
         expirationTime: {
-            type: [String],
+            type: Date,
         },
         password: {
             type: String,
@@ -68,7 +84,7 @@ linksSchema.set("toJSON", {
         // delete ret.password;
         ret.hasPassword = !!ret.password;
         return ret;
-    }
+    },
 });
 
 const Links = mongoose.model<ILinks>("Links", linksSchema);

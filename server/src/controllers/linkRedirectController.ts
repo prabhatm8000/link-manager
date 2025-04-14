@@ -1,11 +1,10 @@
 import type { Request, Response } from "express";
+import { APIResponseError } from "../errors/response";
+import renderMetadata from "../lib/renderRedirectHtml";
 import linksService from "../services/linksService";
 
 const redirectToDestination = async (req: Request, res: Response) => {
     const { shortUrlKey } = req.params;
-
-    console.log(shortUrlKey, "shortUrlKey");
-    
 
     if (!shortUrlKey) {
         res.status(400).json({
@@ -15,24 +14,21 @@ const redirectToDestination = async (req: Request, res: Response) => {
         });
         return;
     }
+
     const url = await linksService.justTheDestinationUrl(shortUrlKey);
     if (!url) {
-        res.status(404).json({
-            success: false,
-            message: "Short URL not found",
-            data: null,
-        });
-        return;
+        throw new APIResponseError("Short URL not found", 404, false);
     }
+
     if (url.password) {
-        res.status(401).json({
-            success: false,
-            message: "Password protected link",
-            data: null,
-        });
-        return;
+        throw new APIResponseError("Password protected link", 401, false);
     }
-    res.redirect(url.destinationUrl);
+    // res.redirect(url.destinationUrl);
+    res.send(renderMetadata({
+        shortUrl: url.shortUrl,
+        destinationUrl: url.destinationUrl,
+        metadata: url.metadata
+    }))
 };
 
 const linkRedirectController = {

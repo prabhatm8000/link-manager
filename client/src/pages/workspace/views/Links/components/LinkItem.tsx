@@ -7,21 +7,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TableCell, TableRow } from "@/components/ui/table";
 import type { ILink } from "@/redux/reducers/types";
-import { AiOutlineDelete } from "react-icons/ai";
-import { IoMdLink } from "react-icons/io";
 import { SlOptionsVertical } from "react-icons/sl";
-import { TbEdit } from "react-icons/tb";
+import type { DropDownOptionsType } from "../types";
 
 const LinkItem = ({
     link,
-    onDetail,
-    onEdit,
-    onDelete,
+    options,
 }: {
     link: ILink;
-    onDetail: (link: ILink) => void;
-    onEdit: (link: ILink) => void;
-    onDelete: (link: ILink) => void;
+    options?: DropDownOptionsType[];
 }) => {
     return (
         <TableRow>
@@ -31,13 +25,12 @@ const LinkItem = ({
                     target="_blank"
                     className="text-blue-400"
                 >
-                    {`/${link.shortUrlKey}`}
+                    /{link.shortUrlKey}
                 </a>
             </TableCell>
 
             <TableCell
                 title={link?.creator?.name}
-                onClick={() => onDetail(link)}
             >
                 <div className="flex items-center gap-2">
                     <Avatar>
@@ -52,7 +45,7 @@ const LinkItem = ({
                     <span>{link?.creator?.email}</span>
                 </div>
             </TableCell>
-            <TableCell onClick={() => onDetail(link)}>
+            <TableCell>
                 <div className="flex flex-wrap gap-2 min-w-52">
                     {link?.tags?.slice(0, 3).map((tag) => (
                         <span
@@ -71,7 +64,7 @@ const LinkItem = ({
                 <span
                     className={`${
                         link?.isActive ? "bg-green-500" : "bg-red-500"
-                    } rounded-full px-3 py-1 text-xs font-semibold mr-2`}
+                    } rounded-full px-3 py-1 text-xs font-semibold mr-2 text-white`}
                 >
                     {link?.isActive ? "Active" : "Inactive"}
                 </span>
@@ -83,30 +76,16 @@ const LinkItem = ({
                             <SlOptionsVertical className="size-4 opacity-50" />
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            <DropdownMenuItem
-                                onClick={() => onDetail(link)}
-                                variant={"default"}
-                                className="flex gap-2 items-center justify-start w-full hover:bg-foreground/10 dark:hover:bg-foreground/10"
-                            >
-                                <IoMdLink />
-                                <span>{"Details"}</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => onEdit(link)}
-                                variant={"default"}
-                                className="flex gap-2 items-center justify-start w-full hover:bg-foreground/10 dark:hover:bg-foreground/10"
-                            >
-                                <TbEdit />
-                                <span>{"Edit"}</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                className="flex gap-2 items-center justify-start w-full hover:bg-red-200 dark:hover:bg-red-950"
-                                variant="destructive"
-                                onClick={() => onDelete(link)}
-                            >
-                                <AiOutlineDelete className="text-red-500" />
-                                <span>{"Delete"}</span>
-                            </DropdownMenuItem>
+                            {options?.map((option: DropDownOptionsType) => (
+                                <DropdownMenuItem
+                                    key={option.label}
+                                    variant={option?.variant || "default"}
+                                    onClick={() => option.onClick(link)}
+                                >
+                                    {option.icon}
+                                    {option.label}
+                                </DropdownMenuItem>
+                            ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

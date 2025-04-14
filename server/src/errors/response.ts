@@ -1,5 +1,3 @@
-import statusMessages from "../constants/messages";
-
 export class APIResponseError extends Error {
     public status: number;
     public success: boolean;

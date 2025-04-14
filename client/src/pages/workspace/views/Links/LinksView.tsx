@@ -1,25 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import LoadingCircle from "@/components/ui/LoadingCircle";
-import {
-    Table,
-    TableBody,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import type { ILink, ILinkState, IWorkspaceState } from "@/redux/reducers/types";
+import type {
+    ILink,
+    ILinkState,
+    IWorkspaceState,
+} from "@/redux/reducers/types";
 import { AppDispatch } from "@/redux/store";
 import { getLinksByWorkspaceId } from "@/redux/thunks/linksThunks";
 import { useEffect, useState } from "react";
-import { IoIosSearch, IoMdRefresh } from "react-icons/io";
+import { AiOutlineDelete } from "react-icons/ai";
+import { IoIosSearch, IoMdLink, IoMdRefresh } from "react-icons/io";
 import { IoAdd } from "react-icons/io5";
+import { TbEdit } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import ViewHeader from "../../components/ViewHeader";
 import CreateLinkModal from "./components/CreateLinkModal";
 import DeleteLinkModal from "./components/DeleteLinkModal";
 import LinkDetailsModal from "./components/LinkDetailsModal";
-import LinkItem from "./components/LinkItem";
+import LinkTable from "./components/LinkTable";
+import type { DropDownOptionsType } from "./types";
 
 type WhichModalType = {
     createLink: boolean;
@@ -60,6 +60,8 @@ const LinksView = () => {
             return { ...p, [modalKey]: state || !p[modalKey] };
         });
     };
+
+    // #region modal handlers
     const handleDetailBtn = (link: ILink) => {
         setSelectedLink(link);
         handleModalState("detailsLink", true);
@@ -72,6 +74,26 @@ const LinksView = () => {
         setSelectedLink(link);
         handleModalState("deleteLink", true);
     };
+    // #region link options
+    const linkOptions: DropDownOptionsType[] = [
+        {
+            label: "Details",
+            icon: <IoMdLink />,
+            onClick: handleDetailBtn,
+        },
+        {
+            label: "Edit",
+            icon: <TbEdit />,
+
+            onClick: handleEditBtn,
+        },
+        {
+            label: "Delete",
+            icon: <AiOutlineDelete />,
+            variant: "destructive",
+            onClick: handleDeleteBtn,
+        },
+    ];
 
     useEffect(() => {
         // debounce
@@ -97,20 +119,47 @@ const LinksView = () => {
         <>
             <ViewHeader heading="Links" subHeading="Manage your links" />
 
-            <form className="items-center gap-2 inline-flex w-full mt-5 mb-10">
-                <Input
-                    id="search-link-view"
-                    type="text"
-                    placeholder="Search with tags or creator email or short url, at least 3 characters"
-                    className="w-full"
-                    value={searchQuery}
-                    onChange={handleSearchQueryChange}
-                />
-                <Button type="submit" className="inline-flex items-center">
-                    <IoIosSearch className="size-5" />
-                    <span>Search</span>
-                </Button>
-            </form>
+            <div className="flex flex-col md:flex-row gap-2 items-start md:items-center justify-between mt-1 mb-4">
+                <span></span>
+                {/* <DropdownMenu>
+                    <DropdownMenuTrigger>
+                        <Button variant="outline">
+                            <LuSettings2 className="size-5" />
+                            <span>Display</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="ms-4">
+                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>Profile</DropdownMenuItem>
+                        <DropdownMenuItem>Billing</DropdownMenuItem>
+                        <DropdownMenuItem>Team</DropdownMenuItem>
+                        <DropdownMenuItem>Subscription</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu> */}
+                <form
+                    className="items-center gap-2 inline-flex max-w-sm w-full"
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSearchQueryChange({
+                            target: { value: searchQuery },
+                        } as any);
+                    }}
+                >
+                    <Input
+                        id="search-link-view"
+                        type="text"
+                        placeholder="Search with tags or creator email or short url, at least 3 characters"
+                        className="w-full"
+                        value={searchQuery}
+                        onChange={handleSearchQueryChange}
+                    />
+                    <Button type="submit" className="inline-flex items-center">
+                        <IoIosSearch className="size-5" />
+                        <span>Search</span>
+                    </Button>
+                </form>
+            </div>
 
             <div className="flex flex-col gap-3">
                 <div className="flex justify-between items-center gap-3">
@@ -134,41 +183,17 @@ const LinksView = () => {
                         }
                     >
                         <IoAdd />
-                        <span>Add Link</span>
+                        <span>Create Link</span>
                     </Button>
                 </div>
 
                 {linksState.loading ? (
                     <LoadingCircle className="size-5" />
                 ) : linksState.links.length > 0 ? (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[100px]">
-                                    Short Link
-                                </TableHead>
-                                <TableHead>Creator</TableHead>
-                                <TableHead>Tags</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="text-right">
-                                    Actions
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {linksState.links.map((link) => (
-                                <LinkItem
-                                    key={link._id}
-                                    link={link}
-                                    onDetail={handleDetailBtn}
-                                    onEdit={handleEditBtn}
-                                    onDelete={handleDeleteBtn}
-                                />
-                            ))}
-                        </TableBody>
-                    </Table>
+                    <LinkTable links={linksState.links} options={linkOptions} />
                 ) : null}
             </div>
+
             <CreateLinkModal
                 isOpen={showModals.createLink}
                 onClose={() => handleModalState("createLink")}
@@ -187,6 +212,7 @@ const LinksView = () => {
                         onClose={() => handleModalState("deleteLink")}
                         link={selectedLink}
                     />
+                    {/* for edit */}
                     <CreateLinkModal
                         isOpen={showModals.createLink}
                         onClose={() => handleModalState("createLink")}

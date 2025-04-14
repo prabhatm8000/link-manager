@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import type { ApiResponseType } from "../reducers/types";
 import axiosInstance from "../../lib/axiosInstance";
+import type { ApiResponseType } from "../reducers/types";
 
 export const generateShortUrlKey = createAsyncThunk(
     "links/generate-short-link-key",
@@ -10,6 +10,18 @@ export const generateShortUrlKey = createAsyncThunk(
                 "/link/generate-short-link-key",
                 data
             );
+            return fulfillWithValue(res.data as ApiResponseType);
+        } catch (error: any) {
+            return rejectWithValue(error.response.data as ApiResponseType);
+        }
+    }
+);
+
+export const fetchSiteMetadata = createAsyncThunk(
+    "links/fetch-site-metadata",
+    async (url: string, { rejectWithValue, fulfillWithValue }) => {
+        try {
+            const res = await axiosInstance.get(`/link/metadata?url=${url}`);
             return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
             return rejectWithValue(error.response.data as ApiResponseType);
@@ -27,7 +39,7 @@ export const createLink = createAsyncThunk(
 
             tags?: string[];
             comment?: string;
-            expirationTime?: string[];
+            expirationTime?: Date;
             password?: string;
         },
         { rejectWithValue, fulfillWithValue }
@@ -43,7 +55,10 @@ export const createLink = createAsyncThunk(
 
 export const getLinksByWorkspaceId = createAsyncThunk(
     "links/get-by-workspace-id",
-    async (data: {workspaceId: string, q?: string}, { rejectWithValue, fulfillWithValue }) => {
+    async (
+        data: { workspaceId: string; q?: string },
+        { rejectWithValue, fulfillWithValue }
+    ) => {
         try {
             const res = await axiosInstance.get(
                 `/link/workspace/${data.workspaceId}?q=${data.q}`
@@ -65,7 +80,7 @@ export const updateLink = createAsyncThunk(
 
             tags?: string[];
             comment?: string;
-            expirationTime?: string[];
+            expirationTime?: Date;
             password?: string;
         },
         { rejectWithValue, fulfillWithValue }
@@ -134,8 +149,11 @@ export const getTagsSuggestions = createAsyncThunk(
         { rejectWithValue, fulfillWithValue }
     ) => {
         try {
-            const res = await axiosInstance.post("/link/getTagsSuggestions", data)
-            return fulfillWithValue(res.data as ApiResponseType)
+            const res = await axiosInstance.post(
+                "/link/getTagsSuggestions",
+                data
+            );
+            return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
             return rejectWithValue(error.response.data as ApiResponseType);
         }
@@ -149,8 +167,8 @@ export const searchLinks = createAsyncThunk(
         { rejectWithValue, fulfillWithValue }
     ) => {
         try {
-            const res = await axiosInstance.post("/search", data)
-            return fulfillWithValue(res.data as ApiResponseType)
+            const res = await axiosInstance.post("/search", data);
+            return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
             return rejectWithValue(error.response.data as ApiResponseType);
         }

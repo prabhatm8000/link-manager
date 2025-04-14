@@ -111,7 +111,7 @@ const AppRouter = () => {
             <Toaster
                 theme={theme}
                 richColors
-                duration={10 * 1000}
+                duration={5 * 1000}
                 swipeDirections={["bottom", "left", "right", "top"]}
                 closeButton
             />

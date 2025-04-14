@@ -20,6 +20,10 @@ const genarateOtp = (size = 6) => {
         .toString()
         .slice(0, size);
 };
+/**
+ * it generates otp and sends it via email
+ * @param email
+ */
 const genarateAndSendOtpViaMail = (email) => __awaiter(void 0, void 0, void 0, function* () {
     const otp = genarateOtp(configs_1.otpConfig.size);
     const expiresAt = new Date(Date.now() + configs_1.otpConfig.expiresAt);
@@ -43,6 +47,12 @@ const genarateAndSendOtpViaMail = (email) => __awaiter(void 0, void 0, void 0, f
     // await sendOtpEmail(email, otp);
     console.log(email, otp);
 });
+/**
+ * basically compares the otp
+ * @param email
+ * @param otp
+ * @returns
+ */
 const verifyOtp = (email, otp) => __awaiter(void 0, void 0, void 0, function* () {
     const otpObj = yield otps_1.default.findOne({ email });
     if (!otpObj) {

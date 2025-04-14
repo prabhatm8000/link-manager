@@ -38,7 +38,7 @@ const SideBar = ({
 }) => {
     return (
         <div
-            className={`w-64 h-full backdrop-blur-lg bg-white dark:bg-black p-2 flex flex-col justify-between ${className}`}
+            className={`w-64 h-full backdrop-blur-lg bg-background p-2 flex flex-col justify-between ${className}`}
         >
             <div className="flex flex-col gap-6">
                 <SideBarHeader />
@@ -254,11 +254,12 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
                         <Button
                             key={index}
                             onClick={() => handleTabChange(tab.value)}
-                            variant="ghost"
-                            className={`flex items-center justify-start gap-1 ${
-                                currentTab === tab.value ? "text-blue-500" : ""
+                            variant="ghost" 
+                            className={`relative flex items-center justify-start gap-1 ${
+                                currentTab === tab.value ? "bg-muted-foreground/25 text-foreground" : ""
                             }`}
                         >
+                            {currentTab === tab.value && <span className="bg-muted-foreground h-4 w-1 rounded-full absolute left-0 top-1/2 transform -translate-y-1/2" />}
                             {tab.icon}
                             <span>{tab.title}</span>
                         </Button>

@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import StatusMessagesMark4 from "../constants/messages";
 import { APIResponseError } from "../errors/response";
 import asyncWrapper from "../lib/asyncWrapper";
+import { fetchMetadata } from "../lib/urlMetadeta";
 import linksService from "../services/linksService";
 import tagsService from "../services/tagsService";
 
@@ -18,6 +19,20 @@ const generateShortUrlKey = asyncWrapper(
         });
     }
 );
+
+const getMetadata = asyncWrapper(async (req: Request, res: Response) => {
+    const { url } = req.query;
+    if (!url || typeof url !== "string") {
+        throw new APIResponseError("", 400, false);
+    }
+
+    const metadata = await fetchMetadata(url);
+    res.status(200).json({
+        message: "",
+        success: true,
+        data: metadata,
+    });
+});
 
 const createLink = asyncWrapper(async (req: Request, res: Response) => {
     const {
@@ -236,6 +251,7 @@ const tagsSuggestions = asyncWrapper(async (req: Request, res: Response) => {
 
 const linksController = {
     generateShortUrlKey,
+    getMetadata,
     createLink,
     getLinkByShortUrlKey,
     getLinksByWorkspaceId,

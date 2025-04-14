@@ -16,22 +16,40 @@ import {
 import TOAST_MESSAGES from "@/constants/toastMessages";
 import type { ILink, IWorkspaceState } from "@/redux/reducers/types";
 import type { AppDispatch } from "@/redux/store";
-import { createLink, generateShortUrlKey, getTagsSuggestions, updateLink } from "@/redux/thunks/linksThunks";
+import {
+    createLink,
+    fetchSiteMetadata,
+    generateShortUrlKey,
+    getTagsSuggestions,
+    updateLink,
+} from "@/redux/thunks/linksThunks";
 import { Info } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { IoIosLink } from "react-icons/io";
-import { IoAdd, IoCalendarOutline } from "react-icons/io5";
+import { FaXTwitter } from "react-icons/fa6";
+import { IoMdRefresh } from "react-icons/io";
+import {
+    IoCalendarOutline,
+    IoCopyOutline,
+    IoLinkOutline,
+} from "react-icons/io5";
 import { RiLockPasswordLine } from "react-icons/ri";
+import { VscNewline } from "react-icons/vsc";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 type LinkFormType = {
     destinationUrl: string;
     shortUrlKey: string;
+    metadata?: {
+        title: string;
+        description: string;
+        favicon: string;
+        previewImg: string;
+    };
     tags?: string[];
     comment?: string;
-    expirationTime?: string | string[];
+    expirationTime?: Date;
     password?: string;
 };
 
@@ -63,6 +81,9 @@ const CreateLinkModal = ({
 }) => {
     const [bottomOptions, setBottomOptions] = useState(bottomOptionsInit);
     const [formSubmitLoading, setFormSubmitLoading] = useState<boolean>(false);
+    const [generatingShortUrlKey, setGeneratingShortUrlKey] =
+        useState<boolean>(false);
+    const [fetchingMetadata, setFetchingMetadata] = useState<boolean>(false);
     const dispatch = useDispatch<AppDispatch>();
     const workspaceState: IWorkspaceState = useSelector(
         (state: any) => state.workspace
@@ -74,6 +95,7 @@ const CreateLinkModal = ({
         formState: { errors },
         reset,
         getValues,
+        watch,
     } = useForm<LinkFormType>();
     const [tags, setTags] = useState<string[]>(getValues("tags") || []);
 
@@ -93,9 +115,6 @@ const CreateLinkModal = ({
         const workspaceId = workspaceState?.currentWorkspace?._id;
         if (!workspaceId) return toast.error(TOAST_MESSAGES.NoCurrentWorkspace);
         setFormSubmitLoading(true);
-        const expirationTimeArray = Array.isArray(data.expirationTime)
-            ? data.expirationTime
-            : data.expirationTime?.split(",").map((d) => d.trim());
 
         return Promise.resolve()
             .then(async () => {
@@ -104,7 +123,6 @@ const CreateLinkModal = ({
                         updateLink({
                             ...data,
                             tags,
-                            expirationTime: expirationTimeArray,
                             workspaceId,
                             linkId: formDataForEdit?._id as string,
                         })
@@ -114,7 +132,6 @@ const CreateLinkModal = ({
                         createLink({
                             ...data,
                             tags,
-                            expirationTime: expirationTimeArray,
                             workspaceId,
                         })
                     );
@@ -125,51 +142,38 @@ const CreateLinkModal = ({
                 reset();
                 onClose();
             });
-
-        // if (!editMode) {
-        //     dispatch(
-        //         createLink({
-        //             ...data,
-        //             tags,
-        //             expirationTime: expirationTimeArray,
-        //             workspaceId,
-        //         })
-        //     ).then(() => {
-        //         setFormSubmitLoading(false);
-        //         reset();
-        //         onClose();
-        //     });
-        // } else {
-        //     dispatch(
-        //         createLink({
-        //             ...data,
-        //             tags,
-        //             expirationTime: expirationTimeArray,
-        //             workspaceId,
-        //         })
-        //     ).then(() => {
-        //         setFormSubmitLoading(false);
-        //         reset();
-        //         onClose();
-        //     });
-        // }
     });
 
     const handleClose = () => {
         if (editMode) reset();
         onClose();
-    }
+    };
 
-    const generateShortUrlKeyCall = async (): Promise<string> => {
+    const generateShortUrlKeyCall = async () => {
+        setGeneratingShortUrlKey(true);
         const resultAction = await dispatch(generateShortUrlKey({ size: 10 }));
         if (generateShortUrlKey.fulfilled.match(resultAction)) {
-            return resultAction.payload.data;
+            setValue("shortUrlKey", resultAction.payload.data);
         }
-        return "";
+        setGeneratingShortUrlKey(false);
     };
-    
+
+    const fetchSiteMetadataCall = async (url: string) => {
+        setFetchingMetadata(true);
+        const resultAction = await dispatch(fetchSiteMetadata(url));
+        if (fetchSiteMetadata.fulfilled.match(resultAction)) {
+            setValue("metadata", resultAction.payload.data);
+        }
+        setFetchingMetadata(false);
+    };
+
     const getTagsSuggestionsCall = async (q: string): Promise<string[]> => {
-        const resultAction = await dispatch(getTagsSuggestions({ workspaceId: workspaceState.currentWorkspace?._id || "", q}));
+        const resultAction = await dispatch(
+            getTagsSuggestions({
+                workspaceId: workspaceState.currentWorkspace?._id || "",
+                q,
+            })
+        );
         if (getTagsSuggestions.fulfilled.match(resultAction)) {
             return resultAction.payload.data;
         }
@@ -178,10 +182,18 @@ const CreateLinkModal = ({
 
     useEffect(() => {
         if (editMode) return;
-        generateShortUrlKeyCall().then((shortUrlKey) =>
-            setValue("shortUrlKey", shortUrlKey)
-        );
+        generateShortUrlKeyCall();
     }, []);
+
+    // fetching site metadata
+    useEffect(() => {
+        const url = watch("destinationUrl");
+        if (!url) return;
+        const timeoutId = setTimeout(() => {
+            fetchSiteMetadataCall(url);
+        }, 1000);
+        return () => clearTimeout(timeoutId);
+    }, [watch("destinationUrl")]);
 
     // populating the field for editmode
     useEffect(() => {
@@ -192,14 +204,12 @@ const CreateLinkModal = ({
         setValue("shortUrlKey", formDataForEdit.shortUrlKey);
         setValue("comment", formDataForEdit.comment);
         setValue("tags", formDataForEdit.tags);
+        setValue("expirationTime", formDataForEdit.expirationTime);
+        setValue("metadata", formDataForEdit.metadata);
         setTags(formDataForEdit.tags || []);
 
         if (formDataForEdit.expirationTime) {
-            setValue(
-                "expirationTime",
-                formDataForEdit.expirationTime?.map((d) => d).join(",")
-            );
-            
+
             // show expiration
             setBottomOptions((prevOptions) => {
                 const newOptions = prevOptions.map((prevOption) => {
@@ -209,7 +219,7 @@ const CreateLinkModal = ({
                     return prevOption;
                 });
                 return newOptions;
-            })
+            });
         }
 
         if (formDataForEdit.password) {
@@ -224,7 +234,7 @@ const CreateLinkModal = ({
                     return prevOption;
                 });
                 return newOptions;
-            })
+            });
         }
     }, [editMode, formDataForEdit]);
 
@@ -238,7 +248,22 @@ const CreateLinkModal = ({
                 className="w-[calc(100%-40px)] max-w-4xl space-y-8 overflow-y-auto"
             >
                 <div className="flex items-center gap-2">
-                    <IoIosLink className="size-6" />
+                    <div className="size-[32px] border border-ring/70 rounded-full p-1">
+                        {watch("metadata.favicon") ? (
+                            <img
+                                src={watch("metadata.favicon")}
+                                alt={watch("metadata.title")}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                    e.currentTarget.src = `${watch(
+                                        "destinationUrl"
+                                    )}/${watch("metadata.favicon")}`;
+                                }}
+                            />
+                        ) : (
+                            <IoLinkOutline className="size-full" />
+                        )}
+                    </div>
                     <TitleText className="text-xl">
                         {editMode ? "Edit Link" : "New Link"}
                     </TitleText>
@@ -247,12 +272,11 @@ const CreateLinkModal = ({
                 <form onSubmit={onSubmit} className="flex flex-col gap-4">
                     <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-8">
                         <section className="flex flex-col gap-4">
-                            <div className="flex flex-col gap-1 relative pb-4">
+                            <div className="flex flex-col gap-2 relative pb-4">
                                 <Label htmlFor="link-destinationUrl">
                                     *Destination URL
                                 </Label>
                                 <Input
-                                    disabled={editMode}
                                     id="link-destinationUrl"
                                     type="text"
                                     placeholder="Ex. https://example.com"
@@ -271,7 +295,7 @@ const CreateLinkModal = ({
                                 )}
                             </div>
 
-                            <div className="flex flex-col gap-1 relative pb-4">
+                            <div className="flex flex-col gap-2 relative pb-4">
                                 <Label htmlFor="link-shortUrlKey">
                                     *Short Link
                                 </Label>
@@ -280,6 +304,7 @@ const CreateLinkModal = ({
                                         {import.meta.env.VITE_CLIENT_URL || ""}
                                     </span>
                                     <Input
+                                        disabled={editMode}
                                         id="link-shortUrlKey"
                                         type="text"
                                         placeholder="Short Link"
@@ -289,6 +314,24 @@ const CreateLinkModal = ({
                                             required: "Short URL is required",
                                         })}
                                     />
+                                    <Button
+                                        disabled={
+                                            editMode || generatingShortUrlKey
+                                        }
+                                        type="button"
+                                        variant={"outline"}
+                                        size={"icon"}
+                                        title="Generate Short Link"
+                                        onClick={() =>
+                                            generateShortUrlKeyCall()
+                                        }
+                                    >
+                                        {generatingShortUrlKey ? (
+                                            <LoadingCircle className="size-4" />
+                                        ) : (
+                                            <IoMdRefresh className="size-5" />
+                                        )}
+                                    </Button>
                                 </div>
                                 {errors.shortUrlKey && (
                                     <span className="text-red-500 text-sm absolute bottom-0">
@@ -297,17 +340,8 @@ const CreateLinkModal = ({
                                 )}
                             </div>
 
-                            <div className="flex flex-col gap-1 relative pb-4">
+                            <div className="flex flex-col gap-2 relative pb-4">
                                 <Label htmlFor="link-tags">Tags</Label>
-                                {/* <Input
-                                    id="link-tags"
-                                    type="text"
-                                    placeholder="Ex. marketing, sales, etc."
-                                    className="w-full"
-                                    {...register("tags", {
-                                        required: "Tags are required",
-                                    })}
-                                /> */}
                                 <ArrayInput
                                     inputProps={{
                                         id: "link-tags",
@@ -327,7 +361,7 @@ const CreateLinkModal = ({
                                 )}
                             </div>
 
-                            <div className="flex flex-col gap-1 relative pb-4">
+                            <div className="flex flex-col gap-2 relative pb-4">
                                 <Label htmlFor="link-comment">Comment</Label>
                                 <Textarea
                                     id="link-comment"
@@ -354,36 +388,38 @@ const CreateLinkModal = ({
                                     option.key === "expirationTime" &&
                                     option.show
                             ) && (
-                                <div className="flex flex-col gap-1 relative pb-4">
-                                    <Label htmlFor="link-expiration-time">
+                                <div className="flex flex-col gap-2 relative pb-4">
+                                    <Label>
                                         <span>Expiration Time</span>
-                                        <Tooltip>
-                                            <TooltipTrigger
-                                                type="button"
-                                                className="w-fit"
-                                            >
-                                                <Info className="w-4 h-4" />
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p className="text-center">
-                                                    can be any of the following,
-                                                    even multiple <br />{" "}
-                                                    separated by comma: 1min,
-                                                    1h, 1d, 1w, 1m, 1y
-                                                </p>
-                                            </TooltipContent>
-                                        </Tooltip>
                                     </Label>
-                                    <Input
-                                        id="link-expiration-time"
-                                        type="text"
-                                        placeholder="Ex. 1min, 1h, 1d, 1w, 1m, 1y"
-                                        className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                        {...register("expirationTime", {
-                                            required:
-                                                "Expiration Time is required",
-                                        })}
-                                    />
+                                    <div className="flex gap-1 items-center w-full">
+                                        <Input
+                                            type="text"
+                                            value={watch("expirationTime") ? new Date(watch("expirationTime") || "").toLocaleString() : ""}
+                                            placeholder="Ex. 1min, 1h, 1d, 1w, 1m, 1y"
+                                            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                        />
+                                        <span>
+                                            <Label htmlFor="link-expiration-time">
+                                                <IoCalendarOutline className="size-5" />
+                                                <input
+                                                    id="link-expiration-time"
+                                                    type="datetime-local"
+                                                    className="absolute opacity-0"
+                                                    onFocus={(e) => {
+                                                        e.target.showPicker();
+                                                    }}
+                                                    {...register(
+                                                        "expirationTime",
+                                                        {
+                                                            required:
+                                                                "Expiration Time is required",
+                                                        }
+                                                    )}
+                                                />
+                                            </Label>
+                                        </span>
+                                    </div>
                                     {errors.expirationTime && (
                                         <span className="text-red-500 text-sm absolute bottom-0">
                                             {
@@ -399,7 +435,7 @@ const CreateLinkModal = ({
                                 (option) =>
                                     option.key === "password" && option.show
                             ) && (
-                                <div className="flex flex-col gap-1 relative pb-4">
+                                <div className="flex flex-col gap-2 relative pb-4">
                                     <CommingSoon text="*not super secure [as of now]" />
                                     <Label htmlFor="link-password">
                                         <span>Password</span>
@@ -436,8 +472,47 @@ const CreateLinkModal = ({
                                 </div>
                             )}
                         </section>
-                        <section className="flex flex-col gap-1 relative">
-                            <QRCode url="https://example.com" />
+
+                        <section className="flex flex-col gap-2 relative">
+                            <div>
+                                <QRCode url="https://example.com" />
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <Label>Share</Label>
+                                <div className="flex gap-2 justify-around">
+                                    <IoCopyOutline className="size-8 border border-input p-2 rounded-md" />
+                                    <FaXTwitter className="size-8 border border-input p-2 rounded-md" />
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <Label>Link Preview</Label>
+                                <div className="border border-ring/50 rounded-md">
+                                    <img
+                                        src={watch("metadata.previewImg")}
+                                        className="w-full h-40 object-cover"
+                                        alt=""
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <Input
+                                        style={{
+                                            fontSize: "12px",
+                                            fontWeight: "bold",
+                                        }}
+                                        className="p-0 h-5 border-0 rounded-none focus-visible:ring-0 focus-visible:border-0"
+                                        placeholder="Add a title"
+                                        {...register("metadata.title")}
+                                    />
+                                    <Textarea
+                                        style={{ fontSize: "12px" }}
+                                        className="p-0 text-xs h-5 border-0 rounded-none focus-visible:ring-0 focus-visible:border-0"
+                                        placeholder="Add a description"
+                                        {...register("metadata.description")}
+                                    />
+                                </div>
+                            </div>
                         </section>
                     </div>
 
@@ -470,14 +545,14 @@ const CreateLinkModal = ({
                             className="flex items-center gap-2"
                             type="submit"
                         >
-                            {formSubmitLoading ? (
-                                <LoadingCircle className="size-5" />
-                            ) : (
-                                <IoAdd className="size-5" />
-                            )}
                             <span>
                                 {editMode ? "Update Link" : "Create Link"}
                             </span>
+                            {formSubmitLoading ? (
+                                <LoadingCircle className="size-5" />
+                            ) : (
+                                <VscNewline className="size-5" />
+                            )}
                         </Button>
                     </div>
                 </form>

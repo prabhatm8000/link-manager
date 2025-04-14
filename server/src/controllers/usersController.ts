@@ -1,10 +1,10 @@
 import type { Request, Response } from "express";
+import StatusMessagesMark4 from "../constants/messages";
 import { APIResponseError } from "../errors/response";
 import asyncWrapper from "../lib/asyncWrapper";
 import { removeAuthCookie, setAuthCookie, setOtpCookie } from "../lib/cookie";
-import usersService from "../services/usersService";
 import otpService from "../services/otpsService";
-import StatusMessagesMark4 from "../constants/messages";
+import usersService from "../services/usersService";
 
 const statusMessages = new StatusMessagesMark4("user");
 
@@ -47,6 +47,7 @@ const resendOtp = asyncWrapper(async (req: Request, res: Response) => {
     });
 });
 
+// verification done at middelware level
 const registerAndVerifyOtp = asyncWrapper(
     async (req: Request, res: Response) => {
         const { name, email, password } = req.body;
@@ -68,8 +69,8 @@ const registerAndVerifyOtp = asyncWrapper(
 );
 
 const login = asyncWrapper(async (req: Request, res: Response) => {
-    const { email, password } = req.body;
-    const user = await usersService.login({ email, password });
+    const { email, password, credential: credentialFromGoogleAuth } = req.body;
+    const user = await usersService.login({ email, password, credentialFromGoogleAuth });
 
     if (!user) {
         throw new APIResponseError(

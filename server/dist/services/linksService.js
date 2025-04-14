@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
+const envVars_1 = __importDefault(require("../constants/envVars"));
 const response_1 = require("../errors/response");
 const links_1 = __importDefault(require("../models/links"));
 const workspaces_1 = __importDefault(require("../models/workspaces"));
@@ -20,7 +21,7 @@ const tagsService_1 = __importDefault(require("./tagsService"));
 const workspacesService_1 = __importDefault(require("./workspacesService"));
 // limits for workspace
 const MAX_LINKS = 20;
-const generateShortLinkKey = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (size = 10) {
+const generateShortUrlKey = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (size = 10) {
     const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let isUnique = false;
     let key = "";
@@ -41,6 +42,9 @@ const generateShortLinkKey = (...args_1) => __awaiter(void 0, [...args_1], void 
     }
     return key;
 });
+const generateUrlWithShortUrlKey = (shortUrlKey) => {
+    return `${envVars_1.default.SERVER_URL}/${shortUrlKey}`;
+};
 /**
  * authentication required, [checks userId in workspace]
  * @param link
@@ -87,7 +91,7 @@ const getOneLinkBy = (_a) => __awaiter(void 0, [_a], void 0, function* ({ linkId
     if (!linkId && !shortUrlKey) {
         throw new response_1.APIResponseError("Link ID or Short URL key is required", 400, false);
     }
-    yield workspacesService_1.default.authorized(workspaceId, userId);
+    yield workspaces_1.default.authorized(workspaceId, userId);
     const link = yield links_1.default.aggregate([
         {
             $match: {
@@ -134,16 +138,52 @@ const getOneLinkBy = (_a) => __awaiter(void 0, [_a], void 0, function* ({ linkId
         res["hasPassword"] = true;
         delete res.password;
     }
+    res["shortUrl"] = generateUrlWithShortUrlKey(res.shortUrlKey);
     return res;
+});
+/**
+ * authentication not required, [probably for redirecting :D, don't use anywhere else]
+ * @param shortUrlKey
+ * @returns
+ */
+const justTheDestinationUrl = (shortUrlKey) => __awaiter(void 0, void 0, void 0, function* () {
+    const link = yield links_1.default.aggregate([
+        {
+            $match: {
+                shortUrlKey: shortUrlKey,
+            },
+        },
+        {
+            $project: {
+                _id: 1,
+                destinationUrl: 1,
+                password: 1,
+            },
+        },
+    ]);
+    if (link.length === 0) {
+        throw new response_1.APIResponseError("Link not found", 404, false);
+    }
+    return link[0];
 });
 /**
  * authentication required, [checks userId in workspace]
  * @param workspaceId
  * @param userId
+ * @param q - search query [search in shortUrlKey and tags and creator email or name]
  * @returns
  */
-const getLinksByWorkspaceId = (workspaceId, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    yield workspacesService_1.default.authorized(workspaceId, userId);
+const getLinksByWorkspaceId = (workspaceId, userId, q) => __awaiter(void 0, void 0, void 0, function* () {
+    yield workspaces_1.default.authorized(workspaceId, userId);
+    const matchStage = {};
+    if (q) {
+        matchStage["$or"] = [
+            { shortUrlKey: { $regex: q, $options: "i" } },
+            { tags: { $regex: q, $options: "i" } },
+            { "creator.email": { $regex: q, $options: "i" } },
+            { "creator.name": { $regex: q, $options: "i" } },
+        ];
+    }
     const links = yield links_1.default.aggregate([
         {
             $match: {
@@ -162,15 +202,18 @@ const getLinksByWorkspaceId = (workspaceId, userId) => __awaiter(void 0, void 0,
             $unwind: "$creator",
         },
         {
+            $match: Object.assign({}, matchStage),
+        },
+        {
             $project: {
                 _id: 1,
-                name: 1,
                 destinationUrl: 1,
                 shortUrlKey: 1,
                 tags: 1,
                 comment: 1,
                 expirationTime: 1,
                 isActive: 1,
+                password: 1,
                 creator: {
                     _id: "$creator._id",
                     name: "$creator.name",
@@ -185,6 +228,13 @@ const getLinksByWorkspaceId = (workspaceId, userId) => __awaiter(void 0, void 0,
             },
         },
     ]);
+    links.forEach((link) => {
+        if (link.password) {
+            link["hasPassword"] = true;
+            delete link.password;
+        }
+        link["shortUrl"] = generateUrlWithShortUrlKey(link.shortUrlKey);
+    });
     return links;
 });
 /**
@@ -199,7 +249,7 @@ const updateLink = (linkId, link, userId) => __awaiter(void 0, void 0, void 0, f
     if (!existingLink) {
         throw new response_1.APIResponseError("Link not found", 404, false);
     }
-    yield workspacesService_1.default.authorized(existingLink.workspaceId, userId);
+    yield workspaces_1.default.authorized(existingLink.workspaceId, userId);
     const updatedLink = yield links_1.default.findByIdAndUpdate(linkId, link, {
         new: true,
     });
@@ -224,7 +274,7 @@ const deactivateLink = (linkId, userId) => __awaiter(void 0, void 0, void 0, fun
     if (!existingLink) {
         throw new response_1.APIResponseError("Link not found", 404, false);
     }
-    yield workspacesService_1.default.authorized(existingLink.workspaceId, userId);
+    yield workspaces_1.default.authorized(existingLink.workspaceId, userId);
     const link = yield links_1.default.findByIdAndUpdate(linkId, { isActive: false });
     if (!link) {
         throw new response_1.APIResponseError("Link not found", 404, false);
@@ -248,7 +298,7 @@ const deleteLink = (linkId, userId, options) => __awaiter(void 0, void 0, void 0
     if (!existingLink) {
         throw new response_1.APIResponseError("Link not found", 404, false);
     }
-    yield workspacesService_1.default.authorized(existingLink.workspaceId, userId);
+    yield workspaces_1.default.authorized(existingLink.workspaceId, userId);
     const link = yield links_1.default.findByIdAndDelete(linkId, {
         session: options ? options.session : null,
     });
@@ -265,15 +315,17 @@ const deleteLink = (linkId, userId, options) => __awaiter(void 0, void 0, void 0
  * @returns
  */
 const deleteAllLinksByWorkspaceId = (workspaceId, userId, options) => __awaiter(void 0, void 0, void 0, function* () {
-    yield workspacesService_1.default.authorized(workspaceId, userId);
+    yield workspaces_1.default.authorized(workspaceId, userId);
     const links = yield links_1.default.deleteMany({ workspaceId: new mongoose_1.default.Types.ObjectId(workspaceId) }, { session: options ? options.session : null });
     return true;
 });
 const linksService = {
-    generateShortLinkKey,
+    generateShortUrlKey,
+    generateUrlWithShortUrlKey,
     createLink,
     getOneLinkBy,
     getLinksByWorkspaceId,
+    justTheDestinationUrl,
     updateLink,
     deactivateLink,
     deleteLink,

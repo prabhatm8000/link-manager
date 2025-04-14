@@ -1,3 +1,10 @@
+import {
+    CardContent,
+    CardFooter,
+    CardHeader,
+    CardTitle
+} from "@/components/ui/Card";
+import { Label } from "@/components/ui/label";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,15 +15,6 @@ import { Input } from "../../../components/ui/input";
 import type { IUserState } from "../../../redux/reducers/types";
 import type { AppDispatch } from "../../../redux/store";
 import { registerAndSendOtp } from "../../../redux/thunks/usersThunk";
-import LoadingCircle from "../../../components/ui/LoadingCircle";
-import { Label } from "@/components/ui/label";
-import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/Card";
 
 const AuthSignUp = () => {
     const {
@@ -48,7 +46,7 @@ const AuthSignUp = () => {
     }, [userState]);
 
     return (
-        <Card className="min-w-80 max-w-sm w-full bg-transparent backdrop-blur-xs border-ring/80 ring-ring/50 ring-[3px]">
+        <>
             <CardHeader>
                 <CardTitle>
                     <TitleText className="text-center">Signup</TitleText>
@@ -147,22 +145,19 @@ const AuthSignUp = () => {
                         type="submit"
                         className="mt-2 px-4 flex items-center justify-center gap-2"
                     >
-                        {userState?.loading && (
-                            <LoadingCircle className="size-5" />
-                        )}
                         <span>Signup</span>
                     </Button>
                 </form>
             </CardContent>
             <CardFooter>
-                <div className="text-center text-black/70 dark:text-white/70">
+                <div className="text-center w-full text-black/70 dark:text-white/70">
                     already have an account?{" "}
                     <Link to="/auth/login" className="text-blue-500">
                         Login
                     </Link>
                 </div>
             </CardFooter>
-        </Card>
+        </>
     );
 };
 

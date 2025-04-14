@@ -14,6 +14,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const response_1 = require("../errors/response");
 const users_1 = __importDefault(require("../models/users"));
+/**
+ *
+ * @param email
+ * @param password
+ * @returns
+ */
 const login = (_a) => __awaiter(void 0, [_a], void 0, function* ({ email, password, }) {
     const user = yield users_1.default.findOne({ email });
     if (!user) {
@@ -26,6 +32,11 @@ const login = (_a) => __awaiter(void 0, [_a], void 0, function* ({ email, passwo
     yield user.save();
     return user.toJSON();
 });
+/**
+ *
+ * @param: {name: string, email: string, password: string, profilePicture: string}
+ * @returns
+ */
 const createUser = (_a) => __awaiter(void 0, [_a], void 0, function* ({ name, email, password, profilePicture, }) {
     const user = yield users_1.default.create({
         name,
@@ -35,18 +46,39 @@ const createUser = (_a) => __awaiter(void 0, [_a], void 0, function* ({ name, em
     });
     return user.toJSON();
 });
+/**
+ * authentication required, [id is checked in the auth middleware]
+ * @param id
+ * @returns
+ */
 const getUserById = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield users_1.default.findById(id);
     return user === null || user === void 0 ? void 0 : user.toJSON();
 });
+/**
+ *
+ * @param email
+ * @returns
+ */
 const getUserByEmail = (email) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield users_1.default.findOne({ email });
     return user === null || user === void 0 ? void 0 : user.toJSON();
 });
+/**
+ * authentication required, [id is checked in the auth middleware]
+ * @param id
+ * @param data
+ * @returns
+ */
 const updateUser = (id, data) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield users_1.default.findByIdAndUpdate(id, data, { new: true });
     return user === null || user === void 0 ? void 0 : user.toJSON();
 });
+/**
+ * authentication required, [id is checked in the auth middleware]
+ * @param id
+ * @returns
+ */
 const deactivateUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield users_1.default.findByIdAndUpdate(id, {
         isActive: false,

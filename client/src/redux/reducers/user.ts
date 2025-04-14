@@ -48,6 +48,7 @@ const userSlice = createSlice({
         });
         builder.addCase(verifyUser.rejected, (state, action) => {
             state.loading = false;
+            state.isAuthenticated = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType).message;
         });

@@ -96,7 +96,7 @@ function sendPasswordResetEmail(to, resetToken) {
 }
 function sendInviteToJoinWorkspaceMail(to, workspace, senderUser) {
     return __awaiter(this, void 0, void 0, function* () {
-        const inviteLink = genarateInviteLink(workspace._id.toString(), senderUser._id.toString(), to);
+        const inviteLink = genarateInviteLink(workspace.id, senderUser.id, to);
         const mailObj = {
             to,
             subject: `Invited by ${senderUser.name} to join workspace`,

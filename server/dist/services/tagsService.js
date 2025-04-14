@@ -28,7 +28,7 @@ const addTags = (workspaceId, tags) => __awaiter(void 0, void 0, void 0, functio
     return newTags;
 });
 const deleteTags = (workspaceId) => __awaiter(void 0, void 0, void 0, function* () {
-    return tags_1.default.findOneAndDelete({
+    yield tags_1.default.findOneAndDelete({
         workspaceId: new mongoose_1.default.Types.ObjectId(workspaceId),
     });
 });
@@ -38,5 +38,35 @@ const getTags = (workspaceId) => __awaiter(void 0, void 0, void 0, function* () 
     });
     return tags;
 });
-const tagsService = { addTags, getTags, deleteTags };
+const searchTags = (workspaceId, q) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield tags_1.default.aggregate([
+        {
+            $match: {
+                workspaceId: new mongoose_1.default.Types.ObjectId(workspaceId),
+            },
+        },
+        {
+            $unwind: "$tags",
+        },
+        {
+            $match: {
+                tags: {
+                    $regex: q,
+                    $options: "i",
+                },
+            },
+        },
+        {
+            $limit: 5,
+        },
+        {
+            $project: {
+                tags: 1,
+            },
+        },
+    ]);
+    const suggestions = result.map((tag) => tag.tags);
+    return suggestions;
+});
+const tagsService = { addTags, getTags, deleteTags, searchTags };
 exports.default = tagsService;

@@ -11,9 +11,8 @@ import {
     resendOtp,
 } from "../../../redux/thunks/usersThunk";
 
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { useEffect, useState } from "react";
-import LoadingCircle from "../../../components/ui/LoadingCircle";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 const coolDownTime = 2.5 * 60;
 const AuthOtp = () => {
@@ -54,7 +53,7 @@ const AuthOtp = () => {
     }, [userState.isAuthenticated]);
 
     return (
-        <Card className="min-w-80 max-w-sm w-full bg-transparent backdrop-blur-xs border-ring/80 ring-ring/50 ring-[3px]">
+        <>
             <CardHeader>
                 <CardTitle>
                     <TitleText className="text-center">Signup</TitleText>
@@ -99,14 +98,11 @@ const AuthOtp = () => {
                         type="submit"
                         className="mt-2 px-4 flex items-center justify-center gap-2"
                     >
-                        {userState?.loading && (
-                            <LoadingCircle className="size-5" />
-                        )}
                         <span>Verify</span>
                     </Button>
                 </form>
             </CardContent>
-        </Card>
+        </>
     );
 };
 

@@ -1,24 +1,22 @@
 import { Link, useNavigate } from "react-router-dom";
 
-import TitleText from "../../../components/TitleText";
-import { useForm } from "react-hook-form";
-import type { IUserState } from "../../../redux/reducers/types";
-import { useSelector } from "react-redux";
-import type { AppDispatch } from "../../../redux/store";
-import { useDispatch } from "react-redux";
-import { useEffect } from "react";
-import { login } from "../../../redux/thunks/usersThunk";
-import LoadingCircle from "../../../components/ui/LoadingCircle";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
-    Card,
     CardContent,
     CardFooter,
     CardHeader,
-    CardTitle,
+    CardTitle
 } from "@/components/ui/Card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
+import TitleText from "../../../components/TitleText";
+import type { IUserState } from "../../../redux/reducers/types";
+import type { AppDispatch } from "../../../redux/store";
+import { login } from "../../../redux/thunks/usersThunk";
+import GoogleLoginBtn from "../components/GoogleLoginBtn";
 
 const AuthLogin = () => {
     const {
@@ -47,7 +45,7 @@ const AuthLogin = () => {
     });
 
     return (
-        <Card className="min-w-80 max-w-sm w-full bg-transparent backdrop-blur-xs border-ring/80 ring-ring/50 ring-[3px]">
+        <>
             <CardHeader>
                 <CardTitle>
                     <TitleText className="text-center">Login</TitleText>
@@ -63,7 +61,7 @@ const AuthLogin = () => {
                             })}
                             id="email"
                             type="email"
-                            placeholder="Email"
+                            placeholder="Your email address"
                             className="w-full"
                             autoComplete="email"
                         />
@@ -94,22 +92,27 @@ const AuthLogin = () => {
                     <Button
                         disabled={user?.loading}
                         type="submit"
-                        className="mt-2 px-4 flex items-center justify-center gap-2"
+                        className="mt-2 px-4 flex items-center justify-center gap-1"
                     >
-                        {user?.loading && <LoadingCircle className="size-5" />}
                         <span>Login</span>
                     </Button>
                 </form>
             </CardContent>
-            <CardFooter>
-                <div className="text-center text-black/70 dark:text-white/70">
+            <CardFooter className="flex-col gap-4">
+                <div className="w-full text-center text-black/70 dark:text-white/70">
                     don't have an account?{" "}
                     <Link to="/auth/signup" className="text-blue-500">
                         Signup
                     </Link>
                 </div>
+                <div className="flex w-full gap-1 items-center text-muted-foreground">
+                    <span className="pt-0.5 mt-1 w-full bg-muted-foreground/60" />
+                    <span>or</span>
+                    <span className="pt-0.5 mt-1 w-full bg-muted-foreground/60" />
+                </div>
+                <GoogleLoginBtn />
             </CardFooter>
-        </Card>
+        </>
     );
 };
 
