@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { IoIosBackspace, IoIosClose } from "react-icons/io";
-import { Input } from "./ui/input";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
 const suggestionsStore = new Map<string, string[]>();
 
@@ -10,11 +10,13 @@ const ArrayInput = ({
     arrayValues,
     setArrayValues,
     getSuggestions,
+    limit
 }: {
     arrayValues: string[] | undefined;
     setArrayValues: React.Dispatch<React.SetStateAction<string[]>>;
     inputProps: React.ComponentProps<"input">;
     getSuggestions: (q: string) => Promise<string[]>;
+    limit?: number
 }) => {
     const [inputValue, setInputValue] = useState<string>("");
     const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
@@ -24,6 +26,10 @@ const ArrayInput = ({
     const handleAdd = (val: string) => {
         setArrayValues((p) => {
             const s = new Set([...p, val]);
+            if (limit && s.size > limit) {
+                alert("max limit reached!");
+                return p;
+            }
             return Array.from(s);
         });
         setInputValue("");

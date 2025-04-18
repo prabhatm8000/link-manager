@@ -13,7 +13,6 @@ import { useState } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { TbEdit } from "react-icons/tb";
 import { useSelector } from "react-redux";
-import ViewHeader from "../../components/ViewHeader";
 import InvitePeopleBtnWithModal from "../Profile/components/InvitePeopleBtnWithModal";
 import PeopleItem from "../Profile/components/PeopleItem";
 import CreateWorkspaceModal from "./components/CreateWorkspaceModal";
@@ -31,10 +30,6 @@ const SettingsView = () => {
     if (!workspaceState?.currentWorkspace) return null;
     return (
         <>
-            <ViewHeader
-                heading="Settings"
-                subHeading="Manage your workspace settings"
-            />
             <div className="py-4 space-y-8">
                 <div className="flex gap-3">
                     <Avatar>

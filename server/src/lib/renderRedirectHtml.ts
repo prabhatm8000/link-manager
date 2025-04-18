@@ -1,16 +1,16 @@
-import type { LinkMetadata } from "../types/link";
+import type { LinkMetadata, LinkStatus } from "../types/link";
 
 const renderMetadata = ({
     shortUrl,
     destinationUrl,
     metadata,
+    status,
 }: {
     shortUrl: string;
     destinationUrl: string;
     metadata?: LinkMetadata;
+    status?: LinkStatus;
 }) => {
-  console.log(metadata, shortUrl);
-  
     return `<!DOCTYPE html>
     <html lang="en">
     <head>
@@ -24,11 +24,14 @@ const renderMetadata = ({
         <meta property="og:image" content="${metadata.previewImg}" />`
       }
       <meta property="og:url" content="${shortUrl}" />
-      <meta http-equiv="refresh" content="1;url=${destinationUrl}" />
-      <script>window.location.href = "${destinationUrl}";</script>
+      ${
+          destinationUrl &&
+          `<meta http-equiv="refresh" content="1;url=${destinationUrl}" />
+        <script>window.location.href = "${destinationUrl}";</script>`
+      }
     </head>
     <body>
-      <p>Redirecting...</p>
+      <p>${destinationUrl ? "Redirecting..." : "Ahoy! Something went wrong"}</p>
     </body>
     </html>`;
 };

@@ -41,9 +41,10 @@ const linksSchema = new mongoose.Schema(
         password: {
             type: String,
         },
-        isActive: {
-            type: Boolean,
-            default: true,
+        status: {
+            type: String,
+            enum: ["active", "inactive", "expired"],
+            default: "active",
         },
         workspaceId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -64,19 +65,29 @@ const linksSchema = new mongoose.Schema(
 linksSchema.index({ shortUrlKey: 1 }, { unique: true });
 
 linksSchema.pre("save", async function (next) {
-    const link = this;
-    if (link.isModified("password") && link.password) {
-        link.password = await bcrypt.hash(link.password, 10);
+    if (this.password && this.isModified("password")) {
+        this.password = await bcrypt.hash(this.password, 10);
     }
     next();
 });
 
+linksSchema.pre("findOneAndUpdate", async function (next) {
+    const update = this.getUpdate();
+
+    // Check if password is being updated
+    if (update && "password" in update && update.password) {
+        const hashed = await bcrypt.hash(update.password, 10);
+        this.setUpdate({ ...update, password: hashed });
+    }
+
+    next();
+});
+
 linksSchema.methods.comparePassword = async function (password: string) {
-    const link = this as ILinks;
-    if (!link.password) {
+    if (!this.password) {
         throw new Error("Password is not set for this link.");
     }
-    return await bcrypt.compare(password, link.password);
+    return await bcrypt.compare(password, this.password);
 };
 
 linksSchema.set("toJSON", {

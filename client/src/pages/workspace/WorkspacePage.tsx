@@ -2,6 +2,7 @@ import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import type { IWorkspaceState } from "../../redux/reducers/types";
 import type { SideBarTabType } from "./components/SideBar";
+import ViewHeader from "./components/ViewHeader";
 import AnalyticsView from "./views/Analytics/AnalyticsView";
 import EventsView from "./views/Events/EventsView";
 import LinksView from "./views/Links/LinksView";
@@ -23,20 +24,57 @@ const WorkspacePage = () => {
         if (workspaceState.loading) return <LoadingView />;
         return <NoWorkspaceView />;
     }
+    
+    let page: {
+        heading: string;
+        subHeading: string;
+        viewNode: React.ReactNode;
+    } | null = null;
     switch (searchParams.get("tab") as SideBarTabType) {
         case "profile":
-            return <ProfileView />;
-        case "links":
-            return <LinksView />;
+            page = {
+                heading: "Profile",
+                subHeading: "Manage your profile",
+                viewNode: <ProfileView />,
+            };
+            break;
         case "events":
-            return <EventsView />;
+            page = {
+                heading: "Events",
+                subHeading: "Manage your events",
+                viewNode: <EventsView />,
+            };
+            break;
         case "analytics":
-            return <AnalyticsView />;
+            page = {
+                heading: "Analytics",
+                subHeading: "Manage your analytics",
+                viewNode: <AnalyticsView />,
+            };
+            break;
         case "settings":
-            return <SettingsView />;
+            page = {
+                heading: "Settings",
+                subHeading: "Manage your workspace settings",
+                viewNode: <SettingsView />,
+            };
+            break;
+        case "links":
         default:
-            return <LinksView />;
+            page = {
+                heading: "Links",
+                subHeading: "Manage your links",
+                viewNode: <LinksView />,
+            };
+            break;
     }
+
+    return (
+        <>
+            <ViewHeader heading={page.heading} subHeading={page.subHeading} />
+            {page.viewNode}
+        </>
+    );
 };
 
 export default WorkspacePage;

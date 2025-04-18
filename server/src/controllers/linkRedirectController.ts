@@ -1,35 +1,70 @@
 import type { Request, Response } from "express";
+import envVars from "../constants/envVars";
 import { APIResponseError } from "../errors/response";
+import asyncWrapper from "../lib/asyncWrapper";
 import renderMetadata from "../lib/renderRedirectHtml";
 import linksService from "../services/linksService";
 
-const redirectToDestination = async (req: Request, res: Response) => {
-    const { shortUrlKey } = req.params;
+const redirectToDestination = asyncWrapper(
+    async (req: Request, res: Response) => {
+        const { shortUrlKey } = req.params;
+        const password = req.query?.p;
 
-    if (!shortUrlKey) {
-        res.status(400).json({
-            success: false,
-            message: "Short URL key is required",
-            data: null,
-        });
-        return;
-    }
+        if (!shortUrlKey) {
+            res.status(400).json({
+                success: false,
+                message: "Short URL key is required",
+                data: null,
+            });
+            return;
+        }
 
-    const url = await linksService.justTheDestinationUrl(shortUrlKey);
-    if (!url) {
-        throw new APIResponseError("Short URL not found", 404, false);
-    }
+        let destinationUrl;
+        let status;
+        let messedUpFlag = false;
 
-    if (url.password) {
-        throw new APIResponseError("Password protected link", 401, false);
+        const url = await linksService.justTheLink(shortUrlKey);
+        if (!url || !url.shortUrl) {
+            throw new APIResponseError("Short URL not found", 404, false);
+        }
+        destinationUrl = url.destinationUrl;
+        status = url.status;
+
+        if (url.expirationTime && url.expirationTime < new Date()) {
+            destinationUrl =
+                "/error-page?code=410&title=Link%20Expired&description=The%20link%20has%20expired.";
+            messedUpFlag = true;
+        }
+
+        // password protected
+        if (url.password) {
+            if (!password || typeof password !== "string") {
+                // not password, ask for password
+                destinationUrl = "/link-password?surl=" + url.shortUrl;
+                messedUpFlag = true;
+            } else if (!(await url.comparePassword(password))) {
+                // wrong password
+                destinationUrl = "/link-password?error=true&surl=" + url.shortUrl;
+                messedUpFlag = true;
+            }
+        }
+
+        // if we messed up, we are redirecting our self,
+        // and if we are in dev mode, we need to add the client url
+        if (messedUpFlag && envVars.NODE_ENV === "dev") {
+            destinationUrl = envVars.CLIENT_URL + destinationUrl;
+        }
+        
+        res.send(
+            renderMetadata({
+                shortUrl: url.shortUrl,
+                destinationUrl,
+                metadata: url.metadata,
+                status,
+            })
+        );
     }
-    // res.redirect(url.destinationUrl);
-    res.send(renderMetadata({
-        shortUrl: url.shortUrl,
-        destinationUrl: url.destinationUrl,
-        metadata: url.metadata
-    }))
-};
+);
 
 const linkRedirectController = {
     redirectToDestination,

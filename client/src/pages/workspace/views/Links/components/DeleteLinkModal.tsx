@@ -38,11 +38,11 @@ const DeleteLinkModal = ({
                     <TitleText className="text-xl">{mainText}</TitleText>
                 </div>
                 <div className="flex flex-col items-center gap-4">
-                    <pre className="text-sm text-center text-muted-foreground">
+                    <p className="text-sm text-center text-muted-foreground">
                         {
-                            "Are you sure you want to delete this link and all the data associated with it?\nThis action cannot be undone."
+                            "Are you sure you want to delete this link and all the data associated with it? This action cannot be undone."
                         }
-                    </pre>
+                    </p>
                     <Button
                         className="flex gap-2 items-center w-fit"
                         variant="destructive"

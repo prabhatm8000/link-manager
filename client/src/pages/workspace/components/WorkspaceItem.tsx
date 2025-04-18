@@ -9,7 +9,7 @@ const WorkspaceItem = (props: {
 }) => {
     return (
         <div
-            className={`flex items-center gap-2 ${props.className}`}
+            className={`flex items-center gap-1 ${props.className}`}
             onClick={() => props?.setActiveWorkspace?.(props.data)}
             title={props.data?.name}
         >
@@ -18,9 +18,9 @@ const WorkspaceItem = (props: {
                     src={""}
                     alt={props.data?.name}
                 />
-                <AvatarFallback>{props.data?.name?.charAt(0) + "W"}</AvatarFallback>
+                <AvatarFallback itemType="workspace">{props.data?.name.charAt(0)}</AvatarFallback>
             </Avatar>
-            <span>{props.data?.name}</span>
+            <span className="truncate">{props.data?.name}</span>
         </div>
     );
 };

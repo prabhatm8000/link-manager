@@ -5,6 +5,8 @@ import { toast, Toaster } from "sonner";
 import SuspenseWrapper from "./components/SuspenseWrapper";
 import ThemeBtn from "./components/ThemeBtn";
 import useTheme from "./hooks/useTheme";
+import { PageDataContants } from "./pages/ErrorPage";
+import LinkPassword from "./pages/LinkPassword";
 import LoadingPage from "./pages/LoadingPage";
 import InvitePage from "./pages/invite/InvitePage";
 import type { IUserState } from "./redux/reducers/types";
@@ -13,7 +15,7 @@ import { verifyUser } from "./redux/thunks/usersThunk";
 
 const AuthRoutes = lazy(() => import("./pages/auth/AuthRoutes"));
 const LandlingRoutes = lazy(() => import("./pages/landing/LandingRoutes"));
-const PageNotFound = lazy(() => import("./pages/PageNotFound"));
+const ErrorPage = lazy(() => import("./pages/ErrorPage"));
 const WorkspaceRoutes = lazy(() => import("./pages/workspace/WorkspaceRoutes"));
 
 const PrivateRoutes = ({ user }: { user: IUserState }) => {
@@ -40,7 +42,7 @@ const PrivateRoutes = ({ user }: { user: IUserState }) => {
                 path="*"
                 element={
                     <SuspenseWrapper>
-                        <PageNotFound />
+                        <ErrorPage pageData={PageDataContants.PageNotFound} />
                     </SuspenseWrapper>
                 }
             />
@@ -99,10 +101,30 @@ const AppRouter = () => {
                     }
                 />
                 <Route
+                    // will have url query params
+                    path="/error-page"
+                    element={
+                        <SuspenseWrapper>
+                            <ErrorPage />
+                        </SuspenseWrapper>
+                    }
+                />
+                <Route
+                    // for - if link is password protected
+                    path="/link-password"
+                    element={
+                        <SuspenseWrapper>
+                            <LinkPassword />
+                        </SuspenseWrapper>
+                    }
+                />
+                <Route
                     path="*"
                     element={
                         <SuspenseWrapper>
-                            <PageNotFound />
+                            <ErrorPage
+                                pageData={PageDataContants.PageNotFound}
+                            />
                         </SuspenseWrapper>
                     }
                 />

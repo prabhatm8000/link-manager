@@ -1,16 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { TableCell, TableRow } from "@/components/ui/table";
 import type { ILink } from "@/redux/reducers/types";
-import { SlOptionsVertical } from "react-icons/sl";
 import type { DropDownOptionsType } from "../types";
+import LinkOptions from "./LinkOptions";
 
-const LinkItem = ({
+const LinkTableRow = ({
     link,
     options,
 }: {
@@ -20,6 +14,16 @@ const LinkItem = ({
     return (
         <TableRow>
             <TableCell>
+                {/* <Avatar>
+                    <AvatarImage
+                        src={link?.metadata?.favicon}
+                        alt={link?.metadata?.title}
+                    />
+                    <AvatarFallback>
+                        {link?.metadata?.title?.charAt(0) || "L"}
+                    </AvatarFallback>
+                </Avatar> */}
+
                 <a
                     href={`${link.shortUrl}`}
                     target="_blank"
@@ -29,9 +33,7 @@ const LinkItem = ({
                 </a>
             </TableCell>
 
-            <TableCell
-                title={link?.creator?.name}
-            >
+            <TableCell title={link?.creator?.name}>
                 <div className="flex items-center gap-2">
                     <Avatar>
                         <AvatarImage
@@ -57,41 +59,28 @@ const LinkItem = ({
                     ))}
                     {link?.tags?.length && link?.tags?.length > 3 ? (
                         <span>...</span>
-                    ): "-"}
+                    ) : (
+                        "-"
+                    )}
                 </div>
             </TableCell>
             <TableCell>
                 <span
                     className={`${
-                        link?.status === "active" ? "bg-green-500" : "bg-red-500"
+                        link?.status === "active"
+                            ? "bg-green-500"
+                            : "bg-red-500"
                     } rounded-full px-3 py-1 text-xs font-semibold mr-2 text-white`}
                 >
-                    {link?.status.charAt(0).toUpperCase() + link?.status.slice(1)}
+                    {link?.status.charAt(0).toUpperCase() +
+                        link?.status.slice(1)}
                 </span>
             </TableCell>
             <TableCell className="text-right">
-                <div className="rounded-md w-full h-full">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger className="p-1">
-                            <SlOptionsVertical className="size-4 opacity-50" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            {options?.map((option: DropDownOptionsType) => (
-                                <DropdownMenuItem
-                                    key={option.label}
-                                    variant={option?.variant || "default"}
-                                    onClick={() => option.onClick(link)}
-                                >
-                                    {option.icon}
-                                    {option.label}
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
+                {options && <LinkOptions options={options} link={link} />}
             </TableCell>
         </TableRow>
     );
 };
 
-export default LinkItem;
+export default LinkTableRow;

@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import PageNotFound from "../PageNotFound";
+import ErrorPage, { PageDataContants } from "../ErrorPage";
 import WorkspaceLayout from "./WorkspaceLayout";
 import WorkspacePage from "./WorkspacePage";
 
@@ -14,7 +14,7 @@ const WorkspaceRoutes = () => {
                     </WorkspaceLayout>
                 }
             />
-            <Route path="*" element={<PageNotFound />} />
+            <Route path="*" element={<ErrorPage pageData={PageDataContants.PageNotFound} />} />
         </Routes>
     );
 };

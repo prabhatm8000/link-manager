@@ -9,7 +9,7 @@ import {
     IoIosMenu,
     IoIosSettings,
 } from "react-icons/io";
-import { IoAnalytics, IoPersonOutline } from "react-icons/io5";
+import { IoAnalytics } from "react-icons/io5";
 import { TbSelector } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useSearchParams } from "react-router-dom";
@@ -38,7 +38,7 @@ const SideBar = ({
 }) => {
     return (
         <div
-            className={`w-64 h-full backdrop-blur-lg bg-background p-2 flex flex-col justify-between ${className}`}
+            className={`w-56 h-full backdrop-blur-lg bg-background p-2 flex flex-col justify-between ${className}`}
         >
             <div className="flex flex-col gap-6">
                 <SideBarHeader />
@@ -75,7 +75,7 @@ export const SideBarHeader = ({
         });
     };
     return (
-        <div className="flex items-end justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
             <Link to={"/"}>
                 <TitleText className="text-xl flex gap-2 justify-start items-center">
                     <IoIosLink />
@@ -128,7 +128,6 @@ const tabs: { title: string; value: SideBarTabType; icon: JSX.Element }[] = [
     { title: "Links", value: "links", icon: <IoIosLink /> },
     { title: "Events", value: "events", icon: <HiCursorClick /> },
     { title: "Analytics", value: "analytics", icon: <IoAnalytics /> },
-    { title: "Profile", value: "profile", icon: <IoPersonOutline /> },
     { title: "Settings", value: "settings", icon: <IoIosSettings /> },
 ];
 const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
@@ -226,12 +225,12 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
             {showWorkspaces ? (
                 <div>
                     <h4 className="text-muted-foreground">Workspaces</h4>
-                    <div className="flex flex-col gap-2 max-h-80 h-80 overflow-y-auto">
+                    <div className="flex flex-col gap-1 max-h-80 h-80 overflow-y-auto">
                         {workspaceState.workspaces.map((workspace, index) => (
                             <WorkspaceItem
                                 key={index}
                                 data={workspace}
-                                className="p-2 cursor-pointer"
+                                className="cursor-pointer bg-foreground/5 hover:bg-foreground/10 rounded-md"
                                 avatarSize="md"
                                 setActiveWorkspace={handleActiveWorkspaceChange}
                             />
@@ -256,7 +255,7 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
                             onClick={() => handleTabChange(tab.value)}
                             variant="ghost" 
                             className={`relative flex items-center justify-start gap-1 ${
-                                currentTab === tab.value ? "bg-muted-foreground/25 text-foreground" : ""
+                                currentTab === tab.value ? "bg-muted-foreground/15 text-foreground" : ""
                             }`}
                         >
                             {currentTab === tab.value && <span className="bg-muted-foreground h-4 w-1 rounded-full absolute left-0 top-1/2 transform -translate-y-1/2" />}

@@ -1,5 +1,24 @@
-google auth
 mail queueing and optimization
-store no. workspace created on the user modal
-single provider for modal
 organize and optimize keyboard shortcuts
+auto cron job for changing status of expired links
+
+handle server-client url in code for dev and prod properly
+
+
+
+
+
+
+------ prize chart --------
+1. 99 RS
+    - 2 workspace
+    - 5 links each
+    - 3k events chapture
+2. 149 RS
+    - 4 workspace
+    - 8 links each
+    - 10k events chapture
+3. 249 RS
+    - 5 workspace
+    - 10 links each
+    - 50k events chapture

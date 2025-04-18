@@ -2,17 +2,11 @@ import ArrayInput from "@/components/ArrayInput";
 import QRCode from "@/components/QRCode";
 import TitleText from "@/components/TitleText";
 import { Button } from "@/components/ui/button";
-import CommingSoon from "@/components/ui/CommingSoon";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import Modal from "@/components/ui/Modal";
 import { Textarea } from "@/components/ui/textarea";
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
-} from "@/components/ui/tooltip";
 import TOAST_MESSAGES from "@/constants/toastMessages";
 import type { ILink, IWorkspaceState } from "@/redux/reducers/types";
 import type { AppDispatch } from "@/redux/store";
@@ -23,7 +17,6 @@ import {
     getTagsSuggestions,
     updateLink,
 } from "@/redux/thunks/linksThunks";
-import { Info } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaXTwitter } from "react-icons/fa6";
@@ -114,27 +107,34 @@ const CreateLinkModal = ({
     const onSubmit = handleSubmit((data) => {
         const workspaceId = workspaceState?.currentWorkspace?._id;
         if (!workspaceId) return toast.error(TOAST_MESSAGES.NoCurrentWorkspace);
+        if (editMode && !formDataForEdit?._id)
+            return toast.error(TOAST_MESSAGES.LinkNotFound);
+
         setFormSubmitLoading(true);
+
+        const linkData = {
+            ...data,
+            tags,
+            workspaceId,
+        };
+
+        bottomOptions.forEach((option: (typeof bottomOptionsInit)[0]) => {
+            if (!option.show && linkData[option.key as keyof typeof linkData]) {
+                delete linkData[option.key as keyof typeof linkData];
+            }
+        });
 
         return Promise.resolve()
             .then(async () => {
                 if (editMode) {
                     await dispatch(
                         updateLink({
-                            ...data,
-                            tags,
-                            workspaceId,
-                            linkId: formDataForEdit?._id as string,
+                            ...linkData,
+                            linkId: formDataForEdit?._id || "",
                         })
                     );
                 } else {
-                    await dispatch(
-                        createLink({
-                            ...data,
-                            tags,
-                            workspaceId,
-                        })
-                    );
+                    await dispatch(createLink(linkData));
                 }
             })
             .then(() => {
@@ -204,7 +204,8 @@ const CreateLinkModal = ({
         setValue("shortUrlKey", formDataForEdit.shortUrlKey);
         setValue("comment", formDataForEdit.comment);
         setValue("tags", formDataForEdit.tags);
-        setValue("expirationTime", formDataForEdit.expirationTime);
+        if (formDataForEdit.expirationTime)
+            setValue("expirationTime", formDataForEdit.expirationTime);
         setValue("metadata", formDataForEdit.metadata);
         setTags(formDataForEdit.tags || []);
 
@@ -221,7 +222,7 @@ const CreateLinkModal = ({
             });
         }
 
-        if (formDataForEdit.password) {
+        if (formDataForEdit.hasPassword) {
             setValue("password", formDataForEdit.password);
 
             // show password
@@ -244,7 +245,7 @@ const CreateLinkModal = ({
                 roundness="light"
                 isOpen={isOpen}
                 onClose={handleClose}
-                className="w-[calc(100%-40px)] max-w-4xl space-y-8 overflow-y-auto"
+                // className="w-[calc(100%-40px)] max-w-4xl space-y-8 overflow-y-auto"
             >
                 <div className="flex items-center gap-2">
                     <div className="size-[32px] border border-ring/70 rounded-full p-1">
@@ -256,7 +257,7 @@ const CreateLinkModal = ({
                                 onError={(e) => {
                                     e.currentTarget.src = `${watch(
                                         "destinationUrl"
-                                    )}/${watch("metadata.favicon")}`;
+                                    )}${watch("metadata.favicon")}`;
                                 }}
                             />
                         ) : (
@@ -349,6 +350,7 @@ const CreateLinkModal = ({
                                             "Ex. marketing, sales, etc.",
                                         className: "w-full",
                                     }}
+                                    limit={5}
                                     arrayValues={tags}
                                     setArrayValues={setTags}
                                     getSuggestions={getTagsSuggestionsCall}
@@ -447,34 +449,20 @@ const CreateLinkModal = ({
                                     option.key === "password" && option.show
                             ) && (
                                 <div className="flex flex-col gap-2 relative pb-4">
-                                    <CommingSoon text="*not super secure [as of now]" />
                                     <Label htmlFor="link-password">
                                         <span>Password</span>
-                                        <Tooltip>
-                                            <TooltipTrigger
-                                                type="button"
-                                                className="w-fit"
-                                            >
-                                                <Info className="w-4 h-4" />
-                                            </TooltipTrigger>
-                                            <TooltipContent>
-                                                <p className="text-center">
-                                                    Not super secure [as of now]
-                                                    why? you ask. <br />
-                                                    there is no hashing, it's
-                                                    just like an access key
-                                                </p>
-                                            </TooltipContent>
-                                        </Tooltip>
                                     </Label>
-                                    <Input
-                                        id="link-password"
-                                        type="password"
-                                        className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                        {...register("password", {
-                                            required: "Password is required",
-                                        })}
-                                    />
+                                    <div className="flex gap-2 items-center w-full">
+                                        <Input
+                                            id="link-password"
+                                            type="password"
+                                            className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                            {...register("password", {
+                                                required:
+                                                    "Password is required",
+                                            })}
+                                        />
+                                    </div>
                                     {errors.password && (
                                         <span className="text-red-500 text-sm absolute bottom-0">
                                             {errors.password.message as string}
@@ -527,7 +515,7 @@ const CreateLinkModal = ({
                         </section>
                     </div>
 
-                    <div className="flex gap-4 relative pb-4 justify-between">
+                    <div className="flex flex-col md:flex-row gap-4 relative pb-4 justify-between">
                         <div className="flex gap-4">
                             {bottomOptions.map((option) => (
                                 <div

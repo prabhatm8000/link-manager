@@ -60,6 +60,7 @@ export interface ILink {
     comment?: string;
     expirationTime?: Date;
     password?: string;
+    createdAt: string;
 
     status: "active" | "inactive" | "expired";
     workspaceId: string;
@@ -77,4 +78,13 @@ export interface ILinkState {
     updateLoading: boolean;
     error: string | null;
     message: string | null;
+}
+
+export interface LinkDisplayConfig {
+    displayMode: "table" | "card";
+    heading: "title" | "shortUrl";
+    value: "description" | "destinationUrl";
+    showCreatorAvatar?: boolean;
+    showTags?: boolean;
+    showCreatedAt?: boolean;
 }

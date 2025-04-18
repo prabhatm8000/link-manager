@@ -1,9 +1,9 @@
 import { Route, Routes } from "react-router-dom";
-import PageNotFound from "../PageNotFound";
-import AuthLogin from "./views/AuthLogin";
-import AuthSignUp from "./views/AuthSignUp";
+import ErrorPage, { PageDataContants } from "../ErrorPage";
 import AuthLayout from "./AuthLayout";
+import AuthLogin from "./views/AuthLogin";
 import AuthOtp from "./views/AuthOtp";
+import AuthSignUp from "./views/AuthSignUp";
 
 const AuthRoutes = () => {
     return (
@@ -32,7 +32,10 @@ const AuthRoutes = () => {
                     </AuthLayout>
                 }
             />
-            <Route path="*" element={<PageNotFound />} />
+            <Route
+                path="*"
+                element={<ErrorPage pageData={PageDataContants.PageNotFound} />}
+            />
         </Routes>
     );
 };

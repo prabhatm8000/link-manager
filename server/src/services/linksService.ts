@@ -3,7 +3,12 @@ import envVars from "../constants/envVars";
 import { APIResponseError } from "../errors/response";
 import Links from "../models/links";
 import Workspace from "../models/workspaces";
-import type { ILinks, ILinksService, LinkMetadata } from "../types/link";
+import type {
+    ILinks,
+    ILinksService,
+    LinkMetadata,
+    LinkStatus,
+} from "../types/link";
 import type { IWorkspace } from "../types/workspace";
 import tagsService from "./tagsService";
 import workspacesService from "./workspacesService";
@@ -162,9 +167,10 @@ const getOneLinkBy = async ({
                     tags: 1,
                     comment: 1,
                     expirationTime: 1,
-                    isActive: 1,
+                    status: 1,
                     password: 1,
                     workspaceId: 1,
+                    createdAt: 1,
                     creator: {
                         _id: "$creator._id",
                         name: "$creator.name",
@@ -196,35 +202,13 @@ const getOneLinkBy = async ({
  * @param shortUrlKey
  * @returns
  */
-const justTheDestinationUrl = async (
-    shortUrlKey: string
-): Promise<{
-    _id: string;
-    destinationUrl: string;
-    shortUrl: string;
-    password?: string;
-    metadata?: LinkMetadata;
-}> => {
-    const link = await Links.aggregate([
-        {
-            $match: {
-                shortUrlKey: shortUrlKey,
-            },
-        },
-        {
-            $project: {
-                _id: 1,
-                destinationUrl: 1,
-                metadata: 1,
-                password: 1,
-            },
-        },
-    ]);
-    if (link.length === 0) {
+const justTheLink = async (shortUrlKey: string): Promise<ILinks> => {
+    const link = await Links.findOne({ shortUrlKey });
+    if (!link) {
         throw new APIResponseError("Link not found", 404, false);
     }
-    link[0]["shortUrl"] = generateUrlWithShortUrlKey(shortUrlKey);
-    return link[0];
+    link["shortUrl"] = generateUrlWithShortUrlKey(shortUrlKey);
+    return link;
 };
 
 /**
@@ -237,16 +221,17 @@ const justTheDestinationUrl = async (
 const getLinksByWorkspaceId = async (
     workspaceId: string,
     userId: string,
-    q?: string
+    q?: string,
 ): Promise<ILinks[]> => {
     await Workspace.authorized(workspaceId, userId);
-    const matchStage: any = {};
+    const queryMatchStages: any = {};
     if (q) {
-        matchStage["$or"] = [
-            { shortUrlKey: { $regex: q, $options: "i" } },
-            { tags: { $regex: q, $options: "i" } },
-            { "creator.email": { $regex: q, $options: "i" } },
-            { "creator.name": { $regex: q, $options: "i" } },
+        queryMatchStages["$or"] = [
+            { destinationUrl: { $regex: `${q}`, $options: "i" } },
+            { shortUrlKey: { $regex: `${q}`, $options: "i" } },
+            { tags: { $regex: `${q}`, $options: "i" } },
+            { "creator.email": { $regex: `${q}`, $options: "i" } },
+            { "creator.name": { $regex: `${q}`, $options: "i" } },
         ];
     }
 
@@ -254,6 +239,11 @@ const getLinksByWorkspaceId = async (
         {
             $match: {
                 workspaceId: new mongoose.Types.ObjectId(workspaceId),
+            },
+        },
+        {
+            $sort: {
+                createdAt: -1,
             },
         },
         {
@@ -269,12 +259,7 @@ const getLinksByWorkspaceId = async (
         },
         {
             $match: {
-                ...matchStage,
-            },
-        },
-        {
-            $sort: {
-                createdAt: -1,
+                ...queryMatchStages,
             },
         },
         {
@@ -285,8 +270,10 @@ const getLinksByWorkspaceId = async (
                 tags: 1,
                 comment: 1,
                 expirationTime: 1,
-                isActive: 1,
+                status: 1,
                 password: 1,
+                metadata: 1,
+                createdAt: 1,
                 creator: {
                     _id: "$creator._id",
                     name: "$creator.name",
@@ -333,7 +320,7 @@ const updateLink = async (
             comment: link.comment,
             expirationTime: link.expirationTime,
             password: link.password,
-            isActive: link.isActive,
+            status: link.status,
         },
         {
             new: true,
@@ -354,28 +341,32 @@ const updateLink = async (
 /**
  * authentication required, [checks userId in workspace]
  * @param linkId
+ * @param
  * @param userId
  * @returns
  */
-const deactivateLink = async (linkId: string, userId: string) => {
+const changeStatus = async (
+    linkId: string,
+    status: LinkStatus,
+    userId: string
+) => {
     const existingLink = await Links.findById(linkId);
     if (!existingLink) {
         throw new APIResponseError("Link not found", 404, false);
     }
     await Workspace.authorized(existingLink.workspaceId, userId);
 
-    const link = await Links.findByIdAndUpdate(linkId, { isActive: false });
+    const link = await Links.findByIdAndUpdate(
+        linkId,
+        { status },
+        { new: true }
+    );
 
     if (!link) {
         throw new APIResponseError("Link not found", 404, false);
     }
 
-    const populatedLink = await getOneLinkBy({
-        linkId: link._id.toString(),
-        userId: link.creatorId.toString(),
-        workspaceId: link.workspaceId.toString(),
-    });
-    return populatedLink;
+    return link;
 };
 
 /**
@@ -431,9 +422,9 @@ const linksService: ILinksService = {
     createLink,
     getOneLinkBy,
     getLinksByWorkspaceId,
-    justTheDestinationUrl,
+    justTheLink,
     updateLink,
-    deactivateLink,
+    changeStatus,
     deleteLink,
     deleteAllLinksByWorkspaceId,
 };

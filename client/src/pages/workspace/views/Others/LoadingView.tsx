@@ -1,4 +1,4 @@
-import { IoIosLink } from "react-icons/io";
+import LoadingCircle from "@/components/ui/LoadingCircle";
 import ViewHeader from "../../components/ViewHeader";
 
 const LoadingView = () => {
@@ -9,10 +9,7 @@ const LoadingView = () => {
                 subHeading="Waiting for the workspace to load..."
             />
             <div className="py-4 h-full flex flex-col items-center justify-center -translate-y-[10%]">
-                <IoIosLink
-                    size={100}
-                    className="animate-pulse ease-in-out"
-                />
+                <LoadingCircle className="size-5" />
             </div>
         </div>
     );

@@ -1,4 +1,5 @@
 import TitleText from "@/components/TitleText";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -31,7 +32,7 @@ const LinkDetailsModal = ({
     const mainText = "Link Details";
     const linkState: ILinkState = useSelector((state: any) => state.links);
     const link = linkState.links.find((link: ILink) => link._id === linkId);
-    
+
     if (!link) {
         return <div>Link not found</div>;
     }
@@ -56,13 +57,12 @@ const LinkDetailsModal = ({
         {
             label: "Status",
             type: "text",
-            value: link.status === "active" ? (
-                <span className="inline-block bg-green-500 text-foreground rounded-full px-3 py-1 text-xs font-semibold">
-                    {" "}
-                    Active
-                </span>
-            ) : (
-                <span className="inline-block bg-red-500 text-foreground rounded-full px-3 py-1 text-xs font-semibold">
+            value: (
+                <span
+                    className={`inline-block rounded-full px-3 py-1 text-xs font-semibold text-white ${
+                        link.status === "active" ? "bg-green-500" : "bg-red-500"
+                    }`}
+                >
                     {link.status.charAt(0).toUpperCase() + link.status.slice(1)}
                 </span>
             ),
@@ -75,11 +75,21 @@ const LinkDetailsModal = ({
         {
             label: "Expiration Time",
             type: "text",
-            value: link.expirationTime,
+            value:
+                link.expirationTime &&
+                new Date(link.expirationTime).toLocaleString(),
         },
         {
             label: "Password protected",
-            value: link?.password,
+            value: (
+                <span
+                    className={`inline-block rounded-full px-3 py-1 text-xs font-semibold text-white ${
+                        link.hasPassword ? "bg-green-500" : "bg-blue-500"
+                    }`}
+                >
+                    {link.hasPassword ? "Protected" : "Not Protected"}
+                </span>
+            ),
         },
     ];
 
@@ -87,7 +97,17 @@ const LinkDetailsModal = ({
         {
             label: "Profile Picture",
             type: "link",
-            value: link?.creator?.profilePicture,
+            value: (
+                <Avatar>
+                    <AvatarImage
+                        src={link?.creator?.profilePicture || ""}
+                        alt={link?.creator?.name || ""}
+                    />
+                    <AvatarFallback>
+                        {link?.creator?.name?.charAt(0)}
+                    </AvatarFallback>
+                </Avatar>
+            ),
         },
         {
             label: "Name",
@@ -125,7 +145,7 @@ const LinkDetailsModal = ({
                         <CardHeader>
                             <CardTitle className="text-xl">Link</CardTitle>
                         </CardHeader>
-                        <CardContent className="flex flex-col gap-3">
+                        <CardContent className="flex flex-col gap-4">
                             {linkDetailRenderer.map((item, index) => (
                                 <div
                                     key={index}
@@ -156,7 +176,7 @@ const LinkDetailsModal = ({
                                             ))}
                                         </p>
                                     ) : (
-                                        <p>{typeof item.value === "string" && item.value ? item.value : new String(item.value)}</p>
+                                        <p>{item?.value || "-"}</p>
                                     )}
                                 </div>
                             ))}
@@ -188,7 +208,7 @@ const LinkDetailsModal = ({
                                     Creator
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="flex flex-col gap-4">
                                 {creatorDetailRenderer.map((item, index) => (
                                     <div
                                         key={index}
@@ -224,56 +244,6 @@ const LinkDetailsModal = ({
                             </CardContent>
                         </Card>
                     </div>
-                    {/*                     
-                    <div className="flex flex-col items-center gap-2">
-                        <TitleText className="text-lg">Short link:</TitleText>
-                        <a
-                            href={`/${link.shortUrlKey}`}
-                            target="_blank"
-                            className="text-blue-400"
-                        >
-                            /{link.shortUrlKey}
-                        </a>
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                        <TitleText className="text-lg">Destination:</TitleText>
-                        <a
-                            href={link.destinationUrl}
-                            target="_blank"
-                            className="text-blue-400"
-                        >
-                            {link.destinationUrl}
-                        </a>
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                        <TitleText className="text-lg">Comment:</TitleText>
-                        <p className="text-muted-foreground">{link.comment}</p>
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                        <TitleText className="text-lg">Link Tags:</TitleText>
-                        <div>
-                            {link?.tags?.map((tag) => (
-                                <span
-                                    key={tag}
-                                    className="inline-block bg-muted-foreground/20 text-foreground rounded-full px-3 py-1 text-xs font-semibold"
-                                >
-                                    {tag}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                        <TitleText className="text-lg">
-                            Link Created By:
-                        </TitleText>
-                        <p className="text-muted-foreground">
-                            {link.creator?.name}
-                        </p>
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                        <TitleText className="text-lg">Link Status:</TitleText>
-                        <p className="text-muted-foreground">{link.isActive}</p>
-                    </div> */}
                 </div>
             </Modal>
         </>

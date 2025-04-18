@@ -5,6 +5,7 @@ import asyncWrapper from "../lib/asyncWrapper";
 import { fetchMetadata } from "../lib/urlMetadeta";
 import linksService from "../services/linksService";
 import tagsService from "../services/tagsService";
+import { LinkStatus } from "../types/link";
 
 const statusMessages = new StatusMessagesMark4("link");
 
@@ -180,7 +181,7 @@ const updateLink = asyncWrapper(async (req: Request, res: Response) => {
 });
 
 const deactivateLink = asyncWrapper(async (req: Request, res: Response) => {
-    const { linkId } = req.params;
+    const { linkId, status } = req.params;
     if (!linkId) {
         throw new APIResponseError(
             statusMessages.getMessage("Link ID is required", "error", "other"),
@@ -188,8 +189,9 @@ const deactivateLink = asyncWrapper(async (req: Request, res: Response) => {
             false
         );
     }
-    const link = await linksService.deactivateLink(
+    const link = await linksService.changeStatus(
         linkId,
+        status as LinkStatus,
         req.user?._id.toString() || ""
     );
     res.status(200).json({

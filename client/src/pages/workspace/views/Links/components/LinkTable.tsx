@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/table";
 import type { ILink } from "@/redux/reducers/types";
 import type { DropDownOptionsType } from "../types";
-import LinkItem from "./LinkItem";
+import LinkTableRow from "./LinkTableRow";
 
 const LinkTable = ({
     links,
@@ -29,7 +29,7 @@ const LinkTable = ({
             </TableHeader>
             <TableBody>
                 {links.map((link) => (
-                    <LinkItem key={link._id} link={link} options={options} />
+                    <LinkTableRow key={link._id} link={link} options={options} />
                 ))}
             </TableBody>
         </Table>

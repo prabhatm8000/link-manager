@@ -20,7 +20,6 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { MdAdd } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
-import ViewHeader from "../../components/ViewHeader";
 import CreateWorkspaceModal from "../Settings/components/CreateWorkspaceModal";
 import WorkspaceItemDetailed from "../Settings/components/WorkspaceItemDetailed";
 
@@ -66,7 +65,6 @@ const ProfileView = () => {
     if (!userState?.user) return null;
     return (
         <>
-            <ViewHeader heading="Profile" subHeading="Manage your profile" />
             <div className="flex flex-col gap-4 w-full">
                 <div className="space-y-8">
                     {/* user info */}

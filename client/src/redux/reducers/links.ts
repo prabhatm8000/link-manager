@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type { ApiResponseType, ILinkState } from "./types";
 import {
     createLink,
     deactivateLink,
@@ -9,6 +8,7 @@ import {
     getLinksByWorkspaceId,
     updateLink,
 } from "../thunks/linksThunks";
+import type { ApiResponseType, ILinkState } from "./types";
 
 const initialState: ILinkState = {
     links: [],
@@ -36,7 +36,7 @@ const linksSlice = createSlice({
         // createLink
         // builder.addCase(createLink.pending, (state) => {});
         builder.addCase(createLink.fulfilled, (state, action) => {
-            state.links.push(action.payload.data);
+            state.links = [action.payload.data, ...state.links];
         });
         builder.addCase(createLink.rejected, (state, action) => {
             state.error = action.error.message || null;

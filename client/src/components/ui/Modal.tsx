@@ -5,7 +5,6 @@ import {
     getVariantClasses,
     type BasicElementProps,
 } from "./classUtity";
-import { Button } from "./button";
 
 interface IModalProps extends BasicElementProps {
     children: React.ReactNode;
@@ -16,7 +15,7 @@ interface IModalProps extends BasicElementProps {
 const Modal = ({ isOpen, ...props }: IModalProps) => {
     useEffect(() => {
         const handleKey = (e: KeyboardEvent) => {
-            if (e.code === "Escape") {
+            if (isOpen && e.code === "Escape") {
                 props.onClose();
             }
         };
@@ -38,18 +37,16 @@ const Modal = ({ isOpen, ...props }: IModalProps) => {
         >
             <div
                 onClick={(e) => e.stopPropagation()}
-                className={`relative min-w-96 bg-white p-4 rounded-lg max-h-[calc(100vh-4rem)] overflow-auto ${getVariantClasses(
+                className={`w-[calc(100%-40px)] max-w-4xl space-y-8 overflow-y-auto relative min-w-96 bg-white p-4 rounded-lg max-h-[calc(100vh-4rem)] overflow-auto ${getVariantClasses(
                     props.variant
                 )} ${getRoundnessClasses(props.roundness)} ${props.className}`}
             >
-                <Button
+                <button
                     onClick={props.onClose}
-                    variant="destructive"
-                    size={"icon"}
-                    className="absolute top-0 right-0 m-2"
+                    className="absolute bg-destructive/50 hover:bg-destructive/75 text-white top-0 right-0 m-2 p-0.5 rounded"
                 >
                     <IoClose className="size-5" />
-                </Button>
+                </button>
                 {props.children}
             </div>
         </div>

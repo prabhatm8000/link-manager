@@ -5,9 +5,11 @@ export interface LinkMetadata {
     previewImg: string;
 }
 
+export type LinkStatus = "active" | "inactive" | "expired";
+
 /**
  * links and related events will follow plan of workspace
-*/
+ */
 export interface ILinks extends mongoose.Document {
     _id: mongoose.Types.ObjectId;
     id: string;
@@ -19,18 +21,17 @@ export interface ILinks extends mongoose.Document {
     expirationTime?: Date;
     password?: string;
 
-    isActive: boolean;
+    status: LinkStatus;
     workspaceId: mongoose.Types.ObjectId;
     creatorId: mongoose.Types.ObjectId;
 
     // when populated
     creator?: IUser;
-    hasPassword?: boolean;
+    shortUrl?: string;
 
     // methods
     comparePassword: (password: string) => Promise<boolean>;
 }
-
 
 export interface ILinksService {
     /**
@@ -94,13 +95,7 @@ export interface ILinksService {
      * @param shortUrlKey
      * @returns
      */
-    justTheDestinationUrl: (shortUrlKey: string) => Promise<{
-        _id: string;
-        shortUrl: string;
-        destinationUrl: string;
-        password?: string;
-        metadata?: LinkMetadata;
-    }>;
+    justTheLink: (shortUrlKey: string) => Promise<ILinks>;
 
     /**
      * authentication required, [checks userId in workspace]
@@ -118,10 +113,11 @@ export interface ILinksService {
     /**
      * authentication required, [checks userId in workspace]
      * @param linkId
+     * @param status
      * @param userId
      * @returns
      */
-    deactivateLink: (linkId: string, userId: string) => Promise<ILinks>;
+    changeStatus: (linkId: string, status: LinkStatus, userId: string) => Promise<ILinks>;
 
     /**
      * authentication required, [checks userId in workspace]

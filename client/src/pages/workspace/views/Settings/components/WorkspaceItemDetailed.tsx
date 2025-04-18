@@ -40,12 +40,9 @@ const WorkspaceItemDetailed = (props: {
             <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
                     <Avatar>
-                        <AvatarImage
-                            src={""}
-                            alt={props.data?.name}
-                        />
-                        <AvatarFallback>
-                            {props.data?.name?.charAt(0) + "W"}
+                        <AvatarImage src={""} alt={props.data?.name} />
+                        <AvatarFallback itemType="workspace">
+                            {props.data?.name?.charAt(0)}
                         </AvatarFallback>
                     </Avatar>
                     <span>{props.data.name}</span>

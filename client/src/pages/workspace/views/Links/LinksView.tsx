@@ -5,6 +5,7 @@ import type {
     ILink,
     ILinkState,
     IWorkspaceState,
+    LinkDisplayConfig,
 } from "@/redux/reducers/types";
 import { AppDispatch } from "@/redux/store";
 import { getLinksByWorkspaceId } from "@/redux/thunks/linksThunks";
@@ -14,9 +15,10 @@ import { IoIosSearch, IoMdLink, IoMdRefresh } from "react-icons/io";
 import { IoAdd } from "react-icons/io5";
 import { TbEdit } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
-import ViewHeader from "../../components/ViewHeader";
 import CreateLinkModal from "./components/CreateLinkModal";
 import DeleteLinkModal from "./components/DeleteLinkModal";
+import DisplayConfigBtn from "./components/DIsplayConfigBtn";
+import LinkCards from "./components/LinkCards";
 import LinkDetailsModal from "./components/LinkDetailsModal";
 import LinkTable from "./components/LinkTable";
 import type { DropDownOptionsType } from "./types";
@@ -37,11 +39,31 @@ const LinksView = () => {
         deleteLink: false,
     });
 
+    // get the saved one, if we have!
+    const [displayConfig, setDisplayConfig] = useState<LinkDisplayConfig>(
+        localStorage.getItem("linkDisplayConfig")
+            ? JSON.parse(localStorage.getItem("linkDisplayConfig") as string)
+            : {
+                  displayMode: "card",
+                  heading: "shortUrl",
+                  value: "destinationUrl",
+              }
+    );
+
     const dispatch = useDispatch<AppDispatch>();
     const linksState: ILinkState = useSelector((state: any) => state.links);
     const workspaceState: IWorkspaceState = useSelector(
         (state: any) => state.workspace
     );
+
+    const handleDisplayConfigChange = (
+        key: keyof LinkDisplayConfig,
+        value: any
+    ) => {
+        setDisplayConfig((p) => {
+            return { ...p, [key]: value };
+        });
+    };
 
     const handleSearchQueryChange = (
         e: React.ChangeEvent<HTMLInputElement>
@@ -117,26 +139,11 @@ const LinksView = () => {
 
     return (
         <>
-            <ViewHeader heading="Links" subHeading="Manage your links" />
-
             <div className="flex flex-col md:flex-row gap-2 items-start md:items-center justify-between mt-1 mb-4">
-                <span></span>
-                {/* <DropdownMenu>
-                    <DropdownMenuTrigger>
-                        <Button variant="outline">
-                            <LuSettings2 className="size-5" />
-                            <span>Display</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="ms-4">
-                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Profile</DropdownMenuItem>
-                        <DropdownMenuItem>Billing</DropdownMenuItem>
-                        <DropdownMenuItem>Team</DropdownMenuItem>
-                        <DropdownMenuItem>Subscription</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu> */}
+                <DisplayConfigBtn
+                    config={displayConfig}
+                    handleChange={handleDisplayConfigChange}
+                />
                 <form
                     className="items-center gap-2 inline-flex max-w-sm w-full"
                     onSubmit={(e) => {
@@ -190,7 +197,21 @@ const LinksView = () => {
                 {linksState.loading ? (
                     <LoadingCircle className="size-5" />
                 ) : linksState.links.length > 0 ? (
-                    <LinkTable links={linksState.links} options={linkOptions} />
+                    <>
+                        {displayConfig.displayMode === "table" && (
+                            <LinkTable
+                                links={linksState.links}
+                                options={linkOptions}
+                            />
+                        )}
+                        {displayConfig.displayMode === "card" && (
+                            <LinkCards
+                                config={displayConfig}
+                                links={linksState.links}
+                                options={linkOptions}
+                            />
+                        )}
+                    </>
                 ) : null}
             </div>
 
