@@ -11,7 +11,7 @@ function Avatar({
         <AvatarPrimitive.Root
             data-slot="avatar"
             className={cn(
-                "relative flex size-9 shrink-0 overflow-hidden rounded-full p-1.5 border border-muted-foreground/15",
+                "relative flex size-9 shrink-0 overflow-hidden rounded-full p-1.5",
                 className
             )}
             {...props}
@@ -40,14 +40,14 @@ function AvatarFallback({
     let colorGrd = "bg-gradient-to-br ";
     switch (itemType) {
         case "link":
-            colorGrd += "from-emerald-400 to-blue-600";
+            colorGrd += "from-emerald-400 via-blue-500 to-indigo-600";
             break;
         case "workspace":
-            colorGrd += "from-red-400 to-purple-600";
+            colorGrd += "from-pink-400 to-red-700";
             break;
         case "people":
         default:
-            colorGrd += "from-yellow-400 to-orange-600";
+            colorGrd += "from-yellow-300 via-amber-500 to-red-600";
     }
     return (
         <AvatarPrimitive.Fallback

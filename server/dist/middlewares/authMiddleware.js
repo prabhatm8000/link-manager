@@ -13,23 +13,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const response_1 = require("../errors/response");
-const asyncWrapper_1 = require("../lib/asyncWrapper");
+const asyncWrapper_1 = __importDefault(require("../lib/asyncWrapper"));
 const cookie_1 = require("../lib/cookie");
 const usersService_1 = __importDefault(require("../services/usersService"));
-const authMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const payload = yield (0, cookie_1.getAuthCookie)(req);
-        const user = yield usersService_1.default.getUserById(payload._id);
-        if (!user) {
-            throw new response_1.APIResponseError("", 401, false);
-        }
-        req.user = user;
-        delete req.user.password;
-        if (next)
-            next();
+const authMiddleware = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const payload = yield (0, cookie_1.getAuthCookie)(req);
+    const user = yield usersService_1.default.getUserById(payload._id);
+    if (!user) {
+        throw new response_1.APIResponseError("", 401, false);
     }
-    catch (error) {
-        (0, asyncWrapper_1.catchHandler)(error, req, res);
-    }
-});
+    req.user = user;
+    delete req.user.password;
+    next();
+}));
 exports.default = authMiddleware;

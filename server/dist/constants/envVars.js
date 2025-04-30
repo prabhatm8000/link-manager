@@ -15,5 +15,7 @@ const envVars = {
     MONGODB_URI: process.env.MONGODB_URI,
     EMAIL: process.env.EMAIL,
     EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
+    // GOOGLE AUTH
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
 };
 exports.default = envVars;

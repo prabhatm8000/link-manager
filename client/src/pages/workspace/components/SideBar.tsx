@@ -26,7 +26,6 @@ import {
     getWorkspaceById,
 } from "../../../redux/thunks/workspaceThunks";
 import SideBarUsageBars from "./SideBarUsageBars";
-import WorkspaceItem from "./WorkspaceItem";
 
 // #region SideBar
 const SideBar = ({
@@ -38,7 +37,7 @@ const SideBar = ({
 }) => {
     return (
         <div
-            className={`w-56 h-full backdrop-blur-lg bg-background p-2 flex flex-col justify-between ${className}`}
+            className={`w-60 h-full backdrop-blur-lg bg-background px-4 py-2 flex flex-col justify-between ${className}`}
         >
             <div className="flex flex-col gap-6">
                 <SideBarHeader />
@@ -199,12 +198,24 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
                 <Button
                     onClick={() => setShowWorkspaces((p) => !p)}
                     className="flex items-center justify-between w-full"
-                    variant={showWorkspaces ? "outline" :"ghost"}
+                    variant={"outline"}
                 >
-                    <WorkspaceItem
-                        data={workspaceState.currentWorkspace}
-                        avatarSize="md"
-                    />
+                    <div className="flex items-center gap-2 truncate">
+                        <Avatar>
+                            <AvatarImage
+                                src={""}
+                                alt={workspaceState.currentWorkspace?.name}
+                            />
+                            <AvatarFallback itemType="workspace">
+                                {workspaceState.currentWorkspace?.name.charAt(
+                                    0
+                                )}
+                            </AvatarFallback>
+                        </Avatar>
+                        <span className="truncate">
+                            {workspaceState.currentWorkspace?.name}
+                        </span>
+                    </div>
                     <TbSelector className="opacity-50" />
                 </Button>
             ) : (
@@ -224,16 +235,30 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
             {/* select workspaces or tab */}
             {showWorkspaces ? (
                 <div>
-                    <h4 className="text-muted-foreground">Workspaces</h4>
+                    <h4 className="text-muted-foreground mb-2">Workspaces</h4>
                     <div className="flex flex-col gap-1 max-h-80 h-80 overflow-y-auto">
                         {workspaceState.workspaces.map((workspace, index) => (
-                            <WorkspaceItem
+                            <Button
                                 key={index}
-                                data={workspace}
-                                className="cursor-pointer bg-foreground/5 hover:bg-foreground/10 rounded-md"
-                                avatarSize="md"
-                                setActiveWorkspace={handleActiveWorkspaceChange}
-                            />
+                                onClick={() =>
+                                    handleActiveWorkspaceChange(workspace)
+                                }
+                                className={`line-clamp-1 relative flex items-center justify-start gap-1 ${
+                                    selectedWorkspaceId === workspace._id
+                                        ? "bg-muted-foreground/15 text-foreground"
+                                        : ""
+                                }`}
+                                variant={"ghost"}
+                            >
+                                <Avatar className="shrink-0">
+                                    <AvatarFallback itemType="workspace">
+                                        {workspace?.name.charAt(0)}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <span className="truncate">
+                                    {workspace?.name}
+                                </span>
+                            </Button>
                         ))}
                         {currentTab !== "profile" && (
                             <Button
@@ -253,12 +278,16 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
                         <Button
                             key={index}
                             onClick={() => handleTabChange(tab.value)}
-                            variant="ghost" 
+                            variant="ghost"
                             className={`relative flex items-center justify-start gap-1 ${
-                                currentTab === tab.value ? "bg-muted-foreground/15 text-foreground" : ""
+                                currentTab === tab.value
+                                    ? "bg-muted-foreground/15 text-foreground"
+                                    : ""
                             }`}
                         >
-                            {currentTab === tab.value && <span className="bg-muted-foreground h-4 w-1 rounded-full absolute left-0 top-1/2 transform -translate-y-1/2" />}
+                            {currentTab === tab.value && (
+                                <span className="bg-muted-foreground h-4 w-1 rounded-full absolute left-0 top-1/2 transform -translate-y-1/2" />
+                            )}
                             {tab.icon}
                             <span>{tab.title}</span>
                         </Button>

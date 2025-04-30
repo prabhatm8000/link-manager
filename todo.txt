@@ -1,6 +1,8 @@
 mail queueing and optimization
 organize and optimize keyboard shortcuts
 auto cron job for changing status of expired links
+implement redis
+create different env for prod and dev
 
 handle server-client url in code for dev and prod properly
 

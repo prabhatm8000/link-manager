@@ -12,12 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const messages_1 = __importDefault(require("../constants/messages"));
 const response_1 = require("../errors/response");
 const asyncWrapper_1 = __importDefault(require("../lib/asyncWrapper"));
 const cookie_1 = require("../lib/cookie");
-const usersService_1 = __importDefault(require("../services/usersService"));
 const otpsService_1 = __importDefault(require("../services/otpsService"));
-const messages_1 = __importDefault(require("../constants/messages"));
+const usersService_1 = __importDefault(require("../services/usersService"));
 const statusMessages = new messages_1.default("user");
 const registerAndSendOtp = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, email, password } = req.body;
@@ -44,6 +44,7 @@ const resendOtp = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, vo
         message: statusMessages.getMessage("OTP resent to your email, please verify", "success", "other"),
     });
 }));
+// verification done at middelware level
 const registerAndVerifyOtp = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, email, password } = req.body;
     const user = yield usersService_1.default.createUser({
@@ -59,8 +60,8 @@ const registerAndVerifyOtp = (0, asyncWrapper_1.default)((req, res) => __awaiter
     });
 }));
 const login = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password } = req.body;
-    const user = yield usersService_1.default.login({ email, password });
+    const { email, password, credential: credentialFromGoogleAuth } = req.body;
+    const user = yield usersService_1.default.login({ email, password, credentialFromGoogleAuth });
     if (!user) {
         throw new response_1.APIResponseError(statusMessages.getMessage("Invalid email or password", "error", "other"), 401, false);
     }

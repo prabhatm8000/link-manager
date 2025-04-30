@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { APIResponseError } from "../errors/response";
-import { validateObjectId } from "../lib/mongodb";
+import { matchObjectId, validateObjectId } from "../lib/mongodb";
 import User from "../models/users";
 import Workspace from "../models/workspaces";
 import type { IWorkspaceService } from "../types/workspace";
@@ -62,6 +62,66 @@ const createWorkspace = async (workspace: {
         }
         throw error;
     }
+};
+
+/**
+ * @param workspaceId
+ */
+const incrementLinkCount = async (workspaceId: string): Promise<void> => {
+    validateObjectId(workspaceId);
+    const result = await Workspace.findByIdAndUpdate(
+        workspaceId,
+        { $inc: { linkCount: 1 } },
+        { new: true }
+    );
+    if (!result) {
+        throw new APIResponseError("Workspace not found", 404, false);
+    }
+};
+
+/**
+ * @param workspaceId
+ */
+const incrementEventCount = async (workspaceId: string): Promise<void> => {
+    validateObjectId(workspaceId);
+    const result = await Workspace.findByIdAndUpdate(
+        workspaceId,
+        { $inc: { eventCount: 1 } },
+        { new: true }
+    );
+    if (!result) {
+        throw new APIResponseError("Workspace not found", 404, false);
+    }
+};
+
+const getLinkCount = async (
+    workspaceId: string,
+    userId: string
+): Promise<number> => {
+    validateObjectId(workspaceId, userId);
+    const result = await Workspace.findById(workspaceId, {
+        linkCount: 1,
+    });
+    result?.authorized(workspaceId, userId);
+    if (!result) {
+        throw new APIResponseError("Workspace not found", 404, false);
+    }
+    return result.linkCount;
+};
+
+const getEventCount = async (
+    workspaceId: string,
+    userId: string
+): Promise<number> => {
+    validateObjectId(workspaceId, userId);
+    const result = await Workspace.findById(workspaceId, {
+        eventCount: 1,
+    });
+    result?.authorized(workspaceId, userId);
+    if (!result) {
+        throw new APIResponseError("Workspace not found", 404, false);
+    }
+    return result.eventCount;
 };
 
 /**
@@ -348,9 +408,10 @@ const removePeople = async (
     userId: string
 ) => {
     validateObjectId(workspaceId, peopleId, userId);
-    if (userId === peopleId) {
+    if (matchObjectId(peopleId, userId)) {
         throw new APIResponseError("You cannot remove yourself", 400, false);
     }
+
     await Workspace.authorized(workspaceId, userId);
     const result = await Workspace.updateOne(
         { _id: workspaceId, createdBy: userId },
@@ -431,6 +492,10 @@ const getInviteData = async (workspaceId: string, senderId: string) => {
 
 const workspacesService: IWorkspaceService = {
     createWorkspace,
+    incrementLinkCount,
+    incrementEventCount,
+    getLinkCount,
+    getEventCount,
     getWorkspaceById,
     getWorkspaceByCreatorId,
     getAllWorkspacesForUser,

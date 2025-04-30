@@ -10,9 +10,11 @@ import {
 } from "@/components/ui/Card";
 import { Label } from "@/components/ui/label";
 import Modal from "@/components/ui/Modal";
+import { handleNumber } from "@/lib/handleNumber";
 import type { ILink, ILinkState } from "@/redux/reducers/types";
 import { AiOutlineDelete } from "react-icons/ai";
 import { IoIosLink } from "react-icons/io";
+import { LuMousePointerClick } from "react-icons/lu";
 import { TbEdit } from "react-icons/tb";
 import { useSelector } from "react-redux";
 
@@ -128,6 +130,19 @@ const LinkDetailsModal = ({
         },
     ];
 
+    const eventsDetailRenderer = [
+        {
+            label: "Clicks",
+            type: "text",
+            value: (
+                <span className="text-xs border border-border rounded-md w-fit h-fit px-2 py-1 flex items-center justify-center gap-1">
+                    <LuMousePointerClick className="size-4 text-blue-500" />
+                    {`${handleNumber(link.clickCount || 0)} clicks`}
+                </span>
+            ),
+        },
+    ];
+
     return (
         <>
             <Modal
@@ -240,7 +255,30 @@ const LinkDetailsModal = ({
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p>later...</p>
+                                <div>
+                                    {eventsDetailRenderer.map((item, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex flex-col justify-center gap-1"
+                                        >
+                                            <Label className="text-sm text-muted-foreground">
+                                                {item.label}
+                                            </Label>
+                                            {item.type === "link" &&
+                                            typeof item.value === "string" ? (
+                                                <a
+                                                    href={item.value}
+                                                    target="_blank"
+                                                    className="text-blue-400"
+                                                >
+                                                    {item.value}
+                                                </a>
+                                            ) : (
+                                                <p>{item.value || "-"}</p>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             </CardContent>
                         </Card>
                     </div>

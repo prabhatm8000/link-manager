@@ -1,6 +1,6 @@
+import type mongoose from "mongoose";
 import type { UpdateWriteOpResult } from "mongoose";
 import type { IUser } from "../models/users";
-import type mongoose from "mongoose";
 
 /**
  * workspace will follow plan of user who created it
@@ -15,7 +15,20 @@ export interface IWorkspace extends mongoose.Document {
     people: mongoose.Types.ObjectId[];
     peopleCount: number;
     linkCount: number;
+    eventCount: number;
     isActive: boolean;
+     /**
+     * check if user is authorized to perform action on workspace
+     * @param ws
+     * @param userId
+     * @param checkAll - if true[default], checks user in people and createdBy, else only in people
+     * @returns
+     */
+     authorized: (
+        ws: IWorkspace | mongoose.Types.ObjectId | string,
+        userId: string,
+        checkAll?: boolean
+    ) => Promise<boolean>;
 }
 
 export interface IWorkspaceModel extends mongoose.Model<IWorkspace> {
@@ -44,6 +57,20 @@ export interface IWorkspaceService {
         description: string;
         createdBy: string;
     }) => Promise<IWorkspace>;
+
+    /**
+     * @param workspaceId
+     */
+    incrementLinkCount: (workspaceId: string) => Promise<void>;
+
+    /**
+     * @param workspaceId
+     */
+    incrementEventCount: (workspaceId: string) => Promise<void>;
+
+    getLinkCount: (workspaceId: string, userId: string) => Promise<number>;
+
+    getEventCount: (workspaceId: string, userId: string) => Promise<number>;
 
     /**
      * authentication required, [checks userId in people]

@@ -17,7 +17,7 @@ import { TbEdit } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import CreateLinkModal from "./components/CreateLinkModal";
 import DeleteLinkModal from "./components/DeleteLinkModal";
-import DisplayConfigBtn from "./components/DIsplayConfigBtn";
+import DisplayConfigBtn from "./components/DisplayConfigBtn";
 import LinkCards from "./components/LinkCards";
 import LinkDetailsModal from "./components/LinkDetailsModal";
 import LinkTable from "./components/LinkTable";
@@ -168,7 +168,7 @@ const LinksView = () => {
                 </form>
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 pb-4">
                 <div className="flex justify-between items-center gap-3">
                     <h3 className="text-muted-foreground flex items-center gap-0">
                         <span>Links</span>
@@ -212,7 +212,11 @@ const LinksView = () => {
                             />
                         )}
                     </>
-                ) : null}
+                ) : (
+                    <div className="flex justify-center items-center h-full">
+                        <p className="text-muted-foreground">No Links found.</p>
+                    </div>
+                )}
             </div>
 
             <CreateLinkModal

@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const express_1 = __importDefault(require("express"));
-const path_1 = __importDefault(require("path"));
 const configs_1 = require("./constants/configs");
 const envVars_1 = __importDefault(require("./constants/envVars"));
 const consoleColor_1 = __importDefault(require("./lib/consoleColor"));
@@ -26,14 +25,6 @@ app.use(configs_1.rateLimiter);
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 app.use(router_1.default);
-app.use(express_1.default.static(path_1.default.join(__dirname, "../../client/dist"), {
-    maxAge: "1y", // browser cache ui files
-    etag: true // force cache use
-}));
-// for prod, serving ui files
-app.get("*", (req, res) => {
-    res.sendFile(path_1.default.join(__dirname, "../../client/dist", "index.html"));
-});
 app.listen(PORT, "0.0.0.0", () => {
     (0, mongodb_1.connectToDB)()
         .catch((err) => {

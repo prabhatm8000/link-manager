@@ -1,4 +1,5 @@
 import mongoose, { type ClientSession } from "mongoose";
+import { shortUrlKeyLength } from "../constants/configs";
 import envVars from "../constants/envVars";
 import { APIResponseError } from "../errors/response";
 import Links from "../models/links";
@@ -16,7 +17,8 @@ import workspacesService from "./workspacesService";
 // limits for workspace
 const MAX_LINKS = 20;
 
-const generateShortUrlKey = async (size: number = 10): Promise<string> => {
+const generateShortUrlKey = async (): Promise<string> => {
+    const size = shortUrlKeyLength;
     const chars =
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let isUnique = false;
@@ -26,10 +28,12 @@ const generateShortUrlKey = async (size: number = 10): Promise<string> => {
 
     while (!isUnique && attempts < MAX_ATTEMPTS) {
         attempts++;
-        key = Array(size)
+        key = Array(size - 1)
             .fill("")
             .map(() => chars.charAt(Math.floor(Math.random() * chars.length)))
             .join("");
+
+        key += "1"; // adding a digit, so that it'll be alphanumeric, like always
 
         // Check if key exists
         const exists = await Links.findOne({ shortUrlKey: key });
@@ -171,6 +175,7 @@ const getOneLinkBy = async ({
                     password: 1,
                     workspaceId: 1,
                     createdAt: 1,
+                    clickCount: 1,
                     creator: {
                         _id: "$creator._id",
                         name: "$creator.name",
@@ -221,7 +226,7 @@ const justTheLink = async (shortUrlKey: string): Promise<ILinks> => {
 const getLinksByWorkspaceId = async (
     workspaceId: string,
     userId: string,
-    q?: string,
+    q?: string
 ): Promise<ILinks[]> => {
     await Workspace.authorized(workspaceId, userId);
     const queryMatchStages: any = {};
@@ -274,6 +279,7 @@ const getLinksByWorkspaceId = async (
                 password: 1,
                 metadata: 1,
                 createdAt: 1,
+                clickCount: 1,
                 creator: {
                     _id: "$creator._id",
                     name: "$creator.name",
@@ -291,6 +297,15 @@ const getLinksByWorkspaceId = async (
         link["shortUrl"] = generateUrlWithShortUrlKey(link.shortUrlKey);
     });
     return links;
+};
+
+/**
+ * on event capture, increment click count
+ * @param linkId
+ * @returns
+ */
+const incrementClickCount = async (linkId: string): Promise<void> => {
+    await Links.updateOne({ _id: linkId }, { $inc: { clickCount: 1 } });
 };
 
 /**
@@ -423,6 +438,7 @@ const linksService: ILinksService = {
     getOneLinkBy,
     getLinksByWorkspaceId,
     justTheLink,
+    incrementClickCount,
     updateLink,
     changeStatus,
     deleteLink,

@@ -30,6 +30,18 @@ const statusMessages = {
             delete: "Error in vanishing. Try again!",
             other: "Attempt unsuccessful.",
         },
+        events: {
+            create: "Couldn't create the event.",
+            update: "Events are immutable.",
+            delete: "The event was already gone.",
+            other: "Attempt unsuccessful.",
+        },
+        analytics: {
+            create: "The data was not found to be useful.",
+            update: "The data was not found to be useful.",
+            delete: "The data was already gone.",
+            other: "Attempt unsuccessful.",
+        },
     },
 
     success: {
@@ -61,6 +73,18 @@ const statusMessages = {
             create: "Something epic has been created!",
             update: "A refinement of epic proportions!",
             delete: "Obliterated beyond recovery!",
+            other: "Attempt successful.",
+        },
+        events: {
+            create: "The event was successfully captured!",
+            update: "Events are immutable.",
+            delete: "The event was successfully deleted!",
+            other: "Attempt successful.",
+        },
+        analytics: {
+            create: "The data was successfully captured!",
+            update: "The data was successfully updated!",
+            delete: "The data was successfully deleted!",
             other: "Attempt successful.",
         },
     },

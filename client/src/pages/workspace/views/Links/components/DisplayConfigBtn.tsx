@@ -55,24 +55,32 @@ const DisplayConfigBtn = ({
             value: "destinationUrl",
         },
         {
+            label: "Analytics",
+            disableCondition:
+                config.displayMode !== "card" ||
+                !config.showAnalytics,
+            key: "showAnalytics",
+            value: !!config.showAnalytics,
+        },
+        {
             label: "Creator",
             disableCondition:
                 config.displayMode !== "card" || !config.showCreatorAvatar,
             key: "showCreatorAvatar",
-            value: config.showCreatorAvatar,
+            value: !!config.showCreatorAvatar,
         },
         {
             label: "Created At",
             disableCondition:
                 config.displayMode !== "card" || !config.showCreatedAt,
             key: "showCreatedAt",
-            value: config.showCreatedAt,
+            value: !!config.showCreatedAt,
         },
         {
             label: "Tags",
             disableCondition: config.displayMode !== "card" || !config.showTags,
             key: "showTags",
-            value: config.showTags,
+            value: !!config.showTags,
         },
     ];
     const itemBtnClassName =

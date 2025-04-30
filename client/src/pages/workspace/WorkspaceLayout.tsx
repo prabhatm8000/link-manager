@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import ScrollToTopBtn from "@/components/ScrollToTopBtn";
+import { useEffect, useRef, useState } from "react";
 import SideBar, { SideBarHeader } from "./components/SideBar";
 
 const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
     const [showSideBar, setShowSideBar] = useState<boolean>(false);
-    // const { theme } = useTheme();
+    const contentAreaRef = useRef<HTMLDivElement>(null);
+    
     useEffect(() => {
         const workspaceElement = document.getElementById("workspace");
         if (workspaceElement) {
@@ -31,7 +33,7 @@ const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
             />
 
             {/* body */}
-            <div className="grid grid-cols-1 grid-rows-[auto_1fr] md:flex md:justify-center h-full w-full bg-foreground/[3%] overflow-auto p-4">
+            <div ref={contentAreaRef} className="grid grid-cols-1 grid-rows-[auto_1fr] md:flex md:justify-center h-full w-full bg-foreground/[3%] overflow-y-scroll py-4 px-6">
                 <div id="workspace" className="w-full min-w-sm max-w-6xl">
                     <div className="block md:hidden -p-4 sticky top-0 bg-background/70 rounded-md backdrop-blur-xs z-20">
                         <SideBarHeader
@@ -40,6 +42,7 @@ const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
                         />
                     </div>
                     {children}
+                    <ScrollToTopBtn containerRef={contentAreaRef} />
                 </div>
             </div>
         </div>

@@ -29,10 +29,11 @@ const generateShortUrlKey = (...args_1) => __awaiter(void 0, [...args_1], void 0
     const MAX_ATTEMPTS = 5;
     while (!isUnique && attempts < MAX_ATTEMPTS) {
         attempts++;
-        key = Array(size)
+        key = Array(size - 1)
             .fill("")
             .map(() => chars.charAt(Math.floor(Math.random() * chars.length)))
             .join("");
+        key += "1"; // adding a digit, so that it'll be alphanumeric, like always
         // Check if key exists
         const exists = yield links_1.default.findOne({ shortUrlKey: key });
         isUnique = !exists;
@@ -115,12 +116,14 @@ const getOneLinkBy = (_a) => __awaiter(void 0, [_a], void 0, function* ({ linkId
                 _id: 1,
                 destinationUrl: 1,
                 shortUrlKey: 1,
+                metadata: 1,
                 tags: 1,
                 comment: 1,
                 expirationTime: 1,
-                isActive: 1,
+                status: 1,
                 password: 1,
                 workspaceId: 1,
+                createdAt: 1,
                 creator: {
                     _id: "$creator._id",
                     name: "$creator.name",
@@ -146,25 +149,13 @@ const getOneLinkBy = (_a) => __awaiter(void 0, [_a], void 0, function* ({ linkId
  * @param shortUrlKey
  * @returns
  */
-const justTheDestinationUrl = (shortUrlKey) => __awaiter(void 0, void 0, void 0, function* () {
-    const link = yield links_1.default.aggregate([
-        {
-            $match: {
-                shortUrlKey: shortUrlKey,
-            },
-        },
-        {
-            $project: {
-                _id: 1,
-                destinationUrl: 1,
-                password: 1,
-            },
-        },
-    ]);
-    if (link.length === 0) {
+const justTheLink = (shortUrlKey) => __awaiter(void 0, void 0, void 0, function* () {
+    const link = yield links_1.default.findOne({ shortUrlKey });
+    if (!link) {
         throw new response_1.APIResponseError("Link not found", 404, false);
     }
-    return link[0];
+    link["shortUrl"] = generateUrlWithShortUrlKey(shortUrlKey);
+    return link;
 });
 /**
  * authentication required, [checks userId in workspace]
@@ -175,19 +166,25 @@ const justTheDestinationUrl = (shortUrlKey) => __awaiter(void 0, void 0, void 0,
  */
 const getLinksByWorkspaceId = (workspaceId, userId, q) => __awaiter(void 0, void 0, void 0, function* () {
     yield workspaces_1.default.authorized(workspaceId, userId);
-    const matchStage = {};
+    const queryMatchStages = {};
     if (q) {
-        matchStage["$or"] = [
-            { shortUrlKey: { $regex: q, $options: "i" } },
-            { tags: { $regex: q, $options: "i" } },
-            { "creator.email": { $regex: q, $options: "i" } },
-            { "creator.name": { $regex: q, $options: "i" } },
+        queryMatchStages["$or"] = [
+            { destinationUrl: { $regex: `${q}`, $options: "i" } },
+            { shortUrlKey: { $regex: `${q}`, $options: "i" } },
+            { tags: { $regex: `${q}`, $options: "i" } },
+            { "creator.email": { $regex: `${q}`, $options: "i" } },
+            { "creator.name": { $regex: `${q}`, $options: "i" } },
         ];
     }
     const links = yield links_1.default.aggregate([
         {
             $match: {
                 workspaceId: new mongoose_1.default.Types.ObjectId(workspaceId),
+            },
+        },
+        {
+            $sort: {
+                createdAt: -1,
             },
         },
         {
@@ -202,7 +199,7 @@ const getLinksByWorkspaceId = (workspaceId, userId, q) => __awaiter(void 0, void
             $unwind: "$creator",
         },
         {
-            $match: Object.assign({}, matchStage),
+            $match: Object.assign({}, queryMatchStages),
         },
         {
             $project: {
@@ -212,19 +209,16 @@ const getLinksByWorkspaceId = (workspaceId, userId, q) => __awaiter(void 0, void
                 tags: 1,
                 comment: 1,
                 expirationTime: 1,
-                isActive: 1,
+                status: 1,
                 password: 1,
+                metadata: 1,
+                createdAt: 1,
                 creator: {
                     _id: "$creator._id",
                     name: "$creator.name",
                     email: "$creator.email",
                     profilePicture: "$creator.profilePicture",
                 },
-            },
-        },
-        {
-            $sort: {
-                createdAt: -1,
             },
         },
     ]);
@@ -250,7 +244,16 @@ const updateLink = (linkId, link, userId) => __awaiter(void 0, void 0, void 0, f
         throw new response_1.APIResponseError("Link not found", 404, false);
     }
     yield workspaces_1.default.authorized(existingLink.workspaceId, userId);
-    const updatedLink = yield links_1.default.findByIdAndUpdate(linkId, link, {
+    // no shortUrlKey update
+    const updatedLink = yield links_1.default.findByIdAndUpdate(linkId, {
+        destinationUrl: link.destinationUrl,
+        metadata: link.metadata,
+        tags: link.tags,
+        comment: link.comment,
+        expirationTime: link.expirationTime,
+        password: link.password,
+        status: link.status,
+    }, {
         new: true,
     });
     if (!updatedLink) {
@@ -266,25 +269,21 @@ const updateLink = (linkId, link, userId) => __awaiter(void 0, void 0, void 0, f
 /**
  * authentication required, [checks userId in workspace]
  * @param linkId
+ * @param
  * @param userId
  * @returns
  */
-const deactivateLink = (linkId, userId) => __awaiter(void 0, void 0, void 0, function* () {
+const changeStatus = (linkId, status, userId) => __awaiter(void 0, void 0, void 0, function* () {
     const existingLink = yield links_1.default.findById(linkId);
     if (!existingLink) {
         throw new response_1.APIResponseError("Link not found", 404, false);
     }
     yield workspaces_1.default.authorized(existingLink.workspaceId, userId);
-    const link = yield links_1.default.findByIdAndUpdate(linkId, { isActive: false });
+    const link = yield links_1.default.findByIdAndUpdate(linkId, { status }, { new: true });
     if (!link) {
         throw new response_1.APIResponseError("Link not found", 404, false);
     }
-    const populatedLink = yield getOneLinkBy({
-        linkId: link._id.toString(),
-        userId: link.creatorId.toString(),
-        workspaceId: link.workspaceId.toString(),
-    });
-    return populatedLink;
+    return link;
 });
 /**
  * authentication required, [checks userId in workspace]
@@ -325,9 +324,9 @@ const linksService = {
     createLink,
     getOneLinkBy,
     getLinksByWorkspaceId,
-    justTheDestinationUrl,
+    justTheLink,
     updateLink,
-    deactivateLink,
+    changeStatus,
     deleteLink,
     deleteAllLinksByWorkspaceId,
 };

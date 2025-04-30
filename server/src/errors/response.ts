@@ -1,3 +1,6 @@
+import type { NextFunction, Request, Response } from "express";
+import StatusMessagesMark4 from "../constants/messages";
+
 export class APIResponseError extends Error {
     public status: number;
     public success: boolean;
@@ -11,3 +14,25 @@ export class APIResponseError extends Error {
         this.success = success;
     }
 }
+
+const statusMessages = new StatusMessagesMark4();
+
+export const apiErrorHandler = (
+    error: any,
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    if (error instanceof APIResponseError) {
+        res.status(error.status).json({
+            success: error.success,
+            message: error.message,
+        });
+    } else {
+        console.log(req.url, error);
+        res.status(500).json({
+            success: false,
+            message: statusMessages.getRandomInternalServerErrorMessage(),
+        });
+    }
+};

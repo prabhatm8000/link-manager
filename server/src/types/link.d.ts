@@ -21,6 +21,8 @@ export interface ILinks extends mongoose.Document {
     expirationTime?: Date;
     password?: string;
 
+    clickCount: number;
+
     status: LinkStatus;
     workspaceId: mongoose.Types.ObjectId;
     creatorId: mongoose.Types.ObjectId;
@@ -111,13 +113,24 @@ export interface ILinksService {
     ) => Promise<ILinks>;
 
     /**
+     * on event capture, increment click count
+     * @param linkId - linkId to increment click count
+     * @returns
+     */
+    incrementClickCount: (linkId: string) => Promise<void>;
+
+    /**
      * authentication required, [checks userId in workspace]
      * @param linkId
      * @param status
      * @param userId
      * @returns
      */
-    changeStatus: (linkId: string, status: LinkStatus, userId: string) => Promise<ILinks>;
+    changeStatus: (
+        linkId: string,
+        status: LinkStatus,
+        userId: string
+    ) => Promise<ILinks>;
 
     /**
      * authentication required, [checks userId in workspace]

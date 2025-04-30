@@ -1,3 +1,4 @@
+
 export type ApiResponseType = {
     success: boolean;
     message: string;
@@ -62,6 +63,8 @@ export interface ILink {
     password?: string;
     createdAt: string;
 
+    clickCount?: number;
+
     status: "active" | "inactive" | "expired";
     workspaceId: string;
     creatorId: string;
@@ -84,7 +87,36 @@ export interface LinkDisplayConfig {
     displayMode: "table" | "card";
     heading: "title" | "shortUrl";
     value: "description" | "destinationUrl";
+    showAnalytics?: boolean;
     showCreatorAvatar?: boolean;
     showTags?: boolean;
     showCreatedAt?: boolean;
+}
+
+export type UserAgentData = {
+    userAgent?: string;
+    ip: string;
+    referer: string;
+    browser: string;
+    os: string;
+    device: string;
+    region: string;
+};
+
+export interface IEvent {
+    _id: string;
+    linkId: string;
+    workspaceId: string;
+    link: Pick<ILink, "_id" | "shortUrlKey" | "destinationUrl" | "metadata">;
+    type: string;
+    metadata: UserAgentData;
+    createdAt: string;
+}
+
+export interface IEventState {
+    events: IEvent[];
+    loading: boolean;
+    hasMore: boolean;
+    error: string | null;
+    message: string | null;
 }

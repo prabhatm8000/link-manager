@@ -1,17 +1,13 @@
 import type { NextFunction, Request, Response } from "express";
 import { APIResponseError } from "../errors/response";
+import asyncWrapper from "../lib/asyncWrapper";
 import { getOtpCookie, removeOtpCookie } from "../lib/cookie";
 import otpService from "../services/otpsService";
-import { catchHandler } from "../lib/asyncWrapper";
 
-const verifyOtpMiddleware = async (
-    req: Request,
-    res: Response,
-    next?: NextFunction
-) => {
-    // email, otp will be undefined on resend === true
-    const { email, otp, resend } = req.body;
-    try {
+const verifyOtpMiddleware = asyncWrapper(
+    async (req: Request, res: Response, next: NextFunction) => {
+        // email, otp will be undefined on resend === true
+        const { email, otp, resend } = req.body;
         const payload = await getOtpCookie(req);
 
         if (!resend) {
@@ -31,10 +27,8 @@ const verifyOtpMiddleware = async (
             ...payload,
         };
 
-        if (next) next();
-    } catch (error) {
-        catchHandler(error, req, res);
+        next();
     }
-};
+);
 
 export default verifyOtpMiddleware;

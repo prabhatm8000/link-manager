@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const messages_1 = __importDefault(require("../constants/messages"));
 const response_1 = require("../errors/response");
 const asyncWrapper_1 = __importDefault(require("../lib/asyncWrapper"));
+const urlMetadeta_1 = require("../lib/urlMetadeta");
 const linksService_1 = __importDefault(require("../services/linksService"));
 const tagsService_1 = __importDefault(require("../services/tagsService"));
 const statusMessages = new messages_1.default("link");
@@ -25,6 +26,18 @@ const generateShortUrlKey = (0, asyncWrapper_1.default)((req, res) => __awaiter(
         success: true,
         message: "",
         data: ShortUrlKey,
+    });
+}));
+const getMetadata = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { url } = req.query;
+    if (!url || typeof url !== "string") {
+        throw new response_1.APIResponseError("", 400, false);
+    }
+    const metadata = yield (0, urlMetadeta_1.fetchMetadata)(url);
+    res.status(200).json({
+        message: "",
+        success: true,
+        data: metadata,
     });
 }));
 const createLink = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -112,11 +125,11 @@ const updateLink = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, v
 }));
 const deactivateLink = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const { linkId } = req.params;
+    const { linkId, status } = req.params;
     if (!linkId) {
         throw new response_1.APIResponseError(statusMessages.getMessage("Link ID is required", "error", "other"), 400, false);
     }
-    const link = yield linksService_1.default.deactivateLink(linkId, ((_a = req.user) === null || _a === void 0 ? void 0 : _a._id.toString()) || "");
+    const link = yield linksService_1.default.changeStatus(linkId, status, ((_a = req.user) === null || _a === void 0 ? void 0 : _a._id.toString()) || "");
     res.status(200).json({
         success: true,
         message: statusMessages.getMessage("Link deactivated successfully", "success", "other"),
@@ -150,6 +163,7 @@ const tagsSuggestions = (0, asyncWrapper_1.default)((req, res) => __awaiter(void
 }));
 const linksController = {
     generateShortUrlKey,
+    getMetadata,
     createLink,
     getLinkByShortUrlKey,
     getLinksByWorkspaceId,

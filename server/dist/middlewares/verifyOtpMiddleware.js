@@ -13,30 +13,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const response_1 = require("../errors/response");
+const asyncWrapper_1 = __importDefault(require("../lib/asyncWrapper"));
 const cookie_1 = require("../lib/cookie");
 const otpsService_1 = __importDefault(require("../services/otpsService"));
-const asyncWrapper_1 = require("../lib/asyncWrapper");
-const verifyOtpMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const verifyOtpMiddleware = (0, asyncWrapper_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     // email, otp will be undefined on resend === true
     const { email, otp, resend } = req.body;
-    try {
-        const payload = yield (0, cookie_1.getOtpCookie)(req);
-        if (!resend) {
-            if (email !== payload.email) {
-                throw new response_1.APIResponseError("Unauthorized", 401, false);
-            }
-            const isMatch = yield otpsService_1.default.verifyOtp(email, otp);
-            if (!isMatch) {
-                throw new response_1.APIResponseError("Invalid OTP", 400, false);
-            }
+    const payload = yield (0, cookie_1.getOtpCookie)(req);
+    if (!resend) {
+        if (email !== payload.email) {
+            throw new response_1.APIResponseError("Unauthorized", 401, false);
         }
-        (0, cookie_1.removeOtpCookie)(res);
-        req.body = Object.assign({}, payload);
-        if (next)
-            next();
+        const isMatch = yield otpsService_1.default.verifyOtp(email, otp);
+        if (!isMatch) {
+            throw new response_1.APIResponseError("Invalid OTP", 400, false);
+        }
     }
-    catch (error) {
-        (0, asyncWrapper_1.catchHandler)(error, req, res);
-    }
-});
+    (0, cookie_1.removeOtpCookie)(res);
+    req.body = Object.assign({}, payload);
+    next();
+}));
 exports.default = verifyOtpMiddleware;
