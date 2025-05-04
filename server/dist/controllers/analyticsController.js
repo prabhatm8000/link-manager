@@ -16,7 +16,8 @@ const asyncWrapper_1 = __importDefault(require("../lib/asyncWrapper"));
 const mongodb_1 = require("../lib/mongodb");
 const analyticsService_1 = __importDefault(require("../services/analyticsService"));
 const getAnalytics = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { linkId, workspaceId, startDate, endDate } = req.query;
+    const { linkId, workspaceId } = req.params;
+    const { startDate, endDate, grouping } = req.query;
     (0, mongodb_1.validateObjectId)(linkId);
     (0, mongodb_1.validateObjectId)(workspaceId);
     const analytics = yield analyticsService_1.default.getAnalyticsByDateRange({
@@ -24,6 +25,9 @@ const getAnalytics = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0,
         workspaceId: workspaceId,
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
+        grouping: grouping
+            ? grouping
+            : undefined,
     });
     res.status(200).json({
         success: true,

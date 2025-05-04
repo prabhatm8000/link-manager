@@ -42,13 +42,14 @@ const getMetadata = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, 
 }));
 const createLink = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const { tags, destinationUrl, shortUrlKey, workspaceId, comment, expirationTime, password, } = req.body;
+    const { tags, destinationUrl, metadata, shortUrlKey, workspaceId, comment, expirationTime, password, } = req.body;
     if (!tags || !destinationUrl || !shortUrlKey || !workspaceId) {
         throw new response_1.APIResponseError(statusMessages.getMessage("All fields are required", "error", "create"), 400, false);
     }
     const link = yield linksService_1.default.createLink({
         destinationUrl,
         shortUrlKey,
+        metadata,
         tags,
         comment,
         expirationTime,

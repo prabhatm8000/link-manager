@@ -13,15 +13,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
+const configs_1 = require("../constants/configs");
 const envVars_1 = __importDefault(require("../constants/envVars"));
 const response_1 = require("../errors/response");
 const links_1 = __importDefault(require("../models/links"));
 const workspaces_1 = __importDefault(require("../models/workspaces"));
+const analyticsService_1 = __importDefault(require("./analyticsService"));
+const eventsService_1 = __importDefault(require("./eventsService"));
 const tagsService_1 = __importDefault(require("./tagsService"));
 const workspacesService_1 = __importDefault(require("./workspacesService"));
 // limits for workspace
 const MAX_LINKS = 20;
-const generateShortUrlKey = (...args_1) => __awaiter(void 0, [...args_1], void 0, function* (size = 10) {
+const generateShortUrlKey = () => __awaiter(void 0, void 0, void 0, function* () {
+    const size = configs_1.shortUrlKeyLength;
     const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let isUnique = false;
     let key = "";
@@ -124,6 +128,7 @@ const getOneLinkBy = (_a) => __awaiter(void 0, [_a], void 0, function* ({ linkId
                 password: 1,
                 workspaceId: 1,
                 createdAt: 1,
+                clickCount: 1,
                 creator: {
                     _id: "$creator._id",
                     name: "$creator.name",
@@ -204,6 +209,7 @@ const getLinksByWorkspaceId = (workspaceId, userId, q) => __awaiter(void 0, void
         {
             $project: {
                 _id: 1,
+                workspaceId: 1,
                 destinationUrl: 1,
                 shortUrlKey: 1,
                 tags: 1,
@@ -213,6 +219,7 @@ const getLinksByWorkspaceId = (workspaceId, userId, q) => __awaiter(void 0, void
                 password: 1,
                 metadata: 1,
                 createdAt: 1,
+                clickCount: 1,
                 creator: {
                     _id: "$creator._id",
                     name: "$creator.name",
@@ -230,6 +237,14 @@ const getLinksByWorkspaceId = (workspaceId, userId, q) => __awaiter(void 0, void
         link["shortUrl"] = generateUrlWithShortUrlKey(link.shortUrlKey);
     });
     return links;
+});
+/**
+ * on event capture, increment click count
+ * @param linkId
+ * @returns
+ */
+const incrementClickCount = (linkId) => __awaiter(void 0, void 0, void 0, function* () {
+    yield links_1.default.updateOne({ _id: linkId }, { $inc: { clickCount: 1 } });
 });
 /**
  * authentication required, [checks userId in workspace]
@@ -298,11 +313,35 @@ const deleteLink = (linkId, userId, options) => __awaiter(void 0, void 0, void 0
         throw new response_1.APIResponseError("Link not found", 404, false);
     }
     yield workspaces_1.default.authorized(existingLink.workspaceId, userId);
+    let session = null;
+    if (options) {
+        session = options.session;
+    }
+    else {
+        session = yield mongoose_1.default.startSession();
+        session.startTransaction();
+    }
     const link = yield links_1.default.findByIdAndDelete(linkId, {
         session: options ? options.session : null,
     });
     if (!link) {
         throw new response_1.APIResponseError("Link not found", 404, false);
+    }
+    // increment link count by -1
+    yield workspaces_1.default.findByIdAndUpdate(link.workspaceId, {
+        $inc: { linkCounts: -1 },
+    }, { session });
+    // delete events
+    yield eventsService_1.default.deleteEventsBy({ linkId: link._id.toString() }, {
+        session
+    });
+    // delete analytics
+    yield analyticsService_1.default.deleteAnalyticsBy({ linkId: link._id.toString(), workspaceId: link.workspaceId.toString() }, {
+        session
+    });
+    if (session) {
+        yield session.commitTransaction();
+        yield session.endSession();
     }
     return link;
 });
@@ -325,6 +364,7 @@ const linksService = {
     getOneLinkBy,
     getLinksByWorkspaceId,
     justTheLink,
+    incrementClickCount,
     updateLink,
     changeStatus,
     deleteLink,

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.inviteConfig = exports.otpConfig = exports.otpCookieConfig = exports.authCookieConfig = exports.corsConfig = exports.rateLimiter = exports.authRateLimiter = exports.jwtConfig = void 0;
+exports.inviteConfig = exports.otpConfig = exports.otpCookieConfig = exports.authCookieConfig = exports.corsConfig = exports.rateLimiter = exports.authRateLimiter = exports.jwtConfig = exports.shortUrlKeyLength = void 0;
 const cors_1 = __importDefault(require("cors"));
 const express_rate_limit_1 = require("express-rate-limit");
 const envVars_1 = __importDefault(require("./envVars"));
@@ -13,6 +13,7 @@ const originWhitelist = [
     "http://localhost:1905",
     "http://localhost:5173",
 ];
+exports.shortUrlKeyLength = 7; // 7 characters long
 // #region jwt
 exports.jwtConfig = {
     jwtTokenExpires: 3 * 24 * 60 * 60 * 1000, // 3 days

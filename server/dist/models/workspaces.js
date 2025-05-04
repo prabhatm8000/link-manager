@@ -37,6 +37,10 @@ const workspaceSchema = new mongoose_1.default.Schema({
         type: Number,
         default: 0,
     },
+    eventCount: {
+        type: Number,
+        default: 0,
+    },
     isActive: {
         type: Boolean,
         default: true,

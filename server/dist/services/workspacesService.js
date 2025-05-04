@@ -17,6 +17,8 @@ const response_1 = require("../errors/response");
 const mongodb_1 = require("../lib/mongodb");
 const users_1 = __importDefault(require("../models/users"));
 const workspaces_1 = __importDefault(require("../models/workspaces"));
+const analyticsService_1 = __importDefault(require("./analyticsService"));
+const eventsService_1 = __importDefault(require("./eventsService"));
 const linksService_1 = __importDefault(require("./linksService"));
 // limits for a user
 const MAX_WORKSPACES = 5;
@@ -57,6 +59,48 @@ const createWorkspace = (workspace) => __awaiter(void 0, void 0, void 0, functio
         }
         throw error;
     }
+});
+/**
+ * @param workspaceId
+ */
+const incrementLinkCount = (workspaceId) => __awaiter(void 0, void 0, void 0, function* () {
+    (0, mongodb_1.validateObjectId)(workspaceId);
+    const result = yield workspaces_1.default.findByIdAndUpdate(workspaceId, { $inc: { linkCount: 1 } }, { new: true });
+    if (!result) {
+        throw new response_1.APIResponseError("Workspace not found", 404, false);
+    }
+});
+/**
+ * @param workspaceId
+ */
+const incrementEventCount = (workspaceId) => __awaiter(void 0, void 0, void 0, function* () {
+    (0, mongodb_1.validateObjectId)(workspaceId);
+    const result = yield workspaces_1.default.findByIdAndUpdate(workspaceId, { $inc: { eventCount: 1 } }, { new: true });
+    if (!result) {
+        throw new response_1.APIResponseError("Workspace not found", 404, false);
+    }
+});
+const getLinkCount = (workspaceId, userId) => __awaiter(void 0, void 0, void 0, function* () {
+    (0, mongodb_1.validateObjectId)(workspaceId, userId);
+    const result = yield workspaces_1.default.findById(workspaceId, {
+        linkCount: 1,
+    });
+    result === null || result === void 0 ? void 0 : result.authorized(workspaceId, userId);
+    if (!result) {
+        throw new response_1.APIResponseError("Workspace not found", 404, false);
+    }
+    return result.linkCount;
+});
+const getEventCount = (workspaceId, userId) => __awaiter(void 0, void 0, void 0, function* () {
+    (0, mongodb_1.validateObjectId)(workspaceId, userId);
+    const result = yield workspaces_1.default.findById(workspaceId, {
+        eventCount: 1,
+    });
+    result === null || result === void 0 ? void 0 : result.authorized(workspaceId, userId);
+    if (!result) {
+        throw new response_1.APIResponseError("Workspace not found", 404, false);
+    }
+    return result.eventCount;
 });
 /**
  * authentication required, [checks userId in people]
@@ -202,10 +246,16 @@ const deleteWorkspace = (workspaceId, createdBy) => __awaiter(void 0, void 0, vo
             _id: new mongoose_1.default.Types.ObjectId(workspaceId),
             createdBy: new mongoose_1.default.Types.ObjectId(createdBy),
         }, { session });
+        // delete user
         yield users_1.default.findByIdAndUpdate(createdBy, { $inc: { workspaceCreatedCount: -1 } }, { session });
+        // delete links
         yield linksService_1.default.deleteAllLinksByWorkspaceId(workspaceId, createdBy, {
             session,
         });
+        // delete events
+        yield eventsService_1.default.deleteEventsBy({ workspaceId: workspaceId }, { session });
+        // delete analytics
+        yield analyticsService_1.default.deleteAnalyticsBy({ workspaceId: workspaceId }, { session });
         yield session.commitTransaction();
         if (!result) {
             throw new response_1.APIResponseError("Workspace not found", 404, false);
@@ -297,7 +347,7 @@ const getPeople = (workspaceId, userId) => __awaiter(void 0, void 0, void 0, fun
  */
 const removePeople = (workspaceId, peopleId, userId) => __awaiter(void 0, void 0, void 0, function* () {
     (0, mongodb_1.validateObjectId)(workspaceId, peopleId, userId);
-    if (userId === peopleId) {
+    if ((0, mongodb_1.matchObjectId)(peopleId, userId)) {
         throw new response_1.APIResponseError("You cannot remove yourself", 400, false);
     }
     yield workspaces_1.default.authorized(workspaceId, userId);
@@ -369,6 +419,10 @@ const getInviteData = (workspaceId, senderId) => __awaiter(void 0, void 0, void 
 });
 const workspacesService = {
     createWorkspace,
+    incrementLinkCount,
+    incrementEventCount,
+    getLinkCount,
+    getEventCount,
     getWorkspaceById,
     getWorkspaceByCreatorId,
     getAllWorkspacesForUser,

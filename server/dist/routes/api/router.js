@@ -15,6 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const response_1 = require("../../errors/response");
 const asyncWrapper_1 = __importDefault(require("../../lib/asyncWrapper"));
+const analyticsRouter_1 = __importDefault(require("./analyticsRouter"));
+const eventsRouter_1 = __importDefault(require("./eventsRouter"));
 const linksRouter_1 = __importDefault(require("./linksRouter"));
 const usersRouter_1 = __importDefault(require("./usersRouter"));
 const workspacesRouter_1 = __importDefault(require("./workspacesRouter"));
@@ -34,8 +36,8 @@ apiRouter.get("/", (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, v
 apiRouter.use("/user", usersRouter_1.default);
 apiRouter.use("/workspace", workspacesRouter_1.default);
 apiRouter.use("/link", linksRouter_1.default);
-apiRouter.use("/events", linksRouter_1.default);
-apiRouter.use("/analytics", linksRouter_1.default);
+apiRouter.use("/event", eventsRouter_1.default);
+apiRouter.use("/analytic", analyticsRouter_1.default);
 // invalid route
 apiRouter.use("/*", (req, res) => {
     throw new response_1.APIResponseError({

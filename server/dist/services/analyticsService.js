@@ -16,76 +16,491 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const response_1 = require("../errors/response");
 const analytics_1 = __importDefault(require("../models/analytics"));
 const captureData = (d) => __awaiter(void 0, void 0, void 0, function* () {
-    const date = new Date(d.date);
-    date.setHours(0, 0, 0, 0); // Set time to midnight to group by date
-    const data = {
-        _id: new mongoose_1.default.Types.ObjectId(),
-        linkId: new mongoose_1.default.Types.ObjectId(d.linkId),
+    const date = new Date();
+    date.setUTCHours(0, 0, 0, 0); // Set time to midnight to group by date
+    const filter = {
         workspaceId: new mongoose_1.default.Types.ObjectId(d.workspaceId),
+        linkId: new mongoose_1.default.Types.ObjectId(d.linkId),
         date,
-        total: 1,
-        browser: [{ name: d.metadata.browser, count: 1 }],
-        os: [{ name: d.metadata.os, count: 1 }],
-        device: [{ name: d.metadata.device, count: 1 }],
-        region: [{ name: d.metadata.region, count: 1 }],
     };
-    const analytics = yield analytics_1.default.findOneAndUpdate({
-        workspaceId: new mongoose_1.default.Types.ObjectId(d.workspaceId),
-        linkId: new mongoose_1.default.Types.ObjectId(d.linkId),
-        date: d.date,
-    }, data, { upsert: true, new: true }).exec();
-    return analytics;
-});
-const getAnalyticsByDateRange = (d) => __awaiter(void 0, void 0, void 0, function* () {
-    const analytics = yield analytics_1.default.aggregate([
+    // 1. getting the array
+    // 2. if the array has a object where the name === d.metadata.browser ? increment the count by 1 : create a new object
+    // 3. upsert: true, create doc if not exists
+    // #region crazy ass capture pipeline
+    yield analytics_1.default.updateOne(filter, [
         {
-            $match: Object.assign(Object.assign({ workspaceId: new mongoose_1.default.Types.ObjectId(d.workspaceId), linkId: new mongoose_1.default.Types.ObjectId(d.linkId) }, (d.startDate && { date: { $gte: d.startDate } })), (d.endDate && { date: { $lte: d.endDate } })),
-        },
-        {
-            $group: {
-                _id: null,
-                total: {
-                    $sum: "$total",
-                },
+            $set: {
                 browser: {
-                    $push: { name: "$browser.name", count: "$browser.count" },
+                    $let: {
+                        // basically doing, `const exisiting = browser || []`
+                        vars: {
+                            existing: {
+                                $ifNull: ["$browser", []],
+                            },
+                        },
+                        // use the variable inside here
+                        in: {
+                            $cond: [
+                                // basically, if existing.map((b) => b.name).includes(d.metadata.browser)
+                                {
+                                    $in: [
+                                        d.metadata.browser,
+                                        {
+                                            $map: {
+                                                input: "$$existing",
+                                                as: "b",
+                                                in: "$$b.name",
+                                            },
+                                        },
+                                    ],
+                                },
+                                // basically, existing.map((b) => b.name === d.metadata.browser ? { ...b, count: b.count + 1 } : b)
+                                {
+                                    $map: {
+                                        input: "$$existing",
+                                        as: "b",
+                                        in: {
+                                            $cond: [
+                                                {
+                                                    $eq: [
+                                                        "$$b.name",
+                                                        d.metadata.browser,
+                                                    ],
+                                                },
+                                                {
+                                                    name: "$$b.name",
+                                                    count: {
+                                                        $add: [
+                                                            "$$b.count",
+                                                            1,
+                                                        ],
+                                                    },
+                                                },
+                                                "$$b",
+                                            ],
+                                        },
+                                    },
+                                },
+                                // basically, `existing.concat([{ name: d.metadata.browser, count: 1 }])`
+                                {
+                                    $concatArrays: [
+                                        "$$existing",
+                                        [
+                                            {
+                                                name: d.metadata.browser,
+                                                count: 1,
+                                            },
+                                        ],
+                                    ],
+                                },
+                            ],
+                        },
+                    },
                 },
                 os: {
-                    $push: { name: "$os.name", count: "$os.count" },
+                    $let: {
+                        vars: { existing: { $ifNull: ["$os", []] } },
+                        in: {
+                            $cond: [
+                                {
+                                    $in: [
+                                        d.metadata.os,
+                                        {
+                                            $map: {
+                                                input: "$$existing",
+                                                as: "o",
+                                                in: "$$o.name",
+                                            },
+                                        },
+                                    ],
+                                },
+                                {
+                                    $map: {
+                                        input: "$$existing",
+                                        as: "o",
+                                        in: {
+                                            $cond: [
+                                                {
+                                                    $eq: [
+                                                        "$$o.name",
+                                                        d.metadata.os,
+                                                    ],
+                                                },
+                                                {
+                                                    name: "$$o.name",
+                                                    count: {
+                                                        $add: [
+                                                            "$$o.count",
+                                                            1,
+                                                        ],
+                                                    },
+                                                },
+                                                "$$o",
+                                            ],
+                                        },
+                                    },
+                                },
+                                {
+                                    $concatArrays: [
+                                        "$$existing",
+                                        [{ name: d.metadata.os, count: 1 }],
+                                    ],
+                                },
+                            ],
+                        },
+                    },
                 },
                 device: {
-                    $push: { name: "$device.name", count: "$device.count" },
+                    $let: {
+                        vars: { existing: { $ifNull: ["$device", []] } },
+                        in: {
+                            $cond: [
+                                {
+                                    $in: [
+                                        d.metadata.device,
+                                        {
+                                            $map: {
+                                                input: "$$existing",
+                                                as: "d",
+                                                in: "$$d.name",
+                                            },
+                                        },
+                                    ],
+                                },
+                                {
+                                    $map: {
+                                        input: "$$existing",
+                                        as: "d",
+                                        in: {
+                                            $cond: [
+                                                {
+                                                    $eq: [
+                                                        "$$d.name",
+                                                        d.metadata.device,
+                                                    ],
+                                                },
+                                                {
+                                                    name: "$$d.name",
+                                                    count: {
+                                                        $add: [
+                                                            "$$d.count",
+                                                            1,
+                                                        ],
+                                                    },
+                                                },
+                                                "$$d",
+                                            ],
+                                        },
+                                    },
+                                },
+                                {
+                                    $concatArrays: [
+                                        "$$existing",
+                                        [
+                                            {
+                                                name: d.metadata.device,
+                                                count: 1,
+                                            },
+                                        ],
+                                    ],
+                                },
+                            ],
+                        },
+                    },
                 },
                 region: {
-                    $push: { name: "$region.name", count: "$region.count" },
+                    $let: {
+                        vars: { existing: { $ifNull: ["$region", []] } },
+                        in: {
+                            $cond: [
+                                {
+                                    $in: [
+                                        d.metadata.region,
+                                        {
+                                            $map: {
+                                                input: "$$existing",
+                                                as: "r",
+                                                in: "$$r.name",
+                                            },
+                                        },
+                                    ],
+                                },
+                                {
+                                    $map: {
+                                        input: "$$existing",
+                                        as: "r",
+                                        in: {
+                                            $cond: [
+                                                {
+                                                    $eq: [
+                                                        "$$r.name",
+                                                        d.metadata.region,
+                                                    ],
+                                                },
+                                                {
+                                                    name: "$$r.name",
+                                                    count: {
+                                                        $add: [
+                                                            "$$r.count",
+                                                            1,
+                                                        ],
+                                                    },
+                                                },
+                                                "$$r",
+                                            ],
+                                        },
+                                    },
+                                },
+                                {
+                                    $concatArrays: [
+                                        "$$existing",
+                                        [
+                                            {
+                                                name: d.metadata.region,
+                                                count: 1,
+                                            },
+                                        ],
+                                    ],
+                                },
+                            ],
+                        },
+                    },
+                },
+                // basically, `total: (total || 0) + 1`
+                total: { $add: [{ $ifNull: ["$total", 0] }, 1] },
+            },
+        },
+    ], { upsert: true });
+    // #endregion
+    return true;
+});
+/**
+ * @param linkId
+ * @param workspaceId
+ * @param startDate - optional inclusive
+ * @param endDate - optional inclusive
+ * @param grouping - optional, default is daily, can be daily, weekly, monthly
+ * @returns
+ */
+const getAnalyticsByDateRange = (d) => __awaiter(void 0, void 0, void 0, function* () {
+    const matchStage = {
+        $match: Object.assign(Object.assign(Object.assign({ workspaceId: new mongoose_1.default.Types.ObjectId(d.workspaceId), linkId: new mongoose_1.default.Types.ObjectId(d.linkId) }, (d.startDate && !d.endDate && { date: { $gte: d.startDate } })), (d.endDate && !d.startDate && { date: { $lte: d.endDate } })), (d.startDate &&
+            d.endDate && {
+            date: { $gte: d.startDate, $lte: d.endDate },
+        })),
+    };
+    const dateFormates = {
+        daily: "%Y-%m-%d",
+        weekly: "%Y-%U", // Week number of year
+        monthly: "%Y-%m",
+    };
+    // for array flattening
+    const reduceFunc = (f) => ({
+        $reduce: {
+            input: f,
+            initialValue: [],
+            in: {
+                $concatArrays: ["$$value", "$$this"],
+            },
+        },
+    });
+    // for summing the count of each name in the array
+    const reduceThatSumsCount = (f) => ({
+        $reduce: {
+            input: f,
+            initialValue: [],
+            in: {
+                $let: {
+                    vars: {
+                        existing: {
+                            $filter: {
+                                input: "$$value",
+                                as: "b",
+                                cond: {
+                                    $eq: ["$$b.name", "$$this.name"],
+                                },
+                            },
+                        },
+                    },
+                    in: {
+                        $cond: [
+                            { $gt: [{ $size: "$$existing" }, 0] },
+                            {
+                                $map: {
+                                    input: "$$value",
+                                    as: "b",
+                                    in: {
+                                        $cond: [
+                                            {
+                                                $eq: [
+                                                    "$$b.name",
+                                                    "$$this.name",
+                                                ],
+                                            },
+                                            {
+                                                name: "$$b.name",
+                                                count: {
+                                                    $add: [
+                                                        "$$b.count",
+                                                        "$$this.count",
+                                                    ],
+                                                },
+                                            },
+                                            "$$b",
+                                        ],
+                                    },
+                                },
+                            },
+                            {
+                                $concatArrays: ["$$value", ["$$this"]],
+                            },
+                        ],
+                    },
                 },
             },
         },
+    });
+    const analytics = yield analytics_1.default.aggregate([
+        matchStage,
         {
             $project: {
                 _id: 0,
                 total: 1,
+                date: 1,
                 browser: 1,
                 os: 1,
                 device: 1,
                 region: 1,
             },
         },
+        {
+            $addFields: {
+                groupDate: {
+                    $dateToString: {
+                        format: dateFormates[d.grouping || "daily"],
+                        date: "$date",
+                    },
+                },
+            },
+        },
+        {
+            $group: {
+                _id: "$groupDate",
+                total: { $sum: "$total" },
+                // push all the arrays in all doc, and creates a nested array
+                browser: { $push: "$browser" },
+                os: { $push: "$os" },
+                device: { $push: "$device" },
+                region: { $push: "$region" },
+            },
+        },
+        {
+            $project: {
+                date: "$_id",
+                total: 1,
+                // array flatten [[{}], [{}], [{}]] => [{}, {}, {}]
+                browser: reduceFunc("$browser"),
+                os: reduceFunc("$os"),
+                device: reduceFunc("$device"),
+                region: reduceFunc("$region"),
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                date: 1,
+                total: 1,
+                // summing the count of each name in the array
+                browser: reduceThatSumsCount("$browser"),
+                os: reduceThatSumsCount("$os"),
+                device: reduceThatSumsCount("$device"),
+                region: reduceThatSumsCount("$region"),
+            },
+        },
+        {
+            $sort: {
+                date: 1,
+            },
+        },
     ]);
-    return analytics[0];
+    const preparedAnalytics = {
+        metrix: {
+            totalClicks: 0,
+            maxClicks: { date: "", count: Number.MIN_SAFE_INTEGER },
+            minClicks: { date: "", count: Number.MAX_SAFE_INTEGER },
+            dateWiseClickCount: [],
+        },
+        browser: new Map(),
+        os: new Map(),
+        device: new Map(),
+        region: new Map(),
+    };
+    for (const a of analytics) {
+        preparedAnalytics.metrix.totalClicks += a.total;
+        if (a.total > preparedAnalytics.metrix.maxClicks.count) {
+            preparedAnalytics.metrix.maxClicks = {
+                date: a.date,
+                count: a.total,
+            };
+        }
+        if (a.total < preparedAnalytics.metrix.minClicks.count) {
+            preparedAnalytics.metrix.minClicks = {
+                date: a.date,
+                count: a.total,
+            };
+        }
+        preparedAnalytics.metrix.dateWiseClickCount.push({
+            date: a.date,
+            count: a.total,
+        });
+        for (const b of a.browser) {
+            preparedAnalytics.browser.set(b.name, b.count + (preparedAnalytics.browser.get(b.name) || 0));
+        }
+        for (const b of a.os) {
+            preparedAnalytics.os.set(b.name, b.count + (preparedAnalytics.os.get(b.name) || 0));
+        }
+        for (const b of a.device) {
+            preparedAnalytics.device.set(b.name, b.count + (preparedAnalytics.device.get(b.name) || 0));
+        }
+        for (const b of a.region) {
+            preparedAnalytics.region.set(b.name, b.count + (preparedAnalytics.region.get(b.name) || 0));
+        }
+    }
+    const analyticsObj = {
+        metrix: preparedAnalytics.metrix,
+        browser: Array.from(preparedAnalytics.browser).map(([name, count]) => ({
+            name,
+            count,
+        })),
+        os: Array.from(preparedAnalytics.os).map(([name, count]) => ({
+            name,
+            count,
+        })),
+        device: Array.from(preparedAnalytics.device).map(([name, count]) => ({
+            name,
+            count,
+        })),
+        region: Array.from(preparedAnalytics.region).map(([name, count]) => ({
+            name,
+            count,
+        })),
+    };
+    return analyticsObj;
 });
-const deleteAnalyticsByLinkId = (d) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteAnalyticsBy = (d, options) => __awaiter(void 0, void 0, void 0, function* () {
     if (!d.linkId && !d.workspaceId) {
         throw new response_1.APIResponseError("At least one of linkId, workspaceId is required", 400, false);
     }
     yield analytics_1.default.deleteMany({
         linkId: d.linkId,
         workspaceId: d.workspaceId,
+    }, {
+        session: options === null || options === void 0 ? void 0 : options.session,
     });
 });
 const analyticsService = {
     captureData,
     getAnalyticsByDateRange,
-    deleteAnalyticsByLinkId,
+    deleteAnalyticsBy,
 };
 exports.default = analyticsService;

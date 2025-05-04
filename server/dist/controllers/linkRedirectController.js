@@ -19,6 +19,7 @@ const renderRedirectHtml_1 = __importDefault(require("../lib/renderRedirectHtml"
 const analyticsService_1 = __importDefault(require("../services/analyticsService"));
 const eventsService_1 = __importDefault(require("../services/eventsService"));
 const linksService_1 = __importDefault(require("../services/linksService"));
+const workspacesService_1 = __importDefault(require("../services/workspacesService"));
 const redirectToDestination = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const { shortUrlKey } = req.params;
@@ -68,15 +69,20 @@ const redirectToDestination = (0, asyncWrapper_1.default)((req, res) => __awaite
         // capturing the event on no messedUpFlag
         // void, i know but we don't care about the result
         // and intentionally not using await
+        void linksService_1.default
+            .incrementClickCount(url._id)
+            .catch((err) => console.error("Click count increment failed:", err));
+        void workspacesService_1.default
+            .incrementEventCount(url.workspaceId)
+            .catch((err) => console.error("Event count increment failed:", err));
         void eventsService_1.default
-            .captureEvent(url._id, url.workspaceId, "CLICK", req.metadata)
+            .captureEvent(url.workspaceId, url._id, "CLICK", req.metadata)
             .catch((err) => console.error("Event capture failed:", err));
         // capturing the analytics data (date wise)
         void analyticsService_1.default
             .captureData({
             workspaceId: url.workspaceId,
             linkId: url._id,
-            date: new Date(),
             metadata: req.metadata,
         })
             .catch((err) => console.error("Analytics capture failed:", err));

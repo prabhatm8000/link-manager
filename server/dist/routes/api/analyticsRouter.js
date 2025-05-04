@@ -6,5 +6,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const analyticsController_1 = __importDefault(require("../../controllers/analyticsController"));
 const analyticsRouter = (0, express_1.Router)();
-analyticsRouter.get("/", analyticsController_1.default.getAnalytics);
+analyticsRouter.get("/:workspaceId/:linkId", analyticsController_1.default.getAnalytics);
 exports.default = analyticsRouter;

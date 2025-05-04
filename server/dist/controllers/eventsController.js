@@ -19,13 +19,18 @@ const mongodb_1 = require("../lib/mongodb");
 const eventsService_1 = __importDefault(require("../services/eventsService"));
 const statusMessgaes = new messages_1.default("events");
 const getEvents = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { linkId, type, limit = 10, skip = 0 } = req.query;
-    (0, mongodb_1.validateObjectId)(linkId);
-    const events = yield eventsService_1.default.getEventsByLinkId({
+    const { workspaceId } = req.params;
+    (0, mongodb_1.validateObjectId)(workspaceId);
+    const { linkId, type, fetchRange = "24h" } = req.query;
+    const limit = Number(req.query.limit) || 10;
+    const skip = Number(req.query.skip) || 0;
+    const events = yield eventsService_1.default.getEventsByWorkspaceId({
+        workspaceId: workspaceId,
         linkId: linkId,
         type: type,
-        limit: Number(limit),
-        skip: Number(skip),
+        fetchRange,
+        limit,
+        skip,
     });
     res.status(200).json({
         success: true,

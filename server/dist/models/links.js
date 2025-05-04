@@ -57,6 +57,10 @@ const linksSchema = new mongoose_1.default.Schema({
         enum: ["active", "inactive", "expired"],
         default: "active",
     },
+    clickCount: {
+        type: Number,
+        default: 0,
+    },
     workspaceId: {
         type: mongoose_1.default.Schema.Types.ObjectId,
         ref: "Workspace",

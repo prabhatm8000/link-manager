@@ -3,18 +3,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateObjectId = exports.disconnectFromDB = exports.connectToDB = void 0;
+exports.matchObjectId = exports.validateObjectId = exports.disconnectFromDB = exports.connectToDB = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const envVars_1 = __importDefault(require("../constants/envVars"));
-const response_1 = require("../errors/response");
 const connectToDB = () => {
-    const mongo = mongoose_1.default.connect(envVars_1.default.MONGODB_URI);
-    // mongo
-    //     .then((o) =>
-    //         o.connection.db?.collection("users")?.dropIndex("name_1")
-    //     )
-    //     .then((_) => console.log("done"));
-    return mongo;
+    try {
+        const mongo = mongoose_1.default.connect(envVars_1.default.MONGODB_URI, {
+            dbName: "link-manager",
+        });
+        return mongo;
+    }
+    catch (error) {
+        console.error("Error connecting to database:", error);
+        process.exit(1);
+    }
 };
 exports.connectToDB = connectToDB;
 const disconnectFromDB = () => mongoose_1.default.disconnect();
@@ -30,8 +32,16 @@ const validateObjectId = (...ids) => {
     for (const id of ids) {
         const isValid = mongoose_1.default.Types.ObjectId.isValid(id);
         if (!isValid)
-            throw new response_1.APIResponseError("Something went wrong", 400, false);
+            throw new Error("Invalid ObjectId");
     }
     return true;
 };
 exports.validateObjectId = validateObjectId;
+const matchObjectId = (id1, id2) => {
+    (0, exports.validateObjectId)(id1, id2);
+    if (id1.toString() !== id2.toString()) {
+        return false;
+    }
+    return true;
+};
+exports.matchObjectId = matchObjectId;

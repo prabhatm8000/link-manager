@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const response_1 = require("../errors/response");
+const dateRange_1 = require("../lib/dateRange");
 const events_1 = __importDefault(require("../models/events"));
 /**
  * @param workspaceId
@@ -33,16 +34,61 @@ const captureEvent = (workspaceId, linkId, type, metadata) => __awaiter(void 0, 
     return event;
 });
 /**
+ * link populated
+ * @param workspaceId
  * @param linkId
- * @param type - don't know, maybe it will be useful for clicks and other type of events
- * @param limit - default is 10, you know what it does
+ * @param type
+ * @param fetchRange - date range for fetching events, it can be "today", "yesterday", "last7days", "last30days", "thismonth", "lastmonth", "all"
  * @param skip - default is 0, you know what it does
+ * @param limit - default is 10, you know what it does
  * @returns
  */
-const getEventsByLinkId = (_a) => __awaiter(void 0, [_a], void 0, function* ({ linkId, type, limit = 10, skip = 0, }) {
+const getEventsByWorkspaceId = (_a) => __awaiter(void 0, [_a], void 0, function* ({ workspaceId, linkId, type, fetchRange = "24h", skip = 0, limit = 10, }) {
+    const { startDate, endDate } = (0, dateRange_1.getDaterange)(fetchRange);
     const events = yield events_1.default.aggregate([
         {
-            $match: Object.assign({ linkId: new mongoose_1.default.Types.ObjectId(linkId) }, (type && { type })),
+            $match: Object.assign(Object.assign(Object.assign({ workspaceId: new mongoose_1.default.Types.ObjectId(workspaceId) }, (linkId && { linkId: new mongoose_1.default.Types.ObjectId(linkId) })), (type && { type })), { createdAt: {
+                    $gte: new Date(startDate),
+                    $lte: new Date(endDate),
+                } }),
+        },
+        {
+            $lookup: {
+                from: "links",
+                let: { linkId: "$linkId" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $eq: ["$_id", "$$linkId"],
+                            },
+                        },
+                    },
+                    {
+                        $project: {
+                            _id: 1,
+                            shortUrlKey: 1,
+                            destinationUrl: 1,
+                            metadata: 1,
+                        },
+                    },
+                ],
+                as: "link",
+            },
+        },
+        {
+            $unwind: "$link",
+        },
+        {
+            $project: {
+                _id: 1,
+                linkId: "$link._id",
+                workspaceId: 1,
+                link: "$link",
+                type: 1,
+                metadata: 1,
+                createdAt: 1,
+            },
         },
         {
             $sort: {
@@ -108,17 +154,19 @@ const getEventById = (eventId) => __awaiter(void 0, void 0, void 0, function* ()
  * @param workspaceId
  * @returns
  */
-const deleteEventsBy = (d) => __awaiter(void 0, void 0, void 0, function* () {
+const deleteEventsBy = (d, options) => __awaiter(void 0, void 0, void 0, function* () {
     if (!d.linkId && !d.type && !d.workspaceId) {
         throw new response_1.APIResponseError("At least one of linkId, type, workspaceId is required", 400, false);
     }
     yield events_1.default.deleteMany(Object.assign(Object.assign(Object.assign({}, (d.linkId && { linkId: new mongoose_1.default.Types.ObjectId(d.linkId) })), (d.type && { type: d.type })), (d.workspaceId && {
         workspaceId: new mongoose_1.default.Types.ObjectId(d.workspaceId),
-    })));
+    })), {
+        session: options === null || options === void 0 ? void 0 : options.session,
+    });
 });
 const eventsService = {
     captureEvent,
-    getEventsByLinkId,
+    getEventsByWorkspaceId,
     getEventById,
     deleteEventsBy,
 };
