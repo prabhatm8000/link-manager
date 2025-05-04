@@ -3,7 +3,18 @@ import { getAnalytics } from "../thunks/analyticsThunks";
 import type { ApiResponseType, IAnalyticsState } from "./types";
 
 const initialState: IAnalyticsState = {
-    analytics: [],
+    analytics: {
+        browser: [],
+        device: [],
+        os: [],
+        region: [],
+        metrix: {
+            totalClicks: 0,
+            maxClicks: { date: "", count: 0 },
+            minClicks: { date: "", count: 0 },
+            dateWiseClickCount: []
+        }
+    },
     loading: false,
     error: null,
     message: null,
@@ -14,7 +25,18 @@ const analyticsSlice = createSlice({
     initialState,
     reducers: {
         clearState: (state) => {
-            state.analytics = [];
+            state.analytics = {
+                browser: [],
+                device: [],
+                os: [],
+                region: [],
+                metrix: {
+                    totalClicks: 0,
+                    maxClicks: { date: "", count: 0 },
+                    minClicks: { date: "", count: 0 },
+                    dateWiseClickCount: []
+                }
+            }
             state.loading = false;
             state.error = null;
             state.message = null;
