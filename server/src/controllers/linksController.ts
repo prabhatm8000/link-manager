@@ -39,6 +39,7 @@ const createLink = asyncWrapper(async (req: Request, res: Response) => {
     const {
         tags,
         destinationUrl,
+        metadata,
         shortUrlKey,
         workspaceId,
         comment,
@@ -60,6 +61,7 @@ const createLink = asyncWrapper(async (req: Request, res: Response) => {
     const link = await linksService.createLink({
         destinationUrl,
         shortUrlKey,
+        metadata,
         tags,
         comment,
         expirationTime,

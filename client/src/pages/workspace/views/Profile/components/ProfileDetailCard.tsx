@@ -14,6 +14,7 @@ import LoadingCircle from "@/components/ui/LoadingCircle";
 import type { IUserState } from "@/redux/reducers/types";
 import type { AppDispatch } from "@/redux/store";
 import { updateUser } from "@/redux/thunks/usersThunk";
+import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
@@ -52,7 +53,7 @@ const ProfileDetailCard = () => {
             <Card>
                 <CardHeader>
                     <CardTitle className="flex gap-5 items-center">
-                        <Avatar>
+                        <Avatar className="size-20">
                             <AvatarImage
                                 src={
                                     userState?.user?.profilePicture || undefined
@@ -72,7 +73,7 @@ const ProfileDetailCard = () => {
                             </h4>
                             {user?.lastLogin && (
                                 <h4 className="text-sm text-muted-foreground line-clamp-1">
-                                    {new Date(user?.lastLogin).toLocaleString()}
+                                    Last Login: {format(new Date(user?.lastLogin), "PPPPpp")}
                                 </h4>
                             )}
                         </div>

@@ -9,6 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import LoadingCircle from "@/components/ui/LoadingCircle";
+import { Textarea } from "@/components/ui/textarea";
 import type { IWorkspace, IWorkspaceState } from "@/redux/reducers/types";
 import type { AppDispatch } from "@/redux/store";
 import { updateWorkspace } from "@/redux/thunks/workspaceThunks";
@@ -103,11 +104,10 @@ const WorkspaceDetailsCard = () => {
                         <Label htmlFor="workspaceDescription">
                             Description
                         </Label>
-                        <Input
+                        <Textarea
                             id="workspaceDescription"
-                            type="text"
                             placeholder="Ex. My workspace for marketing"
-                            className="w-full"
+                            className="w-full h-40 resize-none"
                             maxLength={200}
                             {...register("workspaceDescription", {
                                 maxLength: {

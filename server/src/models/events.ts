@@ -31,6 +31,7 @@ const eventsSchema = new mongoose.Schema<IEvents>(
             required: true,
             enum: [
                 "CLICK",
+                "QR CODE",
             ],
         },
         metadata: {

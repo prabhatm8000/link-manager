@@ -179,7 +179,11 @@ const LinksView = () => {
                             disabled={linksState.loading || refreshLinks}
                             onClick={() => setRefreshLinks(true)}
                         >
-                            <IoMdRefresh className="cursor-pointer size-5" />
+                            {linksState.loading ? (
+                                <LoadingCircle className="size-4" />
+                            ) : (
+                                <IoMdRefresh className="cursor-pointer size-5" />
+                            )}
                         </Button>
                     </h3>
                     <Button
@@ -194,9 +198,7 @@ const LinksView = () => {
                     </Button>
                 </div>
 
-                {linksState.loading ? (
-                    <LoadingCircle className="size-5" />
-                ) : linksState.links.length > 0 ? (
+                {linksState.links.length > 0 ? (
                     <>
                         {displayConfig.displayMode === "table" && (
                             <LinkTable

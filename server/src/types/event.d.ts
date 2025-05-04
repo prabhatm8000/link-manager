@@ -75,9 +75,14 @@ export interface IEventsService {
      * @param workspaceId
      * @returns
      */
-    deleteEventsBy: (d: {
-        linkId?: string;
-        type?: string;
-        workspaceId?: string;
-    }) => Promise<void>;
+    deleteEventsBy: (
+        d: {
+            linkId?: string;
+            type?: string;
+            workspaceId?: string;
+        },
+        options?: {
+            session?: mongoose.ClientSession;
+        }
+    ) => Promise<void>;
 }

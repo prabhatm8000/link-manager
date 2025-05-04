@@ -171,11 +171,16 @@ const getEventById = async (eventId: string) => {
  * @param workspaceId
  * @returns
  */
-const deleteEventsBy = async (d: {
-    linkId?: string;
-    type?: string;
-    workspaceId?: string;
-}): Promise<void> => {
+const deleteEventsBy = async (
+    d: {
+        linkId?: string;
+        type?: string;
+        workspaceId?: string;
+    },
+    options?: {
+        session?: mongoose.ClientSession;
+    }
+): Promise<void> => {
     if (!d.linkId && !d.type && !d.workspaceId) {
         throw new APIResponseError(
             "At least one of linkId, type, workspaceId is required",
@@ -184,13 +189,18 @@ const deleteEventsBy = async (d: {
         );
     }
 
-    await Events.deleteMany({
-        ...(d.linkId && { linkId: new mongoose.Types.ObjectId(d.linkId) }),
-        ...(d.type && { type: d.type }),
-        ...(d.workspaceId && {
-            workspaceId: new mongoose.Types.ObjectId(d.workspaceId),
-        }),
-    });
+    await Events.deleteMany(
+        {
+            ...(d.linkId && { linkId: new mongoose.Types.ObjectId(d.linkId) }),
+            ...(d.type && { type: d.type }),
+            ...(d.workspaceId && {
+                workspaceId: new mongoose.Types.ObjectId(d.workspaceId),
+            }),
+        },
+        {
+            session: options?.session,
+        }
+    );
 };
 
 const eventsService: IEventsService = {

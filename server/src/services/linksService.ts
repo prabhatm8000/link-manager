@@ -11,6 +11,8 @@ import type {
     LinkStatus,
 } from "../types/link";
 import type { IWorkspace } from "../types/workspace";
+import analyticsService from "./analyticsService";
+import eventsService from "./eventsService";
 import tagsService from "./tagsService";
 import workspacesService from "./workspacesService";
 
@@ -270,6 +272,7 @@ const getLinksByWorkspaceId = async (
         {
             $project: {
                 _id: 1,
+                workspaceId: 1,
                 destinationUrl: 1,
                 shortUrlKey: 1,
                 tags: 1,
@@ -402,12 +405,45 @@ const deleteLink = async (
     }
     await Workspace.authorized(existingLink.workspaceId, userId);
 
+    let session = null;
+    if (options) {
+        session = options.session;
+    } else {
+        session = await mongoose.startSession();
+        session.startTransaction();
+    }
+
     const link = await Links.findByIdAndDelete(linkId, {
         session: options ? options.session : null,
     });
+    
     if (!link) {
         throw new APIResponseError("Link not found", 404, false);
     }
+
+    // increment link count by -1
+    await Workspace.findByIdAndUpdate(
+        link.workspaceId,
+        {
+            $inc: { linkCounts: -1 },
+        },
+        { session }
+    );
+
+    // delete events
+    await eventsService.deleteEventsBy({ linkId: link._id.toString() }, {
+        session
+    });
+    // delete analytics
+    await analyticsService.deleteAnalyticsBy({ linkId: link._id.toString(), workspaceId: link.workspaceId.toString() }, {
+        session
+    });
+
+    if (session) {
+        await session.commitTransaction();
+        await session.endSession();
+    }
+
     return link;
 };
 

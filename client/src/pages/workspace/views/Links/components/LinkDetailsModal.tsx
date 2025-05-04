@@ -1,3 +1,4 @@
+import ClickCountSpan from "@/components/ClickCountSpan";
 import TitleText from "@/components/TitleText";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -10,11 +11,9 @@ import {
 } from "@/components/ui/Card";
 import { Label } from "@/components/ui/label";
 import Modal from "@/components/ui/Modal";
-import { handleNumber } from "@/lib/handleNumber";
 import type { ILink, ILinkState } from "@/redux/reducers/types";
 import { AiOutlineDelete } from "react-icons/ai";
 import { IoIosLink } from "react-icons/io";
-import { LuMousePointerClick } from "react-icons/lu";
 import { TbEdit } from "react-icons/tb";
 import { useSelector } from "react-redux";
 
@@ -135,10 +134,7 @@ const LinkDetailsModal = ({
             label: "Clicks",
             type: "text",
             value: (
-                <span className="text-xs border border-border rounded-md w-fit h-fit px-2 py-1 flex items-center justify-center gap-1">
-                    <LuMousePointerClick className="size-4 text-blue-500" />
-                    {`${handleNumber(link.clickCount || 0)} clicks`}
-                </span>
+               <ClickCountSpan count={link.clickCount} />
             ),
         },
     ];

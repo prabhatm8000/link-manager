@@ -2,6 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TableCell, TableRow } from "@/components/ui/table";
 import type { IEvent } from "@/redux/reducers/types"; // Adjust the import based on your types
+import { format } from "date-fns/format";
 import { iconsMap } from "./icons";
 
 const EventTableRow = ({
@@ -55,7 +56,12 @@ const EventTableRow = ({
             </TableCell>
 
             <TableCell>{event.metadata.region}</TableCell>
-            <TableCell>{new Date(event.createdAt).toLocaleString()}</TableCell>
+            <TableCell>
+                {`${format(new Date(event.createdAt), "MMM dd")} | ${format(
+                    new Date(event.createdAt),
+                    "hh:mm:ss a"
+                )}`}
+            </TableCell>
         </TableRow>
     );
 };

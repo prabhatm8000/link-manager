@@ -3,8 +3,9 @@ import { validateObjectId } from "../lib/mongodb";
 import analyticsService from "../services/analyticsService";
 
 const getAnalytics = asyncWrapper(async (req, res) => {
-    const { linkId, workspaceId, startDate, endDate } = req.query;
-    
+    const { linkId, workspaceId } = req.params;
+    const { startDate, endDate, grouping } = req.query;
+
     validateObjectId(linkId as string);
     validateObjectId(workspaceId as string);
 
@@ -13,6 +14,9 @@ const getAnalytics = asyncWrapper(async (req, res) => {
         workspaceId: workspaceId as string,
         startDate: startDate ? new Date(startDate as string) : undefined,
         endDate: endDate ? new Date(endDate as string) : undefined,
+        grouping: grouping
+            ? (grouping as "daily" | "weekly" | "monthly")
+            : undefined,
     });
 
     res.status(200).json({

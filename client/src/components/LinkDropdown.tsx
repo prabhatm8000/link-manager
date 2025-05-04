@@ -20,9 +20,11 @@ import { Button } from "./ui/button";
 const LinkDropdown = ({
     value,
     onChange,
+    dontWantAllLinksOption = false,
 }: {
     value?: ILink;
     onChange: (link?: ILink) => void;
+    dontWantAllLinksOption?: boolean;
 }) => {
     const dispatch = useDispatch<AppDispatch>();
     const linksState: ILinkState = useSelector((state: any) => state.links);
@@ -54,6 +56,7 @@ const LinkDropdown = ({
         <DropdownMenu>
             <DropdownMenuTrigger>
                 <Button
+                    title="Select Link"
                     variant="outline"
                     className="w-full flex items-center gap-2 font-normal"
                 >
@@ -72,13 +75,15 @@ const LinkDropdown = ({
                     <IoIosArrowDown className="ml-2 size-3 text-muted-foreground" />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-full h-80">
-                <DropdownMenuItem onClick={() => onChange(undefined)}>
-                    <Avatar>
-                        <IoIosLink className="size-4" />
-                    </Avatar>
-                    <span>{"All Link"}</span>
-                </DropdownMenuItem>
+            <DropdownMenuContent className="w-full max-h-80">
+                {!dontWantAllLinksOption && (
+                    <DropdownMenuItem onClick={() => onChange(undefined)}>
+                        <Avatar>
+                            <IoIosLink className="size-4" />
+                        </Avatar>
+                        <span>{"All Link"}</span>
+                    </DropdownMenuItem>
+                )}
                 {linksState?.links.map((l, i) => (
                     <DropdownMenuItem
                         defaultChecked={l._id === value?._id}

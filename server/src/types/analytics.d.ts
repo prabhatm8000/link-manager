@@ -20,9 +20,9 @@ export interface IAnalytics extends Document {
 
 export interface IAnalyticsService {
     /**
-     * 
+     *
      * @description this will be called when a link is clicked, to capture the analytics data
-     * @param d 
+     * @param d
      * @returns - true or throw error if failed
      */
     captureData: (d: {
@@ -54,8 +54,13 @@ export interface IAnalyticsService {
      * @param linkId
      * @returns
      */
-    deleteAnalyticsByLinkId: (d: {
-        linkId?: string;
-        workspaceId?: string;
-    }) => Promise<void>;
+    deleteAnalyticsBy: (
+        d: {
+            linkId?: string;
+            workspaceId?: string;
+        },
+        options?: {
+            session?: mongoose.ClientSession;
+        }
+    ) => Promise<void>;
 }

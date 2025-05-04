@@ -4,6 +4,8 @@ import { matchObjectId, validateObjectId } from "../lib/mongodb";
 import User from "../models/users";
 import Workspace from "../models/workspaces";
 import type { IWorkspaceService } from "../types/workspace";
+import analyticsService from "./analyticsService";
+import eventsService from "./eventsService";
 import linksService from "./linksService";
 
 // limits for a user
@@ -287,14 +289,28 @@ const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
             },
             { session }
         );
+
+        // delete user
         await User.findByIdAndUpdate(
             createdBy,
             { $inc: { workspaceCreatedCount: -1 } },
             { session }
         );
+        // delete links
         await linksService.deleteAllLinksByWorkspaceId(workspaceId, createdBy, {
             session,
         });
+        // delete events
+        await eventsService.deleteEventsBy(
+            { workspaceId: workspaceId },
+            { session }
+        );
+        // delete analytics
+        await analyticsService.deleteAnalyticsBy(
+            { workspaceId: workspaceId },
+            { session }
+        );
+
         await session.commitTransaction();
         if (!result) {
             throw new APIResponseError("Workspace not found", 404, false);

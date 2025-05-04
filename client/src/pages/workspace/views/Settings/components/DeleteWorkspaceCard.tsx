@@ -25,7 +25,7 @@ const DeleteWorkspaceCard = () => {
         dispatch(deleteWorkspace(workspace._id)).then(() => navigate("/workspace"));
     };
     return (
-        <Card className="border-destructive">
+        <Card className="border-destructive lg:col-span-2">
             <CardHeader>
                 <CardTitle className="text-red-600">Delete Workspace</CardTitle>
                 <CardDescription>

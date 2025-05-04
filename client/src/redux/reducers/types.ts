@@ -1,4 +1,3 @@
-
 export type ApiResponseType = {
     success: boolean;
     message: string;
@@ -117,6 +116,32 @@ export interface IEventState {
     events: IEvent[];
     loading: boolean;
     hasMore: boolean;
+    error: string | null;
+    message: string | null;
+}
+
+export interface INameCount {
+    name: string;
+    count: number;
+}
+export interface IAnalytics {
+    metrix: {
+        totalClicks: number;
+        maxClicks: { date: string; count: number };
+        minClicks: { date: string; count: number };
+        dateWiseClickCount: {
+            date: Date;
+            count: number;
+        }[];
+    };
+    browser: INameCount[];
+    os: INameCount[];
+    device: INameCount[];
+    region: INameCount[];
+}
+export interface IAnalyticsState {
+    analytics: IAnalytics;
+    loading: boolean;
     error: string | null;
     message: string | null;
 }

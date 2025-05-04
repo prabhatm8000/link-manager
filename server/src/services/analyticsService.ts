@@ -294,8 +294,12 @@ const getAnalyticsByDateRange = async (d: {
         $match: {
             workspaceId: new mongoose.Types.ObjectId(d.workspaceId),
             linkId: new mongoose.Types.ObjectId(d.linkId),
-            ...(d.startDate && { date: { $gte: d.startDate } }),
-            ...(d.endDate && { date: { $lte: d.endDate } }),
+            ...(d.startDate && !d.endDate && { date: { $gte: d.startDate } }),
+            ...(d.endDate && !d.startDate && { date: { $lte: d.endDate } }),
+            ...(d.startDate &&
+                d.endDate && {
+                    date: { $gte: d.startDate, $lte: d.endDate },
+                }),
         },
     };
     const dateFormates = {
@@ -378,6 +382,7 @@ const getAnalyticsByDateRange = async (d: {
             $project: {
                 _id: 0,
                 total: 1,
+                date: 1,
                 browser: 1,
                 os: 1,
                 device: 1,
@@ -420,6 +425,7 @@ const getAnalyticsByDateRange = async (d: {
         },
         {
             $project: {
+                _id: 0,
                 date: 1,
                 total: 1,
 
@@ -437,13 +443,100 @@ const getAnalyticsByDateRange = async (d: {
         },
     ]);
 
-    return analytics[0];
+    const preparedAnalytics = {
+        metrix: {
+            totalClicks: 0,
+            maxClicks: { date: "", count: Number.MIN_SAFE_INTEGER },
+            minClicks: { date: "", count: Number.MAX_SAFE_INTEGER },
+            dateWiseClickCount: [] as {
+                date: string;
+                count: number;
+            }[],
+        },
+        browser: new Map<string, number>(),
+        os: new Map<string, number>(),
+        device: new Map<string, number>(),
+        region: new Map<string, number>(),
+    };
+
+    for (const a of analytics) {
+        preparedAnalytics.metrix.totalClicks += a.total;
+        if (a.total > preparedAnalytics.metrix.maxClicks.count) {
+            preparedAnalytics.metrix.maxClicks = {
+                date: a.date,
+                count: a.total,
+            };
+        }
+        if (a.total < preparedAnalytics.metrix.minClicks.count) {
+            preparedAnalytics.metrix.minClicks = {
+                date: a.date,
+                count: a.total,
+            };
+        }
+
+        preparedAnalytics.metrix.dateWiseClickCount.push({
+            date: a.date,
+            count: a.total,
+        });
+
+        for (const b of a.browser) {
+            preparedAnalytics.browser.set(
+                b.name,
+                b.count + (preparedAnalytics.browser.get(b.name) || 0)
+            );
+        }
+        for (const b of a.os) {
+            preparedAnalytics.os.set(
+                b.name,
+                b.count + (preparedAnalytics.os.get(b.name) || 0)
+            );
+        }
+        for (const b of a.device) {
+            preparedAnalytics.device.set(
+                b.name,
+                b.count + (preparedAnalytics.device.get(b.name) || 0)
+            );
+        }
+        for (const b of a.region) {
+            preparedAnalytics.region.set(
+                b.name,
+                b.count + (preparedAnalytics.region.get(b.name) || 0)
+            );
+        }
+    }
+
+    const analyticsObj = {
+        metrix: preparedAnalytics.metrix,
+        browser: Array.from(preparedAnalytics.browser).map(([name, count]) => ({
+            name,
+            count,
+        })),
+        os: Array.from(preparedAnalytics.os).map(([name, count]) => ({
+            name,
+            count,
+        })),
+        device: Array.from(preparedAnalytics.device).map(([name, count]) => ({
+            name,
+            count,
+        })),
+        region: Array.from(preparedAnalytics.region).map(([name, count]) => ({
+            name,
+            count,
+        })),
+    };
+
+    return analyticsObj;
 };
 
-const deleteAnalyticsByLinkId = async (d: {
-    linkId?: string;
-    workspaceId?: string;
-}) => {
+const deleteAnalyticsBy = async (
+    d: {
+        linkId?: string;
+        workspaceId?: string;
+    },
+    options?: {
+        session?: mongoose.ClientSession;
+    }
+) => {
     if (!d.linkId && !d.workspaceId) {
         throw new APIResponseError(
             "At least one of linkId, workspaceId is required",
@@ -451,23 +544,21 @@ const deleteAnalyticsByLinkId = async (d: {
             false
         );
     }
-    await Analytics.deleteMany({
-        linkId: d.linkId,
-        workspaceId: d.workspaceId,
-    });
+    await Analytics.deleteMany(
+        {
+            linkId: d.linkId,
+            workspaceId: d.workspaceId,
+        },
+        {
+            session: options?.session,
+        }
+    );
 };
 
 const analyticsService: IAnalyticsService = {
     captureData,
     getAnalyticsByDateRange,
-    deleteAnalyticsByLinkId,
+    deleteAnalyticsBy,
 };
-export default analyticsService;
 
-getAnalyticsByDateRange({
-   workspaceId: "67d851ab93692177cfea5942" ,
-   linkId: "6802a842c91a93d310c7c295",
-   grouping: "monthly",
-   startDate: new Date("2023-01-01"),
-   endDate: new Date(),
-}).then(console.log)
+export default analyticsService;

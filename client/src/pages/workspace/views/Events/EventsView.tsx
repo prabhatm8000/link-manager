@@ -3,6 +3,7 @@ import DaterangeDropdown, {
 } from "@/components/DaterangeDropdown";
 import LinkDropdown from "@/components/LinkDropdown";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import { clearState } from "@/redux/reducers/events";
 import type {
@@ -95,6 +96,7 @@ const EventsView = () => {
         limit,
         daterangeFilter,
         selectedLink,
+        eventsState.hasMore,
     ]);
 
     return (
@@ -109,47 +111,50 @@ const EventsView = () => {
                     onChange={handleDaterangeChange}
                 />
             </div>
-            
-            <div className="flex flex-col gap-3">
-                <div className="flex justify-between items-center gap-3">
-                    <h3 className="text-muted-foreground flex items-center gap-0">
-                        <span>Events</span>
-                        <Button
-                            variant={"ghost"}
-                            size={"icon"}
-                            className="text-foreground"
-                            disabled={eventsState.loading}
-                            onClick={handleRefreshEvents}
-                        >
-                            {eventsState.loading ? (
-                                <LoadingCircle className="size-4" />
-                            ) : (
-                                <IoMdRefresh className="cursor-pointer size-5" />
-                            )}
-                        </Button>
-                    </h3>
-                    <Button
-                        variant="default"
-                        onClick={handleSwitchToAnalytics}
-                        className="flex items-center gap-2"
-                    >
-                        <IoAnalytics className="size-5" />
-                        <span>Switch to Analytics</span>
-                    </Button>
-                </div>
 
-                {eventsState?.events.length > 0 ? (
-                    <EventTable
-                        events={eventsState.events}
-                        lastRowRef={lastRowRef}
-                    />
-                ) : (
-                    <div className="my-20 flex justify-center items-center h-full">
-                        <p className="text-muted-foreground">
-                            No events found.
-                        </p>
-                    </div>
-                )}
+            <div className="h-full pb-4">
+                <Card className="h-full">
+                    <CardHeader className="flex justify-between items-center gap-3">
+                        <h3 className="text-muted-foreground flex items-center gap-0">
+                            <span>Events</span>
+                            <Button
+                                variant={"ghost"}
+                                size={"icon"}
+                                className="text-foreground"
+                                disabled={eventsState.loading}
+                                onClick={handleRefreshEvents}
+                            >
+                                {eventsState.loading ? (
+                                    <LoadingCircle className="size-4" />
+                                ) : (
+                                    <IoMdRefresh className="cursor-pointer size-5" />
+                                )}
+                            </Button>
+                        </h3>
+                        <Button
+                            variant="default"
+                            onClick={handleSwitchToAnalytics}
+                            className="flex items-center gap-2"
+                        >
+                            <IoAnalytics className="size-5" />
+                            <span>Switch to Analytics</span>
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                        {eventsState?.events.length > 0 ? (
+                            <EventTable
+                                events={eventsState.events}
+                                lastRowRef={lastRowRef}
+                            />
+                        ) : (
+                            <div className="my-20 flex justify-center items-center h-full">
+                                <p className="text-muted-foreground">
+                                    No events found.
+                                </p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </>
     );
