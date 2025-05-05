@@ -47,13 +47,13 @@ router.use("/api/v1", router_1.default);
 router.use("/", router_2.default);
 // #region Static Files
 if (envVars_1.default.NODE_ENV !== "dev") {
-    router.use(express_1.default.static(path_1.default.join(__dirname, "../../../client/dist"), {
+    router.use(express_1.default.static(path_1.default.join(__dirname, "../../clientBuild"), {
         maxAge: "1y", // browser cache ui files
         etag: true, // force cache use
     }));
     // for prod, serving ui files
     router.get("*", (req, res) => {
-        res.sendFile(path_1.default.join(__dirname, "../../../client/dist", "index.html"));
+        res.sendFile(path_1.default.join(__dirname, "../../clientBuild", "index.html"));
     });
 }
 // #endregion

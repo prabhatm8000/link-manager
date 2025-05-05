@@ -13,7 +13,7 @@ router.use("/", redirectRouter);
 // #region Static Files
 if (envVars.NODE_ENV !== "dev") {
     router.use(
-        express.static(path.join(__dirname, "../../../client/dist"), {
+        express.static(path.join(__dirname, "../../clientBuild"), {
             maxAge: "1y", // browser cache ui files
             etag: true, // force cache use
         })
@@ -22,7 +22,7 @@ if (envVars.NODE_ENV !== "dev") {
     // for prod, serving ui files
     router.get("*", (req, res) => {
         res.sendFile(
-            path.join(__dirname, "../../../client/dist", "index.html")
+            path.join(__dirname, "../../clientBuild", "index.html")
         );
     });
 }

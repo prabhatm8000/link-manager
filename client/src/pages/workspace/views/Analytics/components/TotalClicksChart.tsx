@@ -138,7 +138,8 @@ function TotalClicksChart({
                                     analyticsState.analytics?.metrix?.maxClicks
                                         .count
                                 )} triggers on ${
-                                    analyticsState.analytics?.metrix
+                                    analyticsState.analytics?.metrix?.maxClicks
+                                        .date
                                         ? format(
                                               analyticsState.analytics?.metrix
                                                   ?.maxClicks.date,
@@ -149,7 +150,8 @@ function TotalClicksChart({
                                     analyticsState.analytics?.metrix?.minClicks
                                         .count
                                 )} triggers on ${
-                                    analyticsState.analytics?.metrix
+                                    analyticsState.analytics?.metrix?.minClicks
+                                        .date
                                         ? format(
                                               analyticsState.analytics?.metrix
                                                   ?.minClicks.date,
