@@ -1,3 +1,4 @@
+import LogoutBtn from "@/components/LogoutBtn";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,7 +52,7 @@ const ProfileDetailCard = () => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-[0.6fr_0.4fr] xl:grid-cols-[0.7fr_0.3fr] gap-4">
             <Card>
-                <CardHeader>
+                <CardHeader className="flex gap-5 items-center justify-between">
                     <CardTitle className="flex gap-5 items-center">
                         <Avatar className="size-20">
                             <AvatarImage
@@ -73,11 +74,16 @@ const ProfileDetailCard = () => {
                             </h4>
                             {user?.lastLogin && (
                                 <h4 className="text-sm text-muted-foreground line-clamp-1">
-                                    Last Login: {format(new Date(user?.lastLogin), "PPPPpp")}
+                                    Last Login:{" "}
+                                    {format(
+                                        new Date(user?.lastLogin),
+                                        "PPPPpp"
+                                    )}
                                 </h4>
                             )}
                         </div>
                     </CardTitle>
+                    <LogoutBtn />
                 </CardHeader>
                 <CardContent>
                     <CommingSoon />
