@@ -426,8 +426,14 @@ const getAnalyticsByDateRange = (d) => __awaiter(void 0, void 0, void 0, functio
     const preparedAnalytics = {
         metrix: {
             totalClicks: 0,
-            maxClicks: { date: "", count: Number.MIN_SAFE_INTEGER },
-            minClicks: { date: "", count: Number.MAX_SAFE_INTEGER },
+            maxClicks: {
+                date: "",
+                count: analytics.length > 0 ? Number.MIN_SAFE_INTEGER : 0,
+            },
+            minClicks: {
+                date: "",
+                count: analytics.length > 0 ? Number.MAX_SAFE_INTEGER : 0,
+            },
             dateWiseClickCount: [],
         },
         browser: new Map(),
