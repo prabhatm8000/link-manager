@@ -28,7 +28,7 @@ const LinkPassword = () => {
     };
 
     return (
-        <div className="flex items-center justify-center h-screen w-screen p-4">
+        <div className="flex items-center justify-center h-dvh w-screen p-4">
             <Card className="w-full min-w-xs max-w-sm">
                 <CardHeader className="text-center">
                     <CardTitle>

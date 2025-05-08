@@ -4,6 +4,7 @@ import asyncWrapper from "../../lib/asyncWrapper";
 import analyticsRouter from "./analyticsRouter";
 import eventsRouter from "./eventsRouter";
 import linksRouter from "./linksRouter";
+import usageRouter from "./usageRouer";
 import usersRouter from "./usersRouter";
 import workspacesRouter from "./workspacesRouter";
 
@@ -29,6 +30,7 @@ apiRouter.use("/workspace", workspacesRouter);
 apiRouter.use("/link", linksRouter);
 apiRouter.use("/event", eventsRouter);
 apiRouter.use("/analytic", analyticsRouter);
+apiRouter.use("/usage", usageRouter);
 
 // invalid route
 apiRouter.use("/*", (req: Request, res: Response) => {

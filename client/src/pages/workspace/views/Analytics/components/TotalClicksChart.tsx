@@ -19,6 +19,7 @@ import { handleNumber } from "@/lib/handleNumber";
 import { cn } from "@/lib/utils";
 import type { IAnalyticsState } from "@/redux/reducers/types";
 import { format } from "date-fns";
+import { IoAnalytics } from "react-icons/io5";
 import { LuMousePointerClick } from "react-icons/lu";
 import { useSelector } from "react-redux";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
@@ -72,10 +73,12 @@ function TotalClicksChart({
                 <CardHeader>
                     <CardTitle>Clicks</CardTitle>
                     <CardDescription>
-                        {`Showing clicks from ${format(
-                            dateRange.startDate,
-                            "MMMM dd"
-                        )} to ${format(dateRange.endDate, "MMMM dd")}.`}
+                        {dateRange.startDate && dateRange.endDate && chartData.length >= 2
+                            ? `Showing clicks from ${format(
+                                  dateRange.startDate,
+                                  "MMMM dd"
+                              )} to ${format(dateRange.endDate, "MMMM dd")}.`
+                            : "No Data or Select at least 2 dates to view a chart."}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="h-[400px]">
@@ -116,8 +119,9 @@ function TotalClicksChart({
                             </AreaChart>
                         </ChartContainer>
                     ) : (
-                        <div className="text-muted-foreground h-full w-full flex items-center justify-center text-sm">
-                            No Data or Select at least 2 dates
+                        <div className="text-muted-foreground h-full w-full flex flex-col items-center justify-center text-sm">
+                            <IoAnalytics className="size-8" />
+                            <span>No Data</span>
                         </div>
                     )}
                 </CardContent>

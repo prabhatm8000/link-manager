@@ -48,7 +48,9 @@ const WorkspaceItemDetailed = (props: {
                     <span>{props.data.name}</span>
                 </div>
             </TableCell>
-            <TableCell>{props.data.description}</TableCell>
+            <TableCell>
+                <p className="truncate max-w-52">{props.data.description}</p>
+            </TableCell>
             <TableCell className="text-right">
                 {userState.user?._id === props.data?.createdBy && (
                     <div className="rounded-md w-full h-full">

@@ -2,7 +2,7 @@
 const LoadingPage = () => {
     return (
         <>
-            {/* <div className="fixed z-[999] h-screen w-screen top-0 right-0 flex justify-center items-center">
+            {/* <div className="fixed z-[999] h-dvh w-screen top-0 right-0 flex justify-center items-center">
                 <IoIosLink size={50} className="animate-pulse ease-in-out" />
             </div> */}
             {/* css in the html */}

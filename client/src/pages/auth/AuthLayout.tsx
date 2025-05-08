@@ -12,7 +12,7 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
     const userState: IUserState = useSelector((state: any) => state.user);
 
     return (
-        <div className="h-screen overflow-hidden">
+        <div className="h-dvh overflow-hidden">
             <div className="fixed top-0 left-0 m-4 z-20">
                 <Link to="/" className="w-fit">
                     <Logo className="" />

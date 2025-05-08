@@ -1,8 +1,11 @@
+import mongoose from "mongoose";
 import envVars from "../constants/envVars";
 import { APIResponseError } from "../errors/response";
 import oauthClient from "../lib/oAuthClient";
+import Usage from "../models/usage";
 import User from "../models/users";
-import type { IUsersService } from "../types/user";
+import Workspace from "../models/workspaces";
+import type { IUser, IUsersService } from "../types/user";
 
 /**
  * --- local login ---
@@ -39,12 +42,17 @@ const login = async ({
 
         const findingUser = await User.findOne({ email: payload.email });
         if (!findingUser && payload.email) {
-            user = new User({
-                name: payload.name || "",
-                email: payload.email,
-                profilePicture: payload.picture,
-                authType: "google",
-            });
+            user = await createUser(
+                {
+                    name: payload.name || "",
+                    email: payload.email,
+                    profilePicture: payload.picture,
+                    authType: "google",
+                },
+                {
+                    creatingWhileLogin: true,
+                }
+            );
         } else {
             if (findingUser?.authType !== "google") {
                 throw new APIResponseError(
@@ -71,27 +79,22 @@ const login = async ({
             throw new APIResponseError("Invalid email", 401, false);
         }
         if (findingUser.authType && findingUser.authType !== "local") {
-            throw new APIResponseError(
-                "Bad authentication type",
-                400,
-                false
-            );
+            throw new APIResponseError("Bad authentication type", 400, false);
         }
 
         if (!(await findingUser.comparePassword(password))) {
             throw new APIResponseError("Invalid password", 401, false);
         }
         user = findingUser;
+        user.lastLogin = new Date();
+        await user.save();
     }
 
     if (!user) {
         throw new APIResponseError("User not found", 404, false);
     }
-    user.lastLogin = new Date();
-    await user.save();
 
-    delete user.password;
-    return user;
+    return user as IUser;
 };
 
 /**
@@ -99,27 +102,69 @@ const login = async ({
  * @param: {name: string, email: string, password: string, profilePicture: string}
  * @returns
  */
-const createUser = async ({
-    name,
-    email,
-    password,
-    profilePicture,
-    authType,
-}: {
-    name: string;
-    email: string;
-    password?: string;
-    profilePicture?: string;
-    authType?: "local" | "google";
-}) => {
-    const user = await User.create({
+const createUser = async (
+    {
         name,
         email,
         password,
         profilePicture,
         authType,
+    }: {
+        name: string;
+        email: string;
+        password?: string;
+        profilePicture?: string;
+        authType?: "local" | "google";
+    },
+    options?: {
+        session?: mongoose.ClientSession;
+        creatingWhileLogin?: boolean;
+    }
+) => {
+    const session = options?.session
+        ? options?.session
+        : await mongoose.startSession();
+    if (!options?.session) {
+        // session from outside will be handled from there only, don't care!
+        session.startTransaction();
+    }
+
+    const userId = new mongoose.Types.ObjectId();
+    const usageId = new mongoose.Types.ObjectId();
+    const user = new User({
+        _id: userId,
+        name,
+        email,
+        password,
+        profilePicture,
+        isVerified: authType === "google", // in the case of google auth, the user is automatically verified
+        authType,
+        usageId,
+        lastLogin: options?.creatingWhileLogin ? new Date() : undefined,
     });
-    return user.toJSON();
+    const usage = new Usage({
+        _id: usageId,
+        userId: user._id,
+        workspaceCount: 1, // cause we are creating a dummy workspace
+        linkCount: [],
+    });
+    const ws = new Workspace({
+        name: "Dummy workspace",
+        description:
+            "This is a dummy workspace, you can delete it or rename it or create a new one, according to your needs.",
+        createdBy: user._id,
+        people: [user._id],
+    });
+
+    await user.save({ session });
+    await usage.save({ session });
+    await ws.save({ session });
+
+    if (!options?.session) {
+        // session from outside will be handled from there only, don't care!
+        await session.commitTransaction();
+    }
+    return user.toJSON() as IUser;
 };
 
 /**
@@ -129,7 +174,7 @@ const createUser = async ({
  */
 const getUserById = async (id: string) => {
     const user = await User.findById(id);
-    return user?.toJSON();
+    return user?.toJSON() as IUser;
 };
 
 /**
@@ -139,7 +184,7 @@ const getUserById = async (id: string) => {
  */
 const getUserByEmail = async (email: string) => {
     const user = await User.findOne({ email });
-    return user?.toJSON();
+    return user?.toJSON() as IUser;
 };
 
 /**
@@ -158,7 +203,7 @@ const updateUser = async (
     }
 ) => {
     const user = await User.findByIdAndUpdate(id, data, { new: true });
-    return user?.toJSON();
+    return user?.toJSON() as IUser;
 };
 
 /**
@@ -174,7 +219,7 @@ const deactivateUser = async (id: string) => {
         },
         { new: false }
     );
-    return user?.toJSON();
+    return user?.toJSON() as IUser;
 };
 
 const usersService: IUsersService = {

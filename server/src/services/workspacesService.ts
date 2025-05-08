@@ -1,54 +1,60 @@
 import mongoose from "mongoose";
+import { getQuotaFor } from "../constants/quota";
 import { APIResponseError } from "../errors/response";
 import { matchObjectId, validateObjectId } from "../lib/mongodb";
+import Usage from "../models/usage";
 import User from "../models/users";
 import Workspace from "../models/workspaces";
+import type { IUser } from "../types/user";
 import type { IWorkspaceService } from "../types/workspace";
 import analyticsService from "./analyticsService";
 import eventsService from "./eventsService";
 import linksService from "./linksService";
-
-// limits for a user
-const MAX_WORKSPACES = 5;
-const MAX_PEOPLE = 20;
+import usageService from "./usageService";
 
 /**
  * [user is already authenticated]
  * @param workspace
  * @returns
  */
-const createWorkspace = async (workspace: {
-    name: string;
-    description: string;
-    createdBy: string;
-}) => {
+const createWorkspace = async (
+    workspace: {
+        name: string;
+        description: string;
+    },
+    user: IUser
+) => {
+    const MAX_WORKSPACES = getQuotaFor("WORKSPACES", user.usage?.subscriptionTier);
     const session = await mongoose.startSession();
     try {
         session.startTransaction();
-        const user = await User.findById(workspace.createdBy);
-        const workspaceCreatedCount = user?.workspaceCreatedCount;
+        const workspaceCreatedCount = user.usage?.workspaceCount;
         if (!user || workspaceCreatedCount === undefined) {
             throw new APIResponseError("Something went wrong", 404, false);
         }
 
         if (workspaceCreatedCount >= MAX_WORKSPACES) {
             throw new APIResponseError(
-                `A user can only create ${MAX_WORKSPACES} workspaces`,
+                `Quota of ${MAX_WORKSPACES} workspaces reached!`,
                 400,
                 false
             );
         }
 
-        const newWorkspace = await Workspace.create({
+        const newWorkspace = new Workspace({
             name: workspace.name,
             description: workspace.description,
-            createdBy: new mongoose.Types.ObjectId(workspace.createdBy),
-            people: [new mongoose.Types.ObjectId(workspace.createdBy)],
-            $session: session,
+            createdBy: new mongoose.Types.ObjectId(user._id),
+            people: [new mongoose.Types.ObjectId(user._id)],
         });
 
-        user.workspaceCreatedCount = workspaceCreatedCount + 1;
-        await user.save({ session });
+        await newWorkspace.save({
+            session,
+        });
+        await usageService.incrementWorkspaceCount(
+            { userId: user._id.toString() },
+            { session }
+        );
 
         await session.commitTransaction();
         return newWorkspace;
@@ -64,66 +70,6 @@ const createWorkspace = async (workspace: {
         }
         throw error;
     }
-};
-
-/**
- * @param workspaceId
- */
-const incrementLinkCount = async (workspaceId: string): Promise<void> => {
-    validateObjectId(workspaceId);
-    const result = await Workspace.findByIdAndUpdate(
-        workspaceId,
-        { $inc: { linkCount: 1 } },
-        { new: true }
-    );
-    if (!result) {
-        throw new APIResponseError("Workspace not found", 404, false);
-    }
-};
-
-/**
- * @param workspaceId
- */
-const incrementEventCount = async (workspaceId: string): Promise<void> => {
-    validateObjectId(workspaceId);
-    const result = await Workspace.findByIdAndUpdate(
-        workspaceId,
-        { $inc: { eventCount: 1 } },
-        { new: true }
-    );
-    if (!result) {
-        throw new APIResponseError("Workspace not found", 404, false);
-    }
-};
-
-const getLinkCount = async (
-    workspaceId: string,
-    userId: string
-): Promise<number> => {
-    validateObjectId(workspaceId, userId);
-    const result = await Workspace.findById(workspaceId, {
-        linkCount: 1,
-    });
-    result?.authorized(workspaceId, userId);
-    if (!result) {
-        throw new APIResponseError("Workspace not found", 404, false);
-    }
-    return result.linkCount;
-};
-
-const getEventCount = async (
-    workspaceId: string,
-    userId: string
-): Promise<number> => {
-    validateObjectId(workspaceId, userId);
-    const result = await Workspace.findById(workspaceId, {
-        eventCount: 1,
-    });
-    result?.authorized(workspaceId, userId);
-    if (!result) {
-        throw new APIResponseError("Workspace not found", 404, false);
-    }
-    return result.eventCount;
 };
 
 /**
@@ -290,16 +236,25 @@ const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
             { session }
         );
 
-        // delete user
-        await User.findByIdAndUpdate(
+        // delete links
+        const linksDeleteCount = await linksService.deleteAllLinksByWorkspaceId(
+            workspaceId,
             createdBy,
-            { $inc: { workspaceCreatedCount: -1 } },
+            {
+                session,
+            }
+        );
+
+        // count updation
+        await usageService.updateAll(
+            {
+                userId: createdBy,
+                workspaceId,
+                workspaceCountBy: -1,
+                linkCountBy: -linksDeleteCount,
+            },
             { session }
         );
-        // delete links
-        await linksService.deleteAllLinksByWorkspaceId(workspaceId, createdBy, {
-            session,
-        });
         // delete events
         await eventsService.deleteEventsBy(
             { workspaceId: workspaceId },
@@ -332,16 +287,22 @@ const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
 /**
  * authentication not required, [checked at controller level]
  * @param workspaceId
- * @param userId
+ * @param peopleId
+ * @param user
  * @returns
  */
-const addPeople = async (workspaceId: string, userId: string) => {
-    validateObjectId(workspaceId, userId);
+const addPeople = async (workspaceId: string, peopleId: string) => {
+    validateObjectId(workspaceId, peopleId);
     const workspace = await Workspace.findById(workspaceId);
     if (!workspace) {
         throw new APIResponseError("Workspace not found", 404, false);
     }
-
+    const userUsage = await Usage.findOne({ userId: new mongoose.Types.ObjectId(workspace.createdBy) });
+    if (!userUsage) {
+        throw new Error("userUsage fot creator not found");
+    }
+    
+    const MAX_PEOPLE = getQuotaFor("PEOPLE", userUsage.subscriptionTier);
     if (workspace.peopleCount >= MAX_PEOPLE) {
         throw new APIResponseError("Maximum number reached", 400, false);
     }
@@ -349,7 +310,7 @@ const addPeople = async (workspaceId: string, userId: string) => {
     const result = await Workspace.updateOne(
         { _id: workspaceId },
         {
-            $addToSet: { people: new mongoose.Types.ObjectId(userId) },
+            $addToSet: { people: new mongoose.Types.ObjectId(peopleId) },
             $inc: { peopleCount: 1 },
         }
     );
@@ -508,10 +469,6 @@ const getInviteData = async (workspaceId: string, senderId: string) => {
 
 const workspacesService: IWorkspaceService = {
     createWorkspace,
-    incrementLinkCount,
-    incrementEventCount,
-    getLinkCount,
-    getEventCount,
     getWorkspaceById,
     getWorkspaceByCreatorId,
     getAllWorkspacesForUser,

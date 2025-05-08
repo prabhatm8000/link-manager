@@ -1,4 +1,5 @@
 import type mongoose from "mongoose";
+import type { IUsage } from "./usage";
 
 export interface IUser extends mongoose.Document {
     _id: string | mongoose.Types.ObjectId;
@@ -6,11 +7,13 @@ export interface IUser extends mongoose.Document {
     name: string;
     email: string;
     password?: string;
+    isVerified: boolean;
     authType?: "local" | "google";
     profilePicture?: string;
     isActive?: boolean;
     lastLogin?: Date;
-    workspaceCreatedCount?: number;
+    usageId?: mongoose.Types.ObjectId | string;
+    usage?: IUsage;
     comparePassword(password: string): Promise<boolean>;
 }
 
@@ -33,17 +36,27 @@ export interface IUsersService {
     }) => Promise<IUser>;
 
     /**
-     *
-     * @param: {name: string, email: string, password: string, profilePicture: string}
-     * @returns
+     * options?.creatingWhileLogin === true, will set the lastLogin
      */
-    createUser: (params: {
-        name: string;
-        email: string;
-        password: string;
-        profilePicture?: string;
-        authType?: "local" | "google";
-    }) => Promise<IUser>;
+    createUser: (
+        {
+            name,
+            email,
+            password,
+            profilePicture,
+            authType,
+        }: {
+            name: string;
+            email: string;
+            password?: string;
+            profilePicture?: string;
+            authType?: "local" | "google";
+        },
+        options?: {
+            session?: mongoose.ClientSession;
+            creatingWhileLogin?: boolean;
+        }
+    ) => Promise<IUser>;
 
     /**
      * authentication required, [id is checked in the auth middleware]

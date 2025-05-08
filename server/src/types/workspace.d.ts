@@ -14,8 +14,6 @@ export interface IWorkspace extends mongoose.Document {
     createdBy: mongoose.Types.ObjectId;
     people: mongoose.Types.ObjectId[];
     peopleCount: number;
-    linkCount: number;
-    eventCount: number;
     isActive: boolean;
      /**
      * check if user is authorized to perform action on workspace
@@ -55,22 +53,7 @@ export interface IWorkspaceService {
     createWorkspace: (workspace: {
         name: string;
         description: string;
-        createdBy: string;
-    }) => Promise<IWorkspace>;
-
-    /**
-     * @param workspaceId
-     */
-    incrementLinkCount: (workspaceId: string) => Promise<void>;
-
-    /**
-     * @param workspaceId
-     */
-    incrementEventCount: (workspaceId: string) => Promise<void>;
-
-    getLinkCount: (workspaceId: string, userId: string) => Promise<number>;
-
-    getEventCount: (workspaceId: string, userId: string) => Promise<number>;
+    }, user: IUser) => Promise<IWorkspace>;
 
     /**
      * authentication required, [checks userId in people]
@@ -87,7 +70,6 @@ export interface IWorkspaceService {
         description: string;
         createdBy: string;
         isActive: boolean;
-        linkCount: number;
         people: string[];
         peopleDetails: Array<
             Pick<IUser, "_id" | "id" | "name" | "email" | "profilePicture">

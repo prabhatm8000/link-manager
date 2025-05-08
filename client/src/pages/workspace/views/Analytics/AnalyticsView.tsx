@@ -73,6 +73,9 @@ const AnalyticsView = () => {
             );
             return;
         }
+        if (!dateRange.startDate && !dateRange.endDate) {
+            return;
+        }
 
         dispatch(
             getAnalytics({

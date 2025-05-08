@@ -6,6 +6,7 @@ import { fetchMetadata } from "../lib/urlMetadeta";
 import linksService from "../services/linksService";
 import tagsService from "../services/tagsService";
 import { LinkStatus } from "../types/link";
+import type { IUser } from "../types/user";
 
 const statusMessages = new StatusMessagesMark4("link");
 
@@ -69,7 +70,7 @@ const createLink = asyncWrapper(async (req: Request, res: Response) => {
 
         workspaceId,
         creatorId: req.user?._id.toString() || "", // can't be undefined
-    });
+    }, req.user as IUser);
     res.status(201).json({
         success: true,
         message: statusMessages.getMessage(

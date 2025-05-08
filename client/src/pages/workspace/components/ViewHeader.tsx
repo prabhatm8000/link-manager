@@ -1,3 +1,5 @@
+import { IoIosLink } from "react-icons/io";
+import { Link } from "react-router-dom";
 import TitleText from "../../../components/TitleText";
 
 const ViewHeader = ({
@@ -10,6 +12,13 @@ const ViewHeader = ({
     if (heading.length < 3) throw new Error("Heading too short, min length 3");
     return (
         <div className="flex flex-col gap-4 py-4 px-2">
+             <Link to={"/"} className="md:hidden">
+                <TitleText className="text-xl flex gap-2 justify-start items-center">
+                    <IoIosLink />
+                    <span>Ref.com</span>
+                </TitleText>
+            </Link>
+
             <TitleText className="text-4xl font-bold">
                 {heading}
             </TitleText>

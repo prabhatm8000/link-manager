@@ -4,10 +4,8 @@ import { useEffect, useState, type JSX } from "react";
 import { HiCursorClick } from "react-icons/hi";
 import {
     IoIosAdd,
-    IoIosClose,
     IoIosLink,
-    IoIosMenu,
-    IoIosSettings,
+    IoIosSettings
 } from "react-icons/io";
 import { IoAnalytics } from "react-icons/io5";
 import { TbSelector } from "react-icons/tb";
@@ -37,19 +35,13 @@ const SideBar = ({
 }) => {
     return (
         <div
-            className={`w-60 h-full backdrop-blur-lg bg-background px-4 py-2 flex flex-col justify-between ${className}`}
+            className={`w-60 h-full backdrop-blur-lg bg-background p-4 flex flex-col justify-between ${className}`}
         >
             <div className="flex flex-col gap-6">
                 <SideBarHeader />
                 <SideBarBody setShowSideBar={setShowSideBar} />
             </div>
-            <SideBarUsageBars
-                data={[
-                    { label: "Events", count: 3243, total: 10000 },
-                    { label: "Links", count: 10, total: 25 },
-                    { label: "Workspaces", count: 1, total: 10 },
-                ]}
-            />
+            <SideBarUsageBars />
         </div>
     );
 };
@@ -58,13 +50,7 @@ export default SideBar;
 // #endregion SideBar
 
 // #region Header
-export const SideBarHeader = ({
-    show,
-    handleShow,
-}: {
-    show?: boolean;
-    handleShow?: () => void;
-}) => {
+export const SideBarHeader = () => {
     const userState: IUserState = useSelector((state: any) => state.user);
     const [_, setSearchParams] = useSearchParams();
     const handleTabChange = (tab: SideBarTabType) => {
@@ -81,36 +67,15 @@ export const SideBarHeader = ({
                     <span>Ref.com</span>
                 </TitleText>
             </Link>
-            {handleShow ? (
-                <Button
-                    variant={show ? "destructive" : "outline"}
-                    className="md:hidden transition-all duration-300 ease-out z-50"
-                    onClick={handleShow}
-                    size={"icon"}
-                >
-                    <div
-                        className={`transform ${
-                            show ? "rotate-0" : "rotate-180"
-                        } transition-all duration-300 ease-out`}
-                    >
-                        {show ? (
-                            <IoIosClose className="size-5" />
-                        ) : (
-                            <IoIosMenu className="size-5" />
-                        )}
-                    </div>
-                </Button>
-            ) : (
-                <Avatar onClick={() => handleTabChange("profile")}>
-                    <AvatarImage
-                        src={userState?.user?.profilePicture || ""}
-                        alt={userState?.user?.name || ""}
-                    />
-                    <AvatarFallback>
-                        {userState?.user?.name?.charAt(0)}
-                    </AvatarFallback>
-                </Avatar>
-            )}
+            <Avatar onClick={() => handleTabChange("profile")}>
+                <AvatarImage
+                    src={userState?.user?.profilePicture || ""}
+                    alt={userState?.user?.name || ""}
+                />
+                <AvatarFallback>
+                    {userState?.user?.name?.charAt(0)}
+                </AvatarFallback>
+            </Avatar>
         </div>
     );
 };

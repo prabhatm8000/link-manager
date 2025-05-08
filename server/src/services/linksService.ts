@@ -1,6 +1,7 @@
 import mongoose, { type ClientSession } from "mongoose";
 import { shortUrlKeyLength } from "../constants/configs";
 import envVars from "../constants/envVars";
+import { getQuotaFor } from "../constants/quota";
 import { APIResponseError } from "../errors/response";
 import Links from "../models/links";
 import Workspace from "../models/workspaces";
@@ -10,14 +11,13 @@ import type {
     LinkMetadata,
     LinkStatus,
 } from "../types/link";
+import type { IUser } from "../types/user";
 import type { IWorkspace } from "../types/workspace";
 import analyticsService from "./analyticsService";
 import eventsService from "./eventsService";
 import tagsService from "./tagsService";
+import usageService from "./usageService";
 import workspacesService from "./workspacesService";
-
-// limits for workspace
-const MAX_LINKS = 20;
 
 const generateShortUrlKey = async (): Promise<string> => {
     const size = shortUrlKeyLength;
@@ -71,7 +71,7 @@ const createLink = async (link: {
 
     workspaceId: string;
     creatorId: string;
-}): Promise<ILinks> => {
+}, user: IUser): Promise<ILinks> => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
@@ -82,9 +82,11 @@ const createLink = async (link: {
         if (!workspace) {
             throw new APIResponseError("Workspace not found", 404, false);
         }
-        if (workspace.linkCount >= MAX_LINKS) {
+        const MAX_LINKS = getQuotaFor("LINKS", user.usage?.subscriptionTier);
+        const linkCount = user.usage?.linkCount?.find((item) => item.workspaceId.toString() === link.workspaceId)?.count || 0;
+        if (linkCount >= MAX_LINKS) {
             throw new APIResponseError(
-                "Maximum limit of links reached for this workspace",
+                `Quota limit of ${MAX_LINKS} links reached for this workspace`,
                 400,
                 false
             );
@@ -94,13 +96,7 @@ const createLink = async (link: {
 
         await newLink.save({ session });
         await tagsService.addTags(link.workspaceId, link.tags || []);
-        await Workspace.findByIdAndUpdate(
-            link.workspaceId,
-            {
-                $inc: { linkCounts: 1 },
-            },
-            { session }
-        );
+        await usageService.incrementLinkCount({ userId: user._id.toString(), workspaceId: workspace._id.toString() }, { session });
 
         const populatedLink = await getOneLinkBy({
             linkId: newLink._id.toString(),
@@ -422,13 +418,7 @@ const deleteLink = async (
     }
 
     // increment link count by -1
-    await Workspace.findByIdAndUpdate(
-        link.workspaceId,
-        {
-            $inc: { linkCounts: -1 },
-        },
-        { session }
-    );
+    await usageService.incrementLinkCount({ userId, workspaceId: link.workspaceId.toString(), by: -1 }, { session });
 
     // delete events
     await eventsService.deleteEventsBy({ linkId: link._id.toString() }, {
@@ -458,13 +448,13 @@ const deleteAllLinksByWorkspaceId = async (
     workspaceId: string,
     userId: string,
     options?: { session?: ClientSession }
-): Promise<boolean> => {
+): Promise<number> => {
     await Workspace.authorized(workspaceId, userId);
     const links = await Links.deleteMany(
         { workspaceId: new mongoose.Types.ObjectId(workspaceId) },
         { session: options ? options.session : null }
     );
-    return true;
+    return links.deletedCount;
 };
 
 const linksService: ILinksService = {

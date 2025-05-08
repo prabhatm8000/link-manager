@@ -3,6 +3,7 @@ import { APIResponseError } from "../errors/response";
 import asyncWrapper from "../lib/asyncWrapper";
 import { sendInviteToJoinWorkspaceMail } from "../lib/mail";
 import workspacesService from "../services/workspacesService";
+import type { IUser } from "../types/user";
 
 const statusMessages = new StatusMessagesMark4("workspace");
 
@@ -13,10 +14,9 @@ const createWorkspace = asyncWrapper(async (req, res) => {
     }
 
     const workspace = await workspacesService.createWorkspace({
-        createdBy: req?.user?._id as string, // there is a middleware, so req.user is always defined
         name,
         description,
-    });
+    }, req.user as IUser);
     res.status(201).json({
         success: true,
         message: statusMessages.getMessage("Workspace created", "success", "create"),
@@ -87,7 +87,7 @@ const sendInviteToJoinWorkspace = asyncWrapper(async (req, res) => {
         throw new APIResponseError(statusMessages.getMessage("Workspace not found", "error", "other"), 404, false);
     }
 
-    await sendInviteToJoinWorkspaceMail(email, {name: workspace.name, id: workspace._id}, user);
+    await sendInviteToJoinWorkspaceMail(email, {name: workspace.name, id: workspace._id}, user as IUser);
     res.status(200).json({
         success: true,
         message: statusMessages.getMessage("Invite sent successfully", "success", "other"),

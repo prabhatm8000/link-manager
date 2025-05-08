@@ -69,7 +69,7 @@ const ErrorPage = ({ pageData }: { pageData?: PageDataType }) => {
         });
     }, [searchParams]);
     return (
-        <div className="h-screen">
+        <div className="h-dvh">
             <NavBar />
 
             <div className="flex flex-col items-center justify-center gap-14 mt-20 p-10">

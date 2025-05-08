@@ -1,3 +1,5 @@
+import type { IUser } from "./user";
+
 export interface LinkMetadata {
     title: string;
     description: string;
@@ -54,17 +56,20 @@ export interface ILinksService {
      * @param link
      * @returns
      */
-    createLink: (link: {
-        destinationUrl: string;
-        shortUrlKey: string;
-        metadata?: LinkMetadata;
-        tags?: string[];
-        comment?: string;
-        expirationTime?: Date;
-        password?: string;
-        workspaceId: string;
-        creatorId: string;
-    }) => Promise<ILinks>;
+    createLink: (
+        link: {
+            destinationUrl: string;
+            shortUrlKey: string;
+            metadata?: LinkMetadata;
+            tags?: string[];
+            comment?: string;
+            expirationTime?: Date;
+            password?: string;
+            workspaceId: string;
+            creatorId: string;
+        },
+        user: IUser
+    ) => Promise<ILinks>;
 
     /**
      * authentication required, [checks userId in workspace]
@@ -150,11 +155,11 @@ export interface ILinksService {
      * @param workspaceId
      * @param userId
      * @param options
-     * @returns
+     * @returns - count of deleted items
      */
     deleteAllLinksByWorkspaceId: (
         workspaceId: string,
         userId: string,
         options?: { session?: ClientSession }
-    ) => Promise<boolean>;
+    ) => Promise<number>;
 }

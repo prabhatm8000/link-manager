@@ -2,6 +2,7 @@ import { combineReducers } from "@reduxjs/toolkit";
 import analytics from "./analytics";
 import events from "./events";
 import links from "./links";
+import usage from "./usage";
 import user from "./user";
 import workspace from "./workspace";
 
@@ -10,7 +11,8 @@ const rootReducer = combineReducers({
     workspace,
     links,
     events,
-    analytics
+    analytics,
+    usage,
 });
 
 export default rootReducer;

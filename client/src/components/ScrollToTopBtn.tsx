@@ -31,7 +31,7 @@ const ScrollToTopBtn = ({
     }, []);
     return (
         <Button
-            className={`fixed bottom-0 right-0 m-6 mb-20 text-2xl px-2 py-4 rounded-full transform ${
+            className={`z-50 fixed bottom-0 right-0 m-6 mb-20 text-2xl px-2 py-4 rounded-full transform ${
                 showBtn ? "rotate-0 scale-100" : "rotate-180 scale-0"
             } transition-all duration-300 ease-out`}
             onClick={handleScrollToTop}

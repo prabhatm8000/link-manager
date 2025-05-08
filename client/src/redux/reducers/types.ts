@@ -145,3 +145,26 @@ export interface IAnalyticsState {
     error: string | null;
     message: string | null;
 }
+
+export type UsageParameterType = {
+    label: string;
+    used: number;
+    total: number;
+    per: string;
+};
+
+export interface IUsage {
+    subscriptionTier: string;
+    quota: {
+        workspaces: UsageParameterType;
+        links: UsageParameterType;
+        events: UsageParameterType;
+    }
+}
+
+export interface IUsageState {
+    loading: boolean;
+    error: string | null;
+    message: string | null;
+    usage: IUsage;
+}

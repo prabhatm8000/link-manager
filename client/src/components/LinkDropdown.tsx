@@ -15,7 +15,6 @@ import { useEffect } from "react";
 import { IoIosArrowDown, IoIosLink } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Button } from "./ui/button";
 
 const LinkDropdown = ({
     value,
@@ -54,33 +53,31 @@ const LinkDropdown = ({
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger>
-                <Button
-                    title="Select Link"
-                    variant="outline"
-                    className="w-full flex items-center gap-2 font-normal"
-                >
-                    {value?.shortUrlKey ? (
-                        <Avatar>
-                            <AvatarImage
-                                src={value?.metadata?.favicon}
-                                alt={value?.metadata?.title}
-                            />
-                            <AvatarFallback itemType="link" />
-                        </Avatar>
-                    ) : (
-                        <IoIosLink className="size-4" />
-                    )}
-                    <span>{value?.shortUrlKey || "Select Link"}</span>
-                    <IoIosArrowDown className="ml-2 size-3 text-muted-foreground" />
-                </Button>
+            <DropdownMenuTrigger
+                title="Select Link"
+                className="flex items-center justify-center gap-2 font-normal border border-border rounded-md px-2 bg-background"
+            >
+                {value?.shortUrlKey ? (
+                    <Avatar>
+                        <AvatarImage
+                            src={value?.metadata?.favicon}
+                            alt={value?.metadata?.title}
+                        />
+                        <AvatarFallback itemType="link" />
+                    </Avatar>
+                ) : (
+                    <IoIosLink className="size-4" />
+                )}
+                <span className="py-1">{value?.shortUrlKey || "Select Link"}</span>
+                <IoIosArrowDown className="ml-2 size-3 text-muted-foreground" />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-full max-h-80">
                 {!dontWantAllLinksOption && (
-                    <DropdownMenuItem onClick={() => onChange(undefined)}>
-                        <Avatar>
-                            <IoIosLink className="size-4" />
-                        </Avatar>
+                    <DropdownMenuItem
+                        className="cursor-pointer w-full"
+                        onClick={() => onChange(undefined)}
+                    >
+                        <IoIosLink className="size-4 mx-2.5" />
                         <span>{"All Link"}</span>
                     </DropdownMenuItem>
                 )}
@@ -104,6 +101,16 @@ const LinkDropdown = ({
                         <span>/{l.shortUrlKey}</span>
                     </DropdownMenuItem>
                 ))}
+
+                {linksState.links.length === 0 && (
+                    <DropdownMenuItem
+                        className="cursor-pointer w-full"
+                        title="No links found"
+                    >
+                        <IoIosLink className="size-4" />
+                        <span>No links found</span>
+                    </DropdownMenuItem>
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
     );

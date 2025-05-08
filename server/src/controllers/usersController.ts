@@ -80,6 +80,8 @@ const login = asyncWrapper(async (req: Request, res: Response) => {
         );
     }
 
+    console.log(user);
+    
     setAuthCookie(res, user);
 
     res.status(200).json({

@@ -24,7 +24,7 @@ const ThemeBtn = () => {
 
     return (
         <Button
-            className="fixed bottom-0 right-0 m-6 text-2xl px-2 py-4 rounded-full"
+            className="fixed bottom-0 right-0 m-6 text-2xl px-2 py-4 rounded-full z-50"
             onClick={toggleTheme}
             variant="default"
         >

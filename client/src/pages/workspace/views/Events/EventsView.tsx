@@ -46,8 +46,11 @@ const EventsView = () => {
     };
 
     const handleLinkSelect = (link?: ILink) => {
-        handleRefreshEvents();
-        setSelectedLink(link);
+        setSelectedLink(p => {
+            if (p?._id === link?._id) return link;
+            handleRefreshEvents();
+            return link;
+        });
     };
 
     const handleDaterangeChange = (value: DaterangeType) => {
@@ -112,8 +115,8 @@ const EventsView = () => {
                 />
             </div>
 
-            <div className="h-full pb-4">
-                <Card className="h-full">
+            <div className="pb-4">
+                <Card>
                     <CardHeader className="flex justify-between items-center gap-3">
                         <h3 className="text-muted-foreground flex items-center gap-0">
                             <span>Events</span>
@@ -141,18 +144,19 @@ const EventsView = () => {
                         </Button>
                     </CardHeader>
                     <CardContent>
-                        {eventsState?.events.length > 0 ? (
-                            <EventTable
-                                events={eventsState.events}
-                                lastRowRef={lastRowRef}
-                            />
-                        ) : (
-                            <div className="my-20 flex justify-center items-center h-full">
-                                <p className="text-muted-foreground">
-                                    No events found.
-                                </p>
-                            </div>
-                        )}
+                        <EventTable
+                            events={eventsState.events}
+                            lastRowRef={lastRowRef}
+                        />
+                        <div className="py-2 text-muted-foreground w-full text-center flex justify-center">
+                            {eventsState.loading && (
+                                <LoadingCircle className="size-4" />
+                            )}
+                            {!eventsState.loading &&
+                                eventsState.events.length === 0 && (
+                                    <>No events</>
+                                )}
+                        </div>
                     </CardContent>
                 </Card>
             </div>

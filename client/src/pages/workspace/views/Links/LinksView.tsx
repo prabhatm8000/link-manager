@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/input";
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import type {
@@ -138,8 +139,8 @@ const LinksView = () => {
     }, [workspaceState.currentWorkspace, refreshLinks, searchQuery]);
 
     return (
-        <>
-            <div className="flex flex-col md:flex-row gap-2 items-start md:items-center justify-between mt-1 mb-4">
+        <div className="pb-4 flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row gap-2 items-start md:items-center justify-between">
                 <DisplayConfigBtn
                     config={displayConfig}
                     handleChange={handleDisplayConfigChange}
@@ -157,7 +158,7 @@ const LinksView = () => {
                         id="search-link-view"
                         type="text"
                         placeholder="Search with tags or creator email or short url, at least 3 characters"
-                        className="w-full"
+                        className="w-full bg-background"
                         value={searchQuery}
                         onChange={handleSearchQueryChange}
                     />
@@ -168,9 +169,9 @@ const LinksView = () => {
                 </form>
             </div>
 
-            <div className="flex flex-col gap-3 pb-4">
-                <div className="flex justify-between items-center gap-3">
-                    <h3 className="text-muted-foreground flex items-center gap-0">
+            <Card className="py-4">
+                <CardContent className="px-4 flex gap-2 items-center justify-between">
+                    <CardTitle className="text-muted-foreground flex items-center gap-0">
                         <span>Links</span>
                         <Button
                             variant={"ghost"}
@@ -185,7 +186,7 @@ const LinksView = () => {
                                 <IoMdRefresh className="cursor-pointer size-5" />
                             )}
                         </Button>
-                    </h3>
+                    </CardTitle>
                     <Button
                         variant="default"
                         className="flex items-center gap-2"
@@ -196,30 +197,30 @@ const LinksView = () => {
                         <IoAdd />
                         <span>Create Link</span>
                     </Button>
-                </div>
+                </CardContent>
+            </Card>
 
-                {linksState.links.length > 0 ? (
-                    <>
-                        {displayConfig.displayMode === "table" && (
-                            <LinkTable
-                                links={linksState.links}
-                                options={linkOptions}
-                            />
-                        )}
-                        {displayConfig.displayMode === "card" && (
-                            <LinkCards
-                                config={displayConfig}
-                                links={linksState.links}
-                                options={linkOptions}
-                            />
-                        )}
-                    </>
-                ) : (
-                    <div className="flex justify-center items-center h-full">
-                        <p className="text-muted-foreground">No Links found.</p>
-                    </div>
-                )}
-            </div>
+            {linksState.links.length > 0 ? (
+                <>
+                    {displayConfig.displayMode === "table" && (
+                        <LinkTable
+                            links={linksState.links}
+                            options={linkOptions}
+                        />
+                    )}
+                    {displayConfig.displayMode === "card" && (
+                        <LinkCards
+                            config={displayConfig}
+                            links={linksState.links}
+                            options={linkOptions}
+                        />
+                    )}
+                </>
+            ) : (
+                <div className="flex justify-center items-center h-full">
+                    <p className="text-muted-foreground">No Links found.</p>
+                </div>
+            )}
 
             <CreateLinkModal
                 isOpen={showModals.createLink}
@@ -248,7 +249,7 @@ const LinksView = () => {
                     />
                 </>
             )}
-        </>
+        </div>
     );
 };
 

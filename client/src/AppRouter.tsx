@@ -25,6 +25,7 @@ const PrivateRoutes = ({ user }: { user: IUserState }) => {
             description: "Redirecting to login page.",
             onAutoClose: () => navigate("/auth/login"),
             position: "top-center",
+            duration: 5000,
         });
         return <LoadingPage />;
     }
