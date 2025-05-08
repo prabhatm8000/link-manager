@@ -12,10 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = __importDefault(require("mongoose"));
 const envVars_1 = __importDefault(require("../constants/envVars"));
 const response_1 = require("../errors/response");
 const oAuthClient_1 = __importDefault(require("../lib/oAuthClient"));
+const usage_1 = __importDefault(require("../models/usage"));
 const users_1 = __importDefault(require("../models/users"));
+const workspaces_1 = __importDefault(require("../models/workspaces"));
 /**
  * --- local login ---
  * with email and password
@@ -41,11 +44,13 @@ const login = (_a) => __awaiter(void 0, [_a], void 0, function* ({ email, passwo
         }
         const findingUser = yield users_1.default.findOne({ email: payload.email });
         if (!findingUser && payload.email) {
-            user = new users_1.default({
+            user = yield createUser({
                 name: payload.name || "",
                 email: payload.email,
                 profilePicture: payload.picture,
                 authType: "google",
+            }, {
+                creatingWhileLogin: true,
             });
         }
         else {
@@ -71,13 +76,12 @@ const login = (_a) => __awaiter(void 0, [_a], void 0, function* ({ email, passwo
             throw new response_1.APIResponseError("Invalid password", 401, false);
         }
         user = findingUser;
+        user.lastLogin = new Date();
+        yield user.save();
     }
     if (!user) {
         throw new response_1.APIResponseError("User not found", 404, false);
     }
-    user.lastLogin = new Date();
-    yield user.save();
-    delete user.password;
     return user;
 });
 /**
@@ -85,14 +89,46 @@ const login = (_a) => __awaiter(void 0, [_a], void 0, function* ({ email, passwo
  * @param: {name: string, email: string, password: string, profilePicture: string}
  * @returns
  */
-const createUser = (_a) => __awaiter(void 0, [_a], void 0, function* ({ name, email, password, profilePicture, authType, }) {
-    const user = yield users_1.default.create({
+const createUser = (_a, options_1) => __awaiter(void 0, [_a, options_1], void 0, function* ({ name, email, password, profilePicture, authType, }, options) {
+    const session = (options === null || options === void 0 ? void 0 : options.session)
+        ? options === null || options === void 0 ? void 0 : options.session
+        : yield mongoose_1.default.startSession();
+    if (!(options === null || options === void 0 ? void 0 : options.session)) {
+        // session from outside will be handled from there only, don't care!
+        session.startTransaction();
+    }
+    const userId = new mongoose_1.default.Types.ObjectId();
+    const usageId = new mongoose_1.default.Types.ObjectId();
+    const user = new users_1.default({
+        _id: userId,
         name,
         email,
         password,
         profilePicture,
+        isVerified: authType === "google", // in the case of google auth, the user is automatically verified
         authType,
+        usageId,
+        lastLogin: (options === null || options === void 0 ? void 0 : options.creatingWhileLogin) ? new Date() : undefined,
     });
+    const usage = new usage_1.default({
+        _id: usageId,
+        userId: user._id,
+        workspaceCount: 1, // cause we are creating a dummy workspace
+        linkCount: [],
+    });
+    const ws = new workspaces_1.default({
+        name: "Dummy workspace",
+        description: "This is a dummy workspace, you can delete it or rename it or create a new one, according to your needs.",
+        createdBy: user._id,
+        people: [user._id],
+    });
+    yield user.save({ session });
+    yield usage.save({ session });
+    yield ws.save({ session });
+    if (!(options === null || options === void 0 ? void 0 : options.session)) {
+        // session from outside will be handled from there only, don't care!
+        yield session.commitTransaction();
+    }
     return user.toJSON();
 });
 /**

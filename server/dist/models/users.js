@@ -33,6 +33,10 @@ const userSchema = new mongoose_1.default.Schema({
         enum: ["local", "google"],
         default: "local",
     },
+    isVerified: {
+        type: Boolean,
+        default: false,
+    },
     profilePicture: {
         type: String,
     },
@@ -43,10 +47,11 @@ const userSchema = new mongoose_1.default.Schema({
     lastLogin: {
         type: Date,
     },
-    workspaceCreatedCount: {
-        type: Number,
-        default: 0,
-    },
+    usageId: {
+        type: mongoose_1.default.Schema.Types.ObjectId,
+        ref: "Usage",
+        required: true,
+    }
 }, {
     timestamps: true,
 });
@@ -67,6 +72,7 @@ userSchema.methods.comparePassword = function (password) {
 userSchema.set("toJSON", {
     transform: (_, returnedObject) => {
         delete returnedObject.password;
+        delete returnedObject.usageId;
         return returnedObject;
     },
 });

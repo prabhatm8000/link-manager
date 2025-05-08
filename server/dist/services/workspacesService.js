@@ -13,42 +13,44 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
+const quota_1 = require("../constants/quota");
 const response_1 = require("../errors/response");
 const mongodb_1 = require("../lib/mongodb");
+const usage_1 = __importDefault(require("../models/usage"));
 const users_1 = __importDefault(require("../models/users"));
 const workspaces_1 = __importDefault(require("../models/workspaces"));
 const analyticsService_1 = __importDefault(require("./analyticsService"));
 const eventsService_1 = __importDefault(require("./eventsService"));
 const linksService_1 = __importDefault(require("./linksService"));
-// limits for a user
-const MAX_WORKSPACES = 5;
-const MAX_PEOPLE = 20;
+const usageService_1 = __importDefault(require("./usageService"));
 /**
  * [user is already authenticated]
  * @param workspace
  * @returns
  */
-const createWorkspace = (workspace) => __awaiter(void 0, void 0, void 0, function* () {
+const createWorkspace = (workspace, user) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
+    const MAX_WORKSPACES = (0, quota_1.getQuotaFor)("WORKSPACES", (_a = user.usage) === null || _a === void 0 ? void 0 : _a.subscriptionTier);
     const session = yield mongoose_1.default.startSession();
     try {
         session.startTransaction();
-        const user = yield users_1.default.findById(workspace.createdBy);
-        const workspaceCreatedCount = user === null || user === void 0 ? void 0 : user.workspaceCreatedCount;
+        const workspaceCreatedCount = (_b = user.usage) === null || _b === void 0 ? void 0 : _b.workspaceCount;
         if (!user || workspaceCreatedCount === undefined) {
             throw new response_1.APIResponseError("Something went wrong", 404, false);
         }
         if (workspaceCreatedCount >= MAX_WORKSPACES) {
-            throw new response_1.APIResponseError(`A user can only create ${MAX_WORKSPACES} workspaces`, 400, false);
+            throw new response_1.APIResponseError(`Quota of ${MAX_WORKSPACES} workspaces reached!`, 400, false);
         }
-        const newWorkspace = yield workspaces_1.default.create({
+        const newWorkspace = new workspaces_1.default({
             name: workspace.name,
             description: workspace.description,
-            createdBy: new mongoose_1.default.Types.ObjectId(workspace.createdBy),
-            people: [new mongoose_1.default.Types.ObjectId(workspace.createdBy)],
-            $session: session,
+            createdBy: new mongoose_1.default.Types.ObjectId(user._id),
+            people: [new mongoose_1.default.Types.ObjectId(user._id)],
         });
-        user.workspaceCreatedCount = workspaceCreatedCount + 1;
-        yield user.save({ session });
+        yield newWorkspace.save({
+            session,
+        });
+        yield usageService_1.default.incrementWorkspaceCount({ userId: user._id.toString() }, { session });
         yield session.commitTransaction();
         return newWorkspace;
     }
@@ -59,48 +61,6 @@ const createWorkspace = (workspace) => __awaiter(void 0, void 0, void 0, functio
         }
         throw error;
     }
-});
-/**
- * @param workspaceId
- */
-const incrementLinkCount = (workspaceId) => __awaiter(void 0, void 0, void 0, function* () {
-    (0, mongodb_1.validateObjectId)(workspaceId);
-    const result = yield workspaces_1.default.findByIdAndUpdate(workspaceId, { $inc: { linkCount: 1 } }, { new: true });
-    if (!result) {
-        throw new response_1.APIResponseError("Workspace not found", 404, false);
-    }
-});
-/**
- * @param workspaceId
- */
-const incrementEventCount = (workspaceId) => __awaiter(void 0, void 0, void 0, function* () {
-    (0, mongodb_1.validateObjectId)(workspaceId);
-    const result = yield workspaces_1.default.findByIdAndUpdate(workspaceId, { $inc: { eventCount: 1 } }, { new: true });
-    if (!result) {
-        throw new response_1.APIResponseError("Workspace not found", 404, false);
-    }
-});
-const getLinkCount = (workspaceId, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    (0, mongodb_1.validateObjectId)(workspaceId, userId);
-    const result = yield workspaces_1.default.findById(workspaceId, {
-        linkCount: 1,
-    });
-    result === null || result === void 0 ? void 0 : result.authorized(workspaceId, userId);
-    if (!result) {
-        throw new response_1.APIResponseError("Workspace not found", 404, false);
-    }
-    return result.linkCount;
-});
-const getEventCount = (workspaceId, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    (0, mongodb_1.validateObjectId)(workspaceId, userId);
-    const result = yield workspaces_1.default.findById(workspaceId, {
-        eventCount: 1,
-    });
-    result === null || result === void 0 ? void 0 : result.authorized(workspaceId, userId);
-    if (!result) {
-        throw new response_1.APIResponseError("Workspace not found", 404, false);
-    }
-    return result.eventCount;
 });
 /**
  * authentication required, [checks userId in people]
@@ -246,12 +206,17 @@ const deleteWorkspace = (workspaceId, createdBy) => __awaiter(void 0, void 0, vo
             _id: new mongoose_1.default.Types.ObjectId(workspaceId),
             createdBy: new mongoose_1.default.Types.ObjectId(createdBy),
         }, { session });
-        // delete user
-        yield users_1.default.findByIdAndUpdate(createdBy, { $inc: { workspaceCreatedCount: -1 } }, { session });
         // delete links
-        yield linksService_1.default.deleteAllLinksByWorkspaceId(workspaceId, createdBy, {
+        const linksDeleteCount = yield linksService_1.default.deleteAllLinksByWorkspaceId(workspaceId, createdBy, {
             session,
         });
+        // count updation
+        yield usageService_1.default.updateAll({
+            userId: createdBy,
+            workspaceId,
+            workspaceCountBy: -1,
+            linkCountBy: -linksDeleteCount,
+        }, { session });
         // delete events
         yield eventsService_1.default.deleteEventsBy({ workspaceId: workspaceId }, { session });
         // delete analytics
@@ -273,20 +238,26 @@ const deleteWorkspace = (workspaceId, createdBy) => __awaiter(void 0, void 0, vo
 /**
  * authentication not required, [checked at controller level]
  * @param workspaceId
- * @param userId
+ * @param peopleId
+ * @param user
  * @returns
  */
-const addPeople = (workspaceId, userId) => __awaiter(void 0, void 0, void 0, function* () {
-    (0, mongodb_1.validateObjectId)(workspaceId, userId);
+const addPeople = (workspaceId, peopleId) => __awaiter(void 0, void 0, void 0, function* () {
+    (0, mongodb_1.validateObjectId)(workspaceId, peopleId);
     const workspace = yield workspaces_1.default.findById(workspaceId);
     if (!workspace) {
         throw new response_1.APIResponseError("Workspace not found", 404, false);
     }
+    const userUsage = yield usage_1.default.findOne({ userId: new mongoose_1.default.Types.ObjectId(workspace.createdBy) });
+    if (!userUsage) {
+        throw new Error("userUsage fot creator not found");
+    }
+    const MAX_PEOPLE = (0, quota_1.getQuotaFor)("PEOPLE", userUsage.subscriptionTier);
     if (workspace.peopleCount >= MAX_PEOPLE) {
         throw new response_1.APIResponseError("Maximum number reached", 400, false);
     }
     const result = yield workspaces_1.default.updateOne({ _id: workspaceId }, {
-        $addToSet: { people: new mongoose_1.default.Types.ObjectId(userId) },
+        $addToSet: { people: new mongoose_1.default.Types.ObjectId(peopleId) },
         $inc: { peopleCount: 1 },
     });
     return result;
@@ -419,10 +390,6 @@ const getInviteData = (workspaceId, senderId) => __awaiter(void 0, void 0, void 
 });
 const workspacesService = {
     createWorkspace,
-    incrementLinkCount,
-    incrementEventCount,
-    getLinkCount,
-    getEventCount,
     getWorkspaceById,
     getWorkspaceByCreatorId,
     getAllWorkspacesForUser,

@@ -40,7 +40,7 @@ const eventsSchema = new mongoose_1.default.Schema({
     timestamps: true,
 });
 eventsSchema.index({ workspaceId: 1 });
-// auto delete events after 90 days
+// auto delete events after 90 days of creation
 eventsSchema.index({ createdAt: 1 }, { expireAfterSeconds: 90 * 24 * 60 * 60 });
 const Events = mongoose_1.default.model("Events", eventsSchema);
 exports.default = Events;

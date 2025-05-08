@@ -18,6 +18,7 @@ const asyncWrapper_1 = __importDefault(require("../../lib/asyncWrapper"));
 const analyticsRouter_1 = __importDefault(require("./analyticsRouter"));
 const eventsRouter_1 = __importDefault(require("./eventsRouter"));
 const linksRouter_1 = __importDefault(require("./linksRouter"));
+const usageRouer_1 = __importDefault(require("./usageRouer"));
 const usersRouter_1 = __importDefault(require("./usersRouter"));
 const workspacesRouter_1 = __importDefault(require("./workspacesRouter"));
 const apiRouter = (0, express_1.Router)();
@@ -38,6 +39,7 @@ apiRouter.use("/workspace", workspacesRouter_1.default);
 apiRouter.use("/link", linksRouter_1.default);
 apiRouter.use("/event", eventsRouter_1.default);
 apiRouter.use("/analytic", analyticsRouter_1.default);
+apiRouter.use("/usage", usageRouer_1.default);
 // invalid route
 apiRouter.use("/*", (req, res) => {
     throw new response_1.APIResponseError({

@@ -56,7 +56,7 @@ const createLink = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, v
         password,
         workspaceId,
         creatorId: ((_a = req.user) === null || _a === void 0 ? void 0 : _a._id.toString()) || "", // can't be undefined
-    });
+    }, req.user);
     res.status(201).json({
         success: true,
         message: statusMessages.getMessage("Link created successfully", "success", "create"),

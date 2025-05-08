@@ -15,15 +15,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const configs_1 = require("../constants/configs");
 const envVars_1 = __importDefault(require("../constants/envVars"));
+const quota_1 = require("../constants/quota");
 const response_1 = require("../errors/response");
 const links_1 = __importDefault(require("../models/links"));
 const workspaces_1 = __importDefault(require("../models/workspaces"));
 const analyticsService_1 = __importDefault(require("./analyticsService"));
 const eventsService_1 = __importDefault(require("./eventsService"));
 const tagsService_1 = __importDefault(require("./tagsService"));
+const usageService_1 = __importDefault(require("./usageService"));
 const workspacesService_1 = __importDefault(require("./workspacesService"));
-// limits for workspace
-const MAX_LINKS = 20;
 const generateShortUrlKey = () => __awaiter(void 0, void 0, void 0, function* () {
     const size = configs_1.shortUrlKeyLength;
     const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -55,7 +55,8 @@ const generateUrlWithShortUrlKey = (shortUrlKey) => {
  * @param link
  * @returns
  */
-const createLink = (link) => __awaiter(void 0, void 0, void 0, function* () {
+const createLink = (link, user) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d;
     const session = yield mongoose_1.default.startSession();
     session.startTransaction();
     try {
@@ -63,15 +64,15 @@ const createLink = (link) => __awaiter(void 0, void 0, void 0, function* () {
         if (!workspace) {
             throw new response_1.APIResponseError("Workspace not found", 404, false);
         }
-        if (workspace.linkCount >= MAX_LINKS) {
-            throw new response_1.APIResponseError("Maximum limit of links reached for this workspace", 400, false);
+        const MAX_LINKS = (0, quota_1.getQuotaFor)("LINKS", (_a = user.usage) === null || _a === void 0 ? void 0 : _a.subscriptionTier);
+        const linkCount = ((_d = (_c = (_b = user.usage) === null || _b === void 0 ? void 0 : _b.linkCount) === null || _c === void 0 ? void 0 : _c.find((item) => item.workspaceId.toString() === link.workspaceId)) === null || _d === void 0 ? void 0 : _d.count) || 0;
+        if (linkCount >= MAX_LINKS) {
+            throw new response_1.APIResponseError(`Quota limit of ${MAX_LINKS} links reached for this workspace`, 400, false);
         }
         const newLink = new links_1.default(link);
         yield newLink.save({ session });
         yield tagsService_1.default.addTags(link.workspaceId, link.tags || []);
-        yield workspaces_1.default.findByIdAndUpdate(link.workspaceId, {
-            $inc: { linkCounts: 1 },
-        }, { session });
+        yield usageService_1.default.incrementLinkCount({ userId: user._id.toString(), workspaceId: workspace._id.toString() }, { session });
         const populatedLink = yield getOneLinkBy({
             linkId: newLink._id.toString(),
             userId: link.creatorId.toString(),
@@ -328,9 +329,7 @@ const deleteLink = (linkId, userId, options) => __awaiter(void 0, void 0, void 0
         throw new response_1.APIResponseError("Link not found", 404, false);
     }
     // increment link count by -1
-    yield workspaces_1.default.findByIdAndUpdate(link.workspaceId, {
-        $inc: { linkCounts: -1 },
-    }, { session });
+    yield usageService_1.default.incrementLinkCount({ userId, workspaceId: link.workspaceId.toString(), by: -1 }, { session });
     // delete events
     yield eventsService_1.default.deleteEventsBy({ linkId: link._id.toString() }, {
         session
@@ -355,7 +354,7 @@ const deleteLink = (linkId, userId, options) => __awaiter(void 0, void 0, void 0
 const deleteAllLinksByWorkspaceId = (workspaceId, userId, options) => __awaiter(void 0, void 0, void 0, function* () {
     yield workspaces_1.default.authorized(workspaceId, userId);
     const links = yield links_1.default.deleteMany({ workspaceId: new mongoose_1.default.Types.ObjectId(workspaceId) }, { session: options ? options.session : null });
-    return true;
+    return links.deletedCount;
 });
 const linksService = {
     generateShortUrlKey,

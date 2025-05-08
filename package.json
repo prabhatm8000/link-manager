@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "prodBuild": "cd server && npm run build && cd ../client && npm run build && cp -r ./dist/* ../server/clientBuild",
+    "prodBuildClient": "cd server && npm run build && cd ../client && npm run build && cp -r ./dist/* ../server/clientBuild",
     "prodRun": "cd server && npm run start",
     "prodBuildServerOnly": "cd server && npm run build"
   }

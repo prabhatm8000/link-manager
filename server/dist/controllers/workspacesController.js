@@ -19,16 +19,14 @@ const mail_1 = require("../lib/mail");
 const workspacesService_1 = __importDefault(require("../services/workspacesService"));
 const statusMessages = new messages_1.default("workspace");
 const createWorkspace = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     const { name, description } = req.body;
     if (!name || !description) {
         throw new response_1.APIResponseError(statusMessages.getMessage("Name and description are required", "error", "create"), 400, false);
     }
     const workspace = yield workspacesService_1.default.createWorkspace({
-        createdBy: (_a = req === null || req === void 0 ? void 0 : req.user) === null || _a === void 0 ? void 0 : _a._id, // there is a middleware, so req.user is always defined
         name,
         description,
-    });
+    }, req.user);
     res.status(201).json({
         success: true,
         message: statusMessages.getMessage("Workspace created", "success", "create"),
