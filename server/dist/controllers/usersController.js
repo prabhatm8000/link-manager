@@ -65,7 +65,6 @@ const login = (0, asyncWrapper_1.default)((req, res) => __awaiter(void 0, void 0
     if (!user) {
         throw new response_1.APIResponseError(statusMessages.getMessage("Invalid email or password", "error", "other"), 401, false);
     }
-    console.log(user);
     (0, cookie_1.setAuthCookie)(res, user);
     res.status(200).json({
         success: true,

@@ -1,4 +1,6 @@
 local auth with verfication mail, instead of otp
+add validations in model
+store current workspace in the cookie or something
 organize and optimize keyboard shortcuts
 auto cron job for changing status of expired links
 implement redis

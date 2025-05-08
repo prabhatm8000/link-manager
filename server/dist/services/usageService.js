@@ -55,13 +55,16 @@ const getUsageData = (userId, workspaceId) => __awaiter(void 0, void 0, void 0, 
             }
         },
         {
-            $unwind: "$eventUsage",
+            $unwind: {
+                path: "$eventUsage",
+                preserveNullAndEmptyArrays: true, // won't fail on empty array
+            },
         },
         {
             $project: {
                 _id: 0,
                 subscriptionTier: 1,
-                eventCount: "$eventUsage.count",
+                eventCount: { $ifNull: ["$eventUsage.count", 0] },
                 linkCount: 1,
                 workspaceCount: 1,
             },
@@ -82,7 +85,7 @@ const getUsageData = (userId, workspaceId) => __awaiter(void 0, void 0, void 0, 
             },
             links: {
                 label: "Links",
-                used: (_b = (_a = u.linkCount) === null || _a === void 0 ? void 0 : _a.find((item) => { var _a; return ((_a = item === null || item === void 0 ? void 0 : item.workspaceId) === null || _a === void 0 ? void 0 : _a.toString()) === workspaceId; })) === null || _b === void 0 ? void 0 : _b.count,
+                used: ((_b = (_a = u.linkCount) === null || _a === void 0 ? void 0 : _a.find((item) => { var _a; return ((_a = item === null || item === void 0 ? void 0 : item.workspaceId) === null || _a === void 0 ? void 0 : _a.toString()) === workspaceId; })) === null || _b === void 0 ? void 0 : _b.count) || 0,
                 total: q.LINKS,
                 per: "workspace",
             },

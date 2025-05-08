@@ -79,8 +79,6 @@ const login = asyncWrapper(async (req: Request, res: Response) => {
             false
         );
     }
-
-    console.log(user);
     
     setAuthCookie(res, user);
 

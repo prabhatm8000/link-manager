@@ -43,13 +43,16 @@ const getUsageData = async (userId: string, workspaceId: string): Promise<any> =
             }
         },
         {
-            $unwind: "$eventUsage",
+            $unwind: {
+                path: "$eventUsage",
+                preserveNullAndEmptyArrays: true,   // won't fail on empty array
+            },
         },
         {
             $project: {
                 _id: 0,
                 subscriptionTier: 1,
-                eventCount: "$eventUsage.count",
+                eventCount: { $ifNull: ["$eventUsage.count", 0] },
                 linkCount: 1,
                 workspaceCount: 1,
             },
@@ -70,7 +73,7 @@ const getUsageData = async (userId: string, workspaceId: string): Promise<any> =
             },
             links: {
                 label: "Links",
-                used: u.linkCount?.find((item: any) => item?.workspaceId?.toString() === workspaceId)?.count,
+                used: u.linkCount?.find((item: any) => item?.workspaceId?.toString() === workspaceId)?.count || 0,
                 total: q.LINKS,
                 per: "workspace",
             },
