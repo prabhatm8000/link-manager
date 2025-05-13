@@ -10,6 +10,8 @@ const redirectToDestination = asyncWrapper(
     async (req: Request, res: Response) => {
         const { shortUrlKey } = req.params;
         const password = req.query?.p;
+        const qr = req.query?.qr;
+        const trigger = qr === "yes" ? "QR" : "CLICK";
 
         if (!shortUrlKey) {
             res.status(400).json({
@@ -64,7 +66,8 @@ const redirectToDestination = asyncWrapper(
             void eventUsageService.handleEventCapture(
                 url.creatorId,
                 url,
-                req.metadata
+                trigger,
+                req.userAgentData
             )
         }
 

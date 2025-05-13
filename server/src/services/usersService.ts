@@ -1,11 +1,24 @@
+import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import envVars from "../constants/envVars";
 import { APIResponseError } from "../errors/response";
 import oauthClient from "../lib/oAuthClient";
+import EventUsage from "../models/eventUsage";
 import Usage from "../models/usage";
 import User from "../models/users";
 import Workspace from "../models/workspaces";
 import type { IUser, IUsersService } from "../types/user";
+import workspacesService from "./workspacesService";
+
+const JWT_SECRET = envVars.JWT_SECRET as string;
+
+const genarateUserToken = (user: Pick<IUser, "_id" | "email">) => {
+    const userId = user._id.toString();
+    const token = jwt.sign({ email: user.email, userId }, JWT_SECRET, {
+        expiresIn: "20m",
+    });
+    return token;
+};
 
 /**
  * --- local login ---
@@ -54,7 +67,10 @@ const login = async ({
                 }
             );
         } else {
-            if (findingUser?.authType !== "google") {
+            if (
+                findingUser?.authType !== "google" &&
+                !findingUser?.isVerified
+            ) {
                 throw new APIResponseError(
                     "Please use email and password to login",
                     400,
@@ -79,11 +95,27 @@ const login = async ({
             throw new APIResponseError("Invalid email", 401, false);
         }
         if (findingUser.authType && findingUser.authType !== "local") {
-            throw new APIResponseError("Bad authentication type", 400, false);
+            throw new APIResponseError(
+                "Use different login method!",
+                400,
+                false
+            );
         }
 
         if (!(await findingUser.comparePassword(password))) {
             throw new APIResponseError("Invalid password", 401, false);
+        }
+
+        if (!findingUser.isVerified) {
+            throw new APIResponseError(
+                {
+                    title: "Looks like your account is not verified!",
+                    description:
+                        "To Verify: Put your email and password and click on 'send verfication'",
+                },
+                401,
+                false
+            );
         }
         user = findingUser;
         user.lastLogin = new Date();
@@ -167,6 +199,87 @@ const createUser = async (
     return user.toJSON() as IUser;
 };
 
+const genarateEmailVerficationLink = (user: IUser) => {
+    const userId = user._id.toString();
+    const token = genarateUserToken(user);
+    return {
+        token,
+        link: `${envVars.CLIENT_URL}/auth/emailverify?uid=${userId}&email=${user.email}&vt=${token}`,
+    };
+};
+
+const genaratePasswordResetLink = (user: IUser) => {
+    const userId = user._id.toString();
+    const token = genarateUserToken(user);
+    return {
+        token,
+        link: `${envVars.CLIENT_URL}/auth/passwordreset?uid=${userId}&email=${user.email}&vt=${token}`,
+    };
+};
+
+/**
+ * @param uid - user id
+ * @param vt - verification token
+ * @returns
+ */
+const verifyUserEmail = async (uid: string, vt: string) => {
+    const id = new mongoose.Types.ObjectId(uid);
+    const payload = jwt.verify(vt, JWT_SECRET) as {
+        email: string;
+        userId: string;
+    };
+    if (payload.userId !== id.toString()) throw new APIResponseError("Invalid verification link", 400, false);
+    const user = await User.findOneAndUpdate(
+        {
+            _id: new mongoose.Types.ObjectId(id),
+            email: payload.email,
+        },
+        { isVerified: true },
+        { new: true }
+    );
+    return user?.toJSON() as IUser;
+};
+
+const cancelVerificationAndDeleteUser = async (uid: string, vt: string) => {
+    const id = new mongoose.Types.ObjectId(uid);
+    const payload = jwt.verify(vt, JWT_SECRET) as {
+        email: string;
+        userId: string;
+    };
+    if (payload.userId !== id.toString()) {
+        throw new APIResponseError("Invalid verification link", 400, false);
+    }
+    await deleteUser(id.toString());
+};
+
+/**
+ * @param uid - user id
+ * @param vt - verification token
+ * @param pw - password
+ * @returns
+ */
+const resetPassword = async (uid: string, vt: string, pw: string) => {
+    const id = new mongoose.Types.ObjectId(uid);
+    const payload = jwt.verify(vt, JWT_SECRET) as {
+        email: string;
+        userId: string;
+    };
+    if (payload.userId !== id.toString()) throw new APIResponseError("Invalid Reset link", 400, false);
+
+    const user = await User.findOneAndUpdate(
+        {
+            _id: new mongoose.Types.ObjectId(id),
+            email: payload.email,
+        },
+        { password: pw },
+        { new: true }
+    );
+    if (!user) throw new APIResponseError("User not found", 404, false);
+
+    await user.save();
+    return user.toJSON() as IUser;
+};
+
 /**
  * authentication required, [id is checked in the auth middleware]
  * @param id
@@ -222,13 +335,43 @@ const deactivateUser = async (id: string) => {
     return user?.toJSON() as IUser;
 };
 
+const deleteUser = async (userId: string) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const user = await User.findByIdAndDelete(userId, { session });
+        if (!user) throw new APIResponseError("User not found", 404, false);
+
+        const workspaces = await workspacesService.getAllWorkspacesForUser(
+            userId
+        );
+        for (const ws of workspaces) {
+            await workspacesService.deleteWorkspace(ws._id.toString(), userId, {
+                session,
+            });
+        }
+        await Usage.deleteOne({ userId }, { session });
+        await EventUsage.deleteMany({ userId }, { session });
+        await session.commitTransaction();
+    } catch (error) {
+        await session.abortTransaction();
+        throw error;
+    }
+};
+
 const usersService: IUsersService = {
-    login,
-    createUser,
-    getUserById,
-    getUserByEmail,
-    updateUser,
-    deactivateUser,
+    login: login,
+    createUser: createUser,
+    genarateEmailVerficationLink: genarateEmailVerficationLink,
+    genaratePasswordResetLink: genaratePasswordResetLink,
+    verifyUserEmail: verifyUserEmail,
+    cancelVerificationAndDeleteUser: cancelVerificationAndDeleteUser,
+    resetPassword: resetPassword,
+    getUserById: getUserById,
+    getUserByEmail: getUserByEmail,
+    updateUser: updateUser,
+    deactivateUser: deactivateUser,
+    deleteUser: deleteUser,
 };
 
 export default usersService;

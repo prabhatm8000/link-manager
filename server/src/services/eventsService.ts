@@ -2,25 +2,25 @@ import mongoose from "mongoose";
 import { APIResponseError } from "../errors/response";
 import { getDaterange, type DaterangeTypes } from "../lib/dateRange";
 import Events from "../models/events";
-import type { IEvents, IEventsService, UserAgentData } from "../types/event";
+import type { EventTriggerType, IEvents, IEventsService, UserAgentData } from "../types/event";
 
 /**
  * @param workspaceId
  * @param linkId
- * @param type
+ * @param trigger
  * @param metadata
  * @returns
  */
 const captureEvent = async (
     workspaceId: string,
     linkId: string,
-    type: string,
+    trigger: EventTriggerType,
     metadata: UserAgentData
 ): Promise<IEvents> => {
     const event = new Events({
         workspaceId: new mongoose.Types.ObjectId(workspaceId),
         linkId: new mongoose.Types.ObjectId(linkId),
-        type,
+        trigger,
         metadata,
     });
 
@@ -32,7 +32,7 @@ const captureEvent = async (
  * link populated
  * @param workspaceId
  * @param linkId
- * @param type
+ * @param trigger
  * @param fetchRange - date range for fetching events, it can be "today", "yesterday", "last7days", "last30days", "thismonth", "lastmonth", "all"
  * @param skip - default is 0, you know what it does
  * @param limit - default is 10, you know what it does
@@ -41,14 +41,14 @@ const captureEvent = async (
 const getEventsByWorkspaceId = async ({
     workspaceId,
     linkId,
-    type,
+    trigger,
     fetchRange = "24h",
     skip = 0,
     limit = 10,
 }: {
     workspaceId: string;
     linkId?: string;
-    type?: string;
+    trigger?: EventTriggerType;
     fetchRange?: DaterangeTypes;
     skip?: number;
     limit?: number;
@@ -59,7 +59,7 @@ const getEventsByWorkspaceId = async ({
             $match: {
                 workspaceId: new mongoose.Types.ObjectId(workspaceId),
                 ...(linkId && { linkId: new mongoose.Types.ObjectId(linkId) }),
-                ...(type && { type }),
+                ...(trigger && { trigger }),
                 createdAt: {
                     $gte: new Date(startDate),
                     $lte: new Date(endDate),
@@ -99,7 +99,7 @@ const getEventsByWorkspaceId = async ({
                 linkId: "$link._id",
                 workspaceId: 1,
                 link: "$link",
-                type: 1,
+                trigger: 1,
                 metadata: 1,
                 createdAt: 1,
             },
@@ -147,7 +147,7 @@ const getEventById = async (eventId: string) => {
             $project: {
                 _id: 1,
                 linkId: 1,
-                type: 1,
+                trigger: 1,
                 metadata: 1,
                 createdAt: 1,
                 workspaceId: "$workspace._id",
@@ -167,23 +167,23 @@ const getEventById = async (eventId: string) => {
  * @description useful when deleting link or workspace
  * @description at least one of linkId, type, workspaceId is required
  * @param linkId
- * @param type
+ * @param trigger
  * @param workspaceId
  * @returns
  */
 const deleteEventsBy = async (
     d: {
         linkId?: string;
-        type?: string;
+        trigger?: string;
         workspaceId?: string;
     },
     options?: {
         session?: mongoose.ClientSession;
     }
 ): Promise<void> => {
-    if (!d.linkId && !d.type && !d.workspaceId) {
+    if (!d.linkId && !d.trigger && !d.workspaceId) {
         throw new APIResponseError(
-            "At least one of linkId, type, workspaceId is required",
+            "At least one of linkId, trigger, workspaceId is required",
             400,
             false
         );
@@ -192,7 +192,7 @@ const deleteEventsBy = async (
     await Events.deleteMany(
         {
             ...(d.linkId && { linkId: new mongoose.Types.ObjectId(d.linkId) }),
-            ...(d.type && { type: d.type }),
+            ...(d.trigger && { type: d.trigger }),
             ...(d.workspaceId && {
                 workspaceId: new mongoose.Types.ObjectId(d.workspaceId),
             }),

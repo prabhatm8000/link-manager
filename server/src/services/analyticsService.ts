@@ -205,6 +205,64 @@ const captureData = async (d: {
                             },
                         },
                     },
+                    country: {
+                        $let: {
+                            vars: { existing: { $ifNull: ["$country", []] } },
+                            in: {
+                                $cond: [
+                                    {
+                                        $in: [
+                                            d.metadata.country,
+                                            {
+                                                $map: {
+                                                    input: "$$existing",
+                                                    as: "r",
+                                                    in: "$$r.name",
+                                                },
+                                            },
+                                        ],
+                                    },
+                                    {
+                                        $map: {
+                                            input: "$$existing",
+                                            as: "r",
+                                            in: {
+                                                $cond: [
+                                                    {
+                                                        $eq: [
+                                                            "$$r.name",
+                                                            d.metadata.country,
+                                                        ],
+                                                    },
+                                                    {
+                                                        name: "$$r.name",
+                                                        count: {
+                                                            $add: [
+                                                                "$$r.count",
+                                                                1,
+                                                            ],
+                                                        },
+                                                    },
+                                                    "$$r",
+                                                ],
+                                            },
+                                        },
+                                    },
+                                    {
+                                        $concatArrays: [
+                                            "$$existing",
+                                            [
+                                                {
+                                                    name: d.metadata.country,
+                                                    count: 1,
+                                                },
+                                            ],
+                                        ],
+                                    },
+                                ],
+                            },
+                        },
+                    },
                     region: {
                         $let: {
                             vars: { existing: { $ifNull: ["$region", []] } },
@@ -254,6 +312,64 @@ const captureData = async (d: {
                                             [
                                                 {
                                                     name: d.metadata.region,
+                                                    count: 1,
+                                                },
+                                            ],
+                                        ],
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                    city: {
+                        $let: {
+                            vars: { existing: { $ifNull: ["$city", []] } },
+                            in: {
+                                $cond: [
+                                    {
+                                        $in: [
+                                            d.metadata.city,
+                                            {
+                                                $map: {
+                                                    input: "$$existing",
+                                                    as: "r",
+                                                    in: "$$r.name",
+                                                },
+                                            },
+                                        ],
+                                    },
+                                    {
+                                        $map: {
+                                            input: "$$existing",
+                                            as: "r",
+                                            in: {
+                                                $cond: [
+                                                    {
+                                                        $eq: [
+                                                            "$$r.name",
+                                                            d.metadata.city,
+                                                        ],
+                                                    },
+                                                    {
+                                                        name: "$$r.name",
+                                                        count: {
+                                                            $add: [
+                                                                "$$r.count",
+                                                                1,
+                                                            ],
+                                                        },
+                                                    },
+                                                    "$$r",
+                                                ],
+                                            },
+                                        },
+                                    },
+                                    {
+                                        $concatArrays: [
+                                            "$$existing",
+                                            [
+                                                {
+                                                    name: d.metadata.city,
                                                     count: 1,
                                                 },
                                             ],
@@ -386,7 +502,9 @@ const getAnalyticsByDateRange = async (d: {
                 browser: 1,
                 os: 1,
                 device: 1,
+                country: 1,
                 region: 1,
+                city: 1,
             },
         },
         {
@@ -408,7 +526,9 @@ const getAnalyticsByDateRange = async (d: {
                 browser: { $push: "$browser" },
                 os: { $push: "$os" },
                 device: { $push: "$device" },
+                country: { $push: "$region" },
                 region: { $push: "$region" },
+                city: { $push: "$region" },
             },
         },
         {
@@ -420,7 +540,9 @@ const getAnalyticsByDateRange = async (d: {
                 browser: reduceFunc("$browser"),
                 os: reduceFunc("$os"),
                 device: reduceFunc("$device"),
+                country: reduceFunc("$country"),
                 region: reduceFunc("$region"),
+                city: reduceFunc("$city"),
             },
         },
         {
@@ -433,7 +555,9 @@ const getAnalyticsByDateRange = async (d: {
                 browser: reduceThatSumsCount("$browser"),
                 os: reduceThatSumsCount("$os"),
                 device: reduceThatSumsCount("$device"),
+                country: reduceThatSumsCount("$country"),
                 region: reduceThatSumsCount("$region"),
+                city: reduceThatSumsCount("$city"),
             },
         },
         {
@@ -462,9 +586,12 @@ const getAnalyticsByDateRange = async (d: {
         browser: new Map<string, number>(),
         os: new Map<string, number>(),
         device: new Map<string, number>(),
+        country: new Map<string, number>(),
         region: new Map<string, number>(),
+        city: new Map<string, number>(),
     };
 
+    // count and total
     for (const a of analytics) {
         preparedAnalytics.metrix.totalClicks += a.total;
         if (a.total > preparedAnalytics.metrix.maxClicks.count) {
@@ -503,14 +630,27 @@ const getAnalyticsByDateRange = async (d: {
                 b.count + (preparedAnalytics.device.get(b.name) || 0)
             );
         }
+        for (const b of a.country) {
+            preparedAnalytics.country.set(
+                b.name,
+                b.count + (preparedAnalytics.country.get(b.name) || 0)
+            );
+        }
         for (const b of a.region) {
             preparedAnalytics.region.set(
                 b.name,
                 b.count + (preparedAnalytics.region.get(b.name) || 0)
             );
         }
+        for (const b of a.city) {
+            preparedAnalytics.city.set(
+                b.name,
+                b.count + (preparedAnalytics.city.get(b.name) || 0)
+            );
+        }
     }
 
+    // map [[name, count]] -> array [{name, count}]
     const analyticsObj = {
         metrix: preparedAnalytics.metrix,
         browser: Array.from(preparedAnalytics.browser).map(([name, count]) => ({
@@ -525,7 +665,15 @@ const getAnalyticsByDateRange = async (d: {
             name,
             count,
         })),
+        country: Array.from(preparedAnalytics.country).map(([name, count]) => ({
+            name,
+            count,
+        })),
         region: Array.from(preparedAnalytics.region).map(([name, count]) => ({
+            name,
+            count,
+        })),
+        city: Array.from(preparedAnalytics.city).map(([name, count]) => ({
             name,
             count,
         })),

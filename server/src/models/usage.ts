@@ -7,7 +7,6 @@ const linkCountSchema = new mongoose.Schema<ILinkCount>(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Workspace",
             required: true,
-            unique: true,
         },
         count: { type: Number, required: true },
     },

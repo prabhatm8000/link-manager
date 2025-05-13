@@ -19,7 +19,7 @@ import tagsService from "./tagsService";
 import usageService from "./usageService";
 import workspacesService from "./workspacesService";
 
-const generateShortUrlKey = async (): Promise<string> => {
+const generateShortUrlKey = async (): Promise<{ shortUrlKey: string, shortUrl: string }> => {
     const size = shortUrlKeyLength;
     const chars =
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -48,7 +48,10 @@ const generateShortUrlKey = async (): Promise<string> => {
         );
     }
 
-    return key;
+    return {
+        shortUrlKey: key,
+        shortUrl: generateUrlWithShortUrlKey(key),
+    };
 };
 
 const generateUrlWithShortUrlKey = (shortUrlKey: string): string => {

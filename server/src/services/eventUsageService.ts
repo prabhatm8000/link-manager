@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { getQuotaFor } from "../constants/quota";
 import EventUsage from "../models/eventUsage";
 import Usage from "../models/usage";
-import type { UserAgentData } from "../types/event";
+import type { EventTriggerType, UserAgentData } from "../types/event";
 import type { IEventUsage, IEventUsageService } from "../types/eventUsage";
 import type { ILinks } from "../types/link";
 import analyticsService from "./analyticsService";
@@ -53,6 +53,7 @@ const incrementEventCount = async (
 const handleEventCapture = async (
     userId: string,
     url: ILinks,
+    trigger: EventTriggerType,
     metadata: UserAgentData
 ) => {
     try {
@@ -79,7 +80,7 @@ const handleEventCapture = async (
             eventsService.captureEvent(
                 url.workspaceId,
                 url._id,
-                "CLICK",
+                trigger,
                 metadata
             ),
             analyticsService.captureData({

@@ -58,6 +58,32 @@ export interface IUsersService {
         }
     ) => Promise<IUser>;
 
+    genarateEmailVerficationLink: (user: IUser) => {link: string; token: string};
+    
+    genaratePasswordResetLink: (user: IUser) => {link: string; token: string};
+
+    /**
+     * @param uid - user id
+     * @param vt - verification token
+     * @returns
+     */
+    verifyUserEmail: (uid: string, vt: string) => Promise<IUser>;
+
+    /**
+     * @param uid - user id
+     * @param vt - verification token
+     * @returns
+     */
+    cancelVerificationAndDeleteUser: (uid: string, vt: string) => Promise<void>;
+    
+    /**
+     * @param uid - user id
+     * @param vt - verification token
+     * @param pw - password
+     * @returns
+     */
+    resetPassword: (uid: string, vt: string, pw: string) => Promise<IUser>;
+
     /**
      * authentication required, [id is checked in the auth middleware]
      * @param id
@@ -94,4 +120,6 @@ export interface IUsersService {
      * @returns
      */
     deactivateUser: (id: string) => Promise<IUser | undefined>;
+
+    deleteUser: (userId: string) => Promise<void>;
 }

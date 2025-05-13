@@ -1,94 +1,62 @@
+import TitleText from "@/components/TitleText";
+import { Button } from "@/components/ui/button";
 import {
     CardContent,
-    CardFooter,
     CardHeader,
     CardTitle
 } from "@/components/ui/Card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { registerUser } from "@/redux/thunks/usersThunk";
-import { useEffect } from "react";
+import type { IUserState } from "@/redux/reducers/types";
+import type { AppDispatch } from "@/redux/store";
+import { resetPassword } from "@/redux/thunks/usersThunk";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import TitleText from "../../../components/TitleText";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
-import type { IUserState } from "../../../redux/reducers/types";
-import type { AppDispatch } from "../../../redux/store";
+import { useSearchParams } from "react-router-dom";
 
-const AuthSignUp = () => {
+const PasswordReset = () => {
+    const userState: IUserState = useSelector((state: any) => state.user);
+    const dispatch = useDispatch<AppDispatch>();
+    const [searchParams, _] = useSearchParams();
+    const email = searchParams.get("email");
+    const token = searchParams.get("vt");
+    const uid = searchParams.get("uid");
     const {
         register,
         handleSubmit,
         watch,
-        reset,
+        setValue,
         formState: { errors },
-    } = useForm();
-
-    const userState: IUserState = useSelector((state: any) => state.user);
-    const dispatch = useDispatch<AppDispatch>();
-
+    } = useForm<{ password: string; confirmPassword: string }>();
     const onSubmit = handleSubmit((data) => {
+        if (!token || !uid) return;
         dispatch(
-            registerUser({
-                email: data.email,
-                name: data.name,
-                password: data.password,
+            resetPassword({
+                uid: uid,
+                pw: data.password,
+                vt: token,
             })
-        );
+        ).then(() => {
+            setValue("password", "");
+            setValue("confirmPassword", "");
+        });
     });
-
-    useEffect(() => {
-        if (!userState?.error && !userState?.loading && userState?.isVerificationSent) {
-            reset();
-        }
-    }, [userState]);
+    const isNotInValidForm = !email || !token || !uid;
 
     return (
         <>
             <CardHeader>
                 <CardTitle>
-                    <TitleText className="text-center">Signup</TitleText>
+                    <TitleText className="text-center">
+                        {isNotInValidForm ? "Huh!?" : "Reset Password"}
+                    </TitleText>
                 </CardTitle>
+                <div className="text-lg text-center font-semibold">
+                    <h4>{isNotInValidForm ? "No email! nothing!?" : email}</h4>
+                </div>
             </CardHeader>
             <CardContent className="px-4">
                 <form className="flex flex-col gap-2" onSubmit={onSubmit}>
-                    <div className="flex flex-col gap-1 relative pb-4">
-                        <Label htmlFor="name">Name</Label>
-                        <Input
-                            {...register("name", {
-                                required: "Name is required",
-                            })}
-                            id="name"
-                            type="text"
-                            placeholder="Name"
-                            className="w-full"
-                            autoComplete="name"
-                        />
-                        {errors.name && (
-                            <span className="text-red-500 text-xs absolute bottom-0">
-                                {errors.name.message as string}
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex flex-col gap-1 relative pb-4">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                            {...register("email", {
-                                required: "Email is required",
-                            })}
-                            id="email"
-                            type="email"
-                            placeholder="Email"
-                            className="w-full"
-                            autoComplete="email"
-                        />
-                        {errors.email && (
-                            <span className="text-red-500 text-xs absolute bottom-0">
-                                {errors.email.message as string}
-                            </span>
-                        )}
-                    </div>
                     <div className="flex flex-col gap-1 relative pb-4">
                         <Label htmlFor="password">Password</Label>
                         <Input
@@ -144,20 +112,12 @@ const AuthSignUp = () => {
                         type="submit"
                         className="mt-2 px-4 flex items-center justify-center gap-2"
                     >
-                        <span>Signup</span>
+                        <span>Reset</span>
                     </Button>
                 </form>
             </CardContent>
-            <CardFooter className="px-4">
-                <div className="text-center w-full text-black/70 dark:text-white/70">
-                    already have an account?{" "}
-                    <Link to="/auth/login" className="text-blue-500">
-                        Login
-                    </Link>
-                </div>
-            </CardFooter>
         </>
     );
 };
 
-export default AuthSignUp;
+export default PasswordReset;

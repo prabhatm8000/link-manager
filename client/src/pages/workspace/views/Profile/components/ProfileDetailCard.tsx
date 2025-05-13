@@ -1,8 +1,8 @@
 import LogoutBtn from "@/components/LogoutBtn";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { UsageTooltip } from "@/pages/workspace/components/SideBarUsageBars";
 import type { IUsageState, IUserState } from "@/redux/reducers/types";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { format } from "date-fns";
 import { useSelector } from "react-redux";
 
@@ -19,7 +19,9 @@ const ProfileDetailCard = () => {
                         src={user?.profilePicture || undefined}
                         alt={user?.name}
                     />
-                    <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+                    <AvatarFallback itemType="user" className="text-4xl">
+                        {user?.name?.charAt(0)}
+                    </AvatarFallback>
                 </Avatar>
                 <CardTitle className="flex flex-col justify-between sm:flex-row sm:items-center gap-4 w-full">
                     <div className="w-fit">

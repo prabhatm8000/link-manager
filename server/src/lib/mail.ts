@@ -1,9 +1,9 @@
+import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import { inviteConfig } from "../constants/configs";
 import envVars from "../constants/envVars";
 import type { IUser } from "../types/user";
 import type { IWorkspace } from "../types/workspace";
-import { inviteConfig, otpConfig } from "../constants/configs";
-import jwt from "jsonwebtoken";
 
 const JWT_SECRET = envVars.JWT_SECRET as string;
 const transporter = nodemailer.createTransport({
@@ -62,36 +62,28 @@ async function sendMail({
     }
 }
 
-async function sendOtpEmail(to: string, otp: string) {
+async function sendVerificationEmail(to: string, verficationLink: string) {
     const mailObj = {
         to: to,
-        subject: "OTP Verification",
-        text: `Your OTP is: ${otp}. It will expire in ${
-            otpConfig.expiresAt / 60000
-        } minutes.`,
-        html: `<p>Your OTP is: ${otp}. It will expire in ${
-            otpConfig.expiresAt / 60000
-        } minutes.</p>`,
+        subject: "Ref.com - Email Verification",
+        text: `An attempt was made to create an account on Ref.com. Verify your email by clicking the verify email link, ignoring this email if you did not create an account.`,
+        html: `
+            <p>An attempt was made to create an account on Ref.com. Verify your email by clicking the verify email link, ignoring this email if you did not create an account.</p>
+            <p style="text-align: center; padding: 0px 20px;"><a href="${verficationLink}" style="text-decoration: none; color: blue; font-weight: bold; padding: 5px 10px; border-radius: 5px;">Verify Email</a></p>
+        `,
     };
     await sendMail(mailObj);
 }
 
-async function sendVerificationEmail(to: string, token: string) {
+async function sendPasswordResetEmail(to: string, resetLink: string) {
     const mailObj = {
         to: to,
-        subject: "Email Verification",
-        text: `Click here to verify your email: http://localhost:3000/verify-email/${token}`,
-        html: `<p>Click here to verify your email: <a href="http://localhost:3000/verify-email/${token}">Verify Email</a></p>`,
-    };
-    await sendMail(mailObj);
-}
-
-async function sendPasswordResetEmail(to: string, resetToken: string) {
-    const mailObj = {
-        to: to,
-        subject: "Password Reset",
-        text: `Click here to reset your password: http://localhost:3000/reset-password/${resetToken}`,
-        html: `<p>Click here to reset your password: <a href="http://localhost:3000/reset-password/${resetToken}">Reset Password</a></p>`,
+        subject: "Ref.com - Password Reset",
+        text: `An attempt was made to reset your account password on Ref.com. Click the link below to reset your password, ignoring this email if you did not request a password reset.`,
+        html: `
+            <p>An attempt was made to reset your account password on Ref.com. Click the link below to reset your password, ignoring this email if you did not request a password reset.</p>
+            <p style="text-align: center; padding: 0px 20px;"><a href="${resetLink}" style="text-decoration: none; color: blue; font-weight: bold; padding: 5px 10px; border-radius: 5px;">Reset Password</a></p>
+        `
     };
     await sendMail(mailObj);
 }
@@ -101,11 +93,7 @@ async function sendInviteToJoinWorkspaceMail(
     workspace: Pick<IWorkspace, "id" | "name">,
     senderUser: IUser
 ) {
-    const inviteLink = genarateInviteLink(
-        workspace.id,
-        senderUser.id,
-        to
-    );
+    const inviteLink = genarateInviteLink(workspace.id, senderUser.id, to);
     const mailObj = {
         to,
         subject: `Invited by ${senderUser.name} to join workspace`,
@@ -120,8 +108,6 @@ async function sendInviteToJoinWorkspaceMail(
 }
 
 export {
-    sendOtpEmail,
-    sendPasswordResetEmail,
-    sendVerificationEmail,
-    sendInviteToJoinWorkspaceMail,
+    sendInviteToJoinWorkspaceMail, sendPasswordResetEmail, sendVerificationEmail
 };
+

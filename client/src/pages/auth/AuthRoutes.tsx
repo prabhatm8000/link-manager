@@ -1,11 +1,24 @@
-import { Route, Routes } from "react-router-dom";
+import type { IUserState } from "@/redux/reducers/types";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import ErrorPage, { PageDataContants } from "../ErrorPage";
 import AuthLayout from "./AuthLayout";
 import AuthLogin from "./views/AuthLogin";
-import AuthOtp from "./views/AuthOtp";
 import AuthSignUp from "./views/AuthSignUp";
+import PasswordReset from "./views/PasswordReset";
+import VerifyEmail from "./views/VerifyEmail";
 
 const AuthRoutes = () => {
+    const userState: IUserState = useSelector((state: any) => state.user);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (userState?.isAuthenticated) {
+            navigate("/workspace");
+        }
+    }, [userState?.isAuthenticated]);
+    
     return (
         <Routes>
             <Route
@@ -25,10 +38,18 @@ const AuthRoutes = () => {
                 }
             />
             <Route
-                path="otp/:email"
+                path="emailverify"
                 element={
                     <AuthLayout>
-                        <AuthOtp />
+                        <VerifyEmail />
+                    </AuthLayout>
+                }
+            />
+            <Route
+                path="passwordreset"
+                element={
+                    <AuthLayout>
+                        <PasswordReset />
                     </AuthLayout>
                 }
             />

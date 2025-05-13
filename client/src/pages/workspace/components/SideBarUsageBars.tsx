@@ -21,6 +21,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { handleNumber } from "../../../lib/handleNumber";
 
 export const UsageTooltip = () => {
+    const [isTooltipOpen, setIsTooltipOpen] = useState(false);
     const usageState: IUsageState = useSelector((state: any) => state.usage);
     const quota = usageState.usage.quota;
     const tooltipContentRender = (e: keyof typeof quota) => {
@@ -32,12 +33,27 @@ export const UsageTooltip = () => {
             </span>
         );
     };
+
+    useEffect(() => {
+        if (!isTooltipOpen) return;
+
+        const t = setTimeout(() => {
+            setIsTooltipOpen(false);
+        }, 5000);
+        return () => {
+            clearTimeout(t);
+        };
+    }, [isTooltipOpen]);
+
     return (
-        <Tooltip>
+        <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
             <TooltipTrigger>
-                <AiOutlineInfoCircle className="size-4 text-muted-foreground" />
+                <AiOutlineInfoCircle
+                    onClick={() => setIsTooltipOpen((p) => !p)}
+                    className="size-4 text-muted-foreground"
+                />
             </TooltipTrigger>
-            <TooltipContent sideOffset={5} className="w-48">
+            <TooltipContent updatePositionStrategy="optimized" className="w-48 mx-4">
                 <div className="flex flex-col">
                     <div className="flex items-center gap-1">
                         <span>Subscription:</span>

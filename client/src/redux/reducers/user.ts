@@ -1,12 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
+    cancelVerification,
+    deleteUser,
     login,
     logout,
-    registerAndSendOtp,
-    registerAndVerifyOtp,
-    resendOtp,
+    registerUser,
+    resendVerification,
+    resetPassword,
+    sendPasswordReset,
     updateUser,
     verifyUser,
+    verifyUserEmail
 } from "../thunks/usersThunk";
 import type { ApiResponseType, IUser, IUserState } from "./types";
 
@@ -16,7 +20,7 @@ const initialState: IUserState = {
     loading: false,
     error: null,
     message: null,
-    isOtpSent: false,
+    isVerificationSent: false,
 };
 
 const userSlice = createSlice({
@@ -29,7 +33,7 @@ const userSlice = createSlice({
             state.loading = false;
             state.error = null;
             state.message = null;
-            state.isOtpSent = false;
+            state.isVerificationSent = false;
         },
     },
     extraReducers: (builder) => {
@@ -91,63 +95,116 @@ const userSlice = createSlice({
             state.message = (action.payload as ApiResponseType).message;
         });
 
-        // register and otpSend
-        builder.addCase(registerAndSendOtp.fulfilled, (state, action) => {
+        // send password reset
+        builder.addCase(sendPasswordReset.fulfilled, (state) => {
+            state.loading = false;
+            state.error = null;
+            state.message = null;
+        })
+        builder.addCase(sendPasswordReset.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+            state.message = null;
+        })
+        builder.addCase(sendPasswordReset.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error.message || null;
+            state.message = (action.payload as ApiResponseType).message;
+        })
+
+        // reset password
+        builder.addCase(resetPassword.fulfilled, (state, action) => {
             state.user = action.payload.data as IUser;
             state.loading = false;
             state.error = null;
             state.message = null;
-            state.isOtpSent = true;
         });
-        builder.addCase(registerAndSendOtp.pending, (state) => {
+        builder.addCase(resetPassword.pending, (state) => {
             state.loading = true;
             state.error = null;
             state.message = null;
-            state.isOtpSent = false;
         });
-        builder.addCase(registerAndSendOtp.rejected, (state, action) => {
+        builder.addCase(resetPassword.rejected, (state, action) => {
             state.loading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType).message;
-            state.isOtpSent = false;
         });
 
-        // resend otp
-        builder.addCase(resendOtp.fulfilled, (state, action) => {
+        // registerUser
+        builder.addCase(registerUser.fulfilled, (state, action) => {
             state.user = action.payload.data as IUser;
             state.loading = false;
             state.error = null;
             state.message = null;
-            state.isOtpSent = true;
+            state.isVerificationSent = true;
         });
-        builder.addCase(resendOtp.pending, (state) => {
+        builder.addCase(registerUser.pending, (state) => {
             state.loading = true;
             state.error = null;
             state.message = null;
-            state.isOtpSent = false;
+            state.isVerificationSent = false;
         });
-        builder.addCase(resendOtp.rejected, (state, action) => {
+        builder.addCase(registerUser.rejected, (state, action) => {
             state.loading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType).message;
-            state.isOtpSent = false;
+            state.isVerificationSent = false;
+        });
+        
+        // resendVerification
+        builder.addCase(resendVerification.fulfilled, (state) => {
+            state.loading = false;
+            state.error = null;
+            state.message = null;
+            state.isVerificationSent = true;
+        });
+        builder.addCase(resendVerification.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+            state.message = null;
+            state.isVerificationSent = false;
+        });
+        builder.addCase(resendVerification.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error.message || null;
+            state.message = (action.payload as ApiResponseType).message;
+            state.isVerificationSent = false;
         });
 
-        // register and verify otp
-        builder.addCase(registerAndVerifyOtp.fulfilled, (state, action) => {
+        // verify user email
+        builder.addCase(verifyUserEmail.fulfilled, (state, action) => {
             state.user = action.payload.data as IUser;
             state.isAuthenticated = true;
             state.loading = false;
             state.error = null;
             state.message = null;
-            state.isOtpSent = false;
+            state.isVerificationSent = false;
         });
-        builder.addCase(registerAndVerifyOtp.pending, (state) => {
+        builder.addCase(verifyUserEmail.pending, (state) => {
+            state.loading = true;
+            state.isAuthenticated = false;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(verifyUserEmail.rejected, (state, action) => {
+            state.loading = false;
+            state.isAuthenticated = false;
+            state.error = action.error.message || null;
+            state.message = (action.payload as ApiResponseType).message;
+        });
+
+        // cancel verification
+        builder.addCase(cancelVerification.fulfilled, (state) => {
+            state.loading = false;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(cancelVerification.pending, (state) => {
             state.loading = true;
             state.error = null;
             state.message = null;
         });
-        builder.addCase(registerAndVerifyOtp.rejected, (state, action) => {
+        builder.addCase(cancelVerification.rejected, (state, action) => {
             state.loading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType).message;
@@ -166,6 +223,25 @@ const userSlice = createSlice({
             state.message = null;
         });
         builder.addCase(updateUser.rejected, (state, action) => {
+            state.loading = false;
+            state.error = action.error.message || null;
+            state.message = (action.payload as ApiResponseType).message;
+        });
+        
+        // delete user and logout
+        builder.addCase(deleteUser.fulfilled, (state) => {
+            state.user = null;
+            state.isAuthenticated = false;
+            state.loading = false;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(deleteUser.pending, (state) => {
+            state.loading = true;
+            state.error = null;
+            state.message = null;
+        });
+        builder.addCase(deleteUser.rejected, (state, action) => {
             state.loading = false;
             state.error = action.error.message || null;
             state.message = (action.payload as ApiResponseType).message;

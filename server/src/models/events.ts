@@ -8,7 +8,9 @@ const metadataSchema = new mongoose.Schema<IEvents["metadata"]>(
         browser: { type: String, required: true },
         os: { type: String, required: true },
         device: { type: String, required: true },
+        country: { type: String, required: true },
         region: { type: String, required: true },
+        city: { type: String, required: true },
         referer: { type: String, required: true },
     },
     { _id: false }
@@ -26,12 +28,12 @@ const eventsSchema = new mongoose.Schema<IEvents>(
             ref: "Workspace",
             required: true,
         },
-        type: {
+        trigger: {
             type: String,
             required: true,
             enum: [
                 "CLICK",
-                "QR CODE",
+                "QR",
             ],
         },
         metadata: {

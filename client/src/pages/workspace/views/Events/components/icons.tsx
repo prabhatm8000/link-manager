@@ -14,6 +14,7 @@ import {
     FaWatchmanMonitoring,
 } from "react-icons/fa6";
 import { HiCursorClick } from "react-icons/hi";
+import { MdQrCode2 } from "react-icons/md";
 import {
     SiAndroid,
     SiApple,
@@ -58,6 +59,7 @@ type IconMapType = {
 export const iconsMap: IconMapType = {
     events: {
         click: <HiCursorClick />,
+        qr: <MdQrCode2 />,
         unknown: defaultBrowserIcon,
     },
     browsers: {
@@ -100,12 +102,12 @@ export const iconsMap: IconMapType = {
         embedded: <FaMicrochip />,
         unknown: <FaQuestion />,
     },
-    getEventIcon: (eventType: string) =>
-        iconsMap.events[eventType.toLowerCase()] || defaultBrowserIcon,
+    getEventIcon: (trigger: string) =>
+        iconsMap.events[trigger?.toLowerCase()] || defaultBrowserIcon,
     getBrowserIcon: (browser: string) =>
-        iconsMap.browsers[browser.toLowerCase() || "unknown"] ||
+        iconsMap.browsers[browser?.toLowerCase() || "unknown"] ||
         defaultBrowserIcon,
-    getOSIcon: (os: string) => iconsMap.os[os.toLowerCase()] || <FaQuestion />,
+    getOSIcon: (os: string) => iconsMap.os[os?.toLowerCase()] || <FaQuestion />,
     getDeviceIcon: (device: string) =>
-        iconsMap.devices[device.toLowerCase()] || <FaQuestion />,
+        iconsMap.devices[device?.toLowerCase()] || <FaQuestion />,
 };

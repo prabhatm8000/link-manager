@@ -1,5 +1,5 @@
 import type mongoose from "mongoose";
-import type { UpdateWriteOpResult } from "mongoose";
+import type { ClientSession, UpdateWriteOpResult } from "mongoose";
 import type { IUser } from "../models/users";
 
 /**
@@ -120,11 +120,15 @@ export interface IWorkspaceService {
      * authentication required, [checks userId in createdBy]
      * @param workspaceId
      * @param createdBy
+     * @param options - optional, has session
      * @returns
      */
     deleteWorkspace: (
         workspaceId: string,
-        createdBy: string
+        createdBy: string,
+        options?: {
+            session: ClientSession
+        }
     ) => Promise<IWorkspace | null>;
 
     /**

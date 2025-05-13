@@ -24,7 +24,10 @@ const createWorkspace = async (
     },
     user: IUser
 ) => {
-    const MAX_WORKSPACES = getQuotaFor("WORKSPACES", user.usage?.subscriptionTier);
+    const MAX_WORKSPACES = getQuotaFor(
+        "WORKSPACES",
+        user.usage?.subscriptionTier
+    );
     const session = await mongoose.startSession();
     try {
         session.startTransaction();
@@ -223,11 +226,20 @@ const updateWorkspace = async (
  * @param createdBy
  * @returns
  */
-const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
+const deleteWorkspace = async (
+    workspaceId: string,
+    createdBy: string,
+    options?: {
+        session?: mongoose.ClientSession;
+    }
+) => {
     validateObjectId(workspaceId, createdBy);
-    const session = await mongoose.startSession();
+    let session = options?.session
+        ? options.session
+        : await mongoose.startSession();
     try {
-        session.startTransaction();
+        if (!options?.session) session.startTransaction();
+
         const result = await Workspace.findOneAndDelete(
             {
                 _id: new mongoose.Types.ObjectId(workspaceId),
@@ -235,6 +247,9 @@ const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
             },
             { session }
         );
+        if (!result) {
+            throw new APIResponseError("Workspace not found", 404, false);
+        }
 
         // delete links
         const linksDeleteCount = await linksService.deleteAllLinksByWorkspaceId(
@@ -245,34 +260,34 @@ const deleteWorkspace = async (workspaceId: string, createdBy: string) => {
             }
         );
 
-        // count updation
-        await usageService.updateAll(
-            {
-                userId: createdBy,
-                workspaceId,
-                workspaceCountBy: -1,
-                linkCountBy: -linksDeleteCount,
-            },
-            { session }
-        );
-        // delete events
-        await eventsService.deleteEventsBy(
-            { workspaceId: workspaceId },
-            { session }
-        );
-        // delete analytics
-        await analyticsService.deleteAnalyticsBy(
-            { workspaceId: workspaceId },
-            { session }
-        );
+        await Promise.all([
+            // count updation
+            await usageService.updateAll(
+                {
+                    userId: createdBy,
+                    workspaceId,
+                    workspaceCountBy: -1,
+                    linkCountBy: -linksDeleteCount,
+                },
+                { session }
+            ),
+            // delete events
+            await eventsService.deleteEventsBy(
+                { workspaceId: workspaceId },
+                { session }
+            ),
+            // delete analytics
+            await analyticsService.deleteAnalyticsBy(
+                { workspaceId: workspaceId },
+                { session }
+            ),
+        ]);
 
-        await session.commitTransaction();
-        if (!result) {
-            throw new APIResponseError("Workspace not found", 404, false);
-        }
+        if (!options?.session) await session.commitTransaction();
         return result;
     } catch (error: any) {
         await session.abortTransaction();
+
         if (error?.name === "MongoServerError" && error?.code === 11000) {
             throw new APIResponseError(
                 "Workspace name already exists",
@@ -297,11 +312,13 @@ const addPeople = async (workspaceId: string, peopleId: string) => {
     if (!workspace) {
         throw new APIResponseError("Workspace not found", 404, false);
     }
-    const userUsage = await Usage.findOne({ userId: new mongoose.Types.ObjectId(workspace.createdBy) });
+    const userUsage = await Usage.findOne({
+        userId: new mongoose.Types.ObjectId(workspace.createdBy),
+    });
     if (!userUsage) {
         throw new Error("userUsage fot creator not found");
     }
-    
+
     const MAX_PEOPLE = getQuotaFor("PEOPLE", userUsage.subscriptionTier);
     if (workspace.peopleCount >= MAX_PEOPLE) {
         throw new APIResponseError("Maximum number reached", 400, false);

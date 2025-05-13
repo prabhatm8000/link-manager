@@ -43,7 +43,10 @@ export interface ILinksService {
      * @param size
      * @returns
      */
-    generateShortUrlKey: (size?: number) => Promise<string>;
+    generateShortUrlKey: (size?: number) => Promise<{
+        shortUrlKey: string;
+        shortUrl: string;
+    }>;
 
     /**
      * @param shortUrlKey

@@ -3,6 +3,7 @@ import { APIResponseError } from "../errors/response";
 import asyncWrapper from "../lib/asyncWrapper";
 import { validateObjectId } from "../lib/mongodb";
 import eventsService from "../services/eventsService";
+import type { EventTriggerType } from "../types/event";
 
 const statusMessgaes = new StatusMessagesMark4("events");
 
@@ -10,14 +11,14 @@ const getEvents = asyncWrapper(async (req, res) => {
     const { workspaceId } = req.params;
     validateObjectId(workspaceId as string);
 
-    const { linkId, type, fetchRange = "24h" } = req.query;
+    const { linkId, trigger, fetchRange = "24h" } = req.query;
     const limit = Number(req.query.limit) || 10;
     const skip = Number(req.query.skip) || 0;
 
     const events = await eventsService.getEventsByWorkspaceId({
         workspaceId: workspaceId as string,
         linkId: linkId as string,
-        type: type as string,
+        trigger: trigger as EventTriggerType,
         fetchRange,
         limit,
         skip,
@@ -29,6 +30,7 @@ const getEvents = asyncWrapper(async (req, res) => {
         data: events,
     });
 });
+
 const getEventById = asyncWrapper(async (req, res) => {
     const { eventId } = req.params;
     validateObjectId(eventId as string);

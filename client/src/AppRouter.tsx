@@ -14,6 +14,7 @@ import type { AppDispatch } from "./redux/store";
 import { verifyUser } from "./redux/thunks/usersThunk";
 
 const AuthRoutes = lazy(() => import("./pages/auth/AuthRoutes"));
+const LegalRoutes = lazy(() => import("./pages/legal/LegalRoutes"));
 const LandlingRoutes = lazy(() => import("./pages/landing/LandingRoutes"));
 const ErrorPage = lazy(() => import("./pages/ErrorPage"));
 const WorkspaceRoutes = lazy(() => import("./pages/workspace/WorkspaceRoutes"));
@@ -76,6 +77,14 @@ const AppRouter = () => {
                     element={
                         <SuspenseWrapper>
                             <AuthRoutes />
+                        </SuspenseWrapper>
+                    }
+                />
+                <Route
+                    path="/legal/*"
+                    element={
+                        <SuspenseWrapper>
+                            <LegalRoutes />
                         </SuspenseWrapper>
                     }
                 />

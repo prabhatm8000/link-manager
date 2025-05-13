@@ -45,8 +45,50 @@ export const logout = createAsyncThunk(
     }
 );
 
-export const registerAndSendOtp = createAsyncThunk(
-    "user/register-send-otp",
+export const sendPasswordReset = createAsyncThunk(
+    "user/sendPasswordReset",
+    async (
+        data: {
+            email: string;
+        },
+        { rejectWithValue, fulfillWithValue }
+    ) => {
+        try {
+            const res = await axiosInstance.post(
+                "/user/sendPasswordReset",
+                data
+            );
+            return fulfillWithValue(res.data as ApiResponseType);
+        } catch (error: any) {
+            return rejectWithValue(error.response.data as ApiResponseType);
+        }
+    }
+);
+
+export const resetPassword = createAsyncThunk(
+    "user/resetPassword",
+    async (
+        data: {
+            uid: string;
+            vt: string;
+            pw: string;
+        },
+        { rejectWithValue, fulfillWithValue }
+    ) => {
+        try {
+            const res = await axiosInstance.post(
+                "/user/resetPassword",
+                data
+            );
+            return fulfillWithValue(res.data as ApiResponseType);
+        } catch (error: any) {
+            return rejectWithValue(error.response.data as ApiResponseType);
+        }
+    }
+);
+
+export const registerUser = createAsyncThunk(
+    "user/registerUser",
     async (
         data: {
             email: string;
@@ -57,7 +99,7 @@ export const registerAndSendOtp = createAsyncThunk(
     ) => {
         try {
             const res = await axiosInstance.post(
-                "/user/register-send-otp",
+                "/user/register",
                 data
             );
             return fulfillWithValue(res.data as ApiResponseType);
@@ -67,13 +109,17 @@ export const registerAndSendOtp = createAsyncThunk(
     }
 );
 
-export const resendOtp = createAsyncThunk(
-    "user/resend-otp",
-    async (_, { rejectWithValue, fulfillWithValue }) => {
+export const resendVerification = createAsyncThunk(
+    "user/resendVerification",
+    async (
+        data: {
+            email: string;
+            password: string;
+        },
+        { rejectWithValue, fulfillWithValue }
+    ) => {
         try {
-            const res = await axiosInstance.post("/user/resend-otp", {
-                resend: true,
-            });
+            const res = await axiosInstance.post("/user/resendVerification", data);
             return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
             return rejectWithValue(error.response.data as ApiResponseType);
@@ -81,18 +127,39 @@ export const resendOtp = createAsyncThunk(
     }
 );
 
-export const registerAndVerifyOtp = createAsyncThunk(
-    "user/register-verify-otp",
+export const verifyUserEmail = createAsyncThunk(
+    "user/verifyUserEmail",
     async (
         data: {
-            email: string;
-            otp: string;
+            uid: string;
+            vt: string;
         },
         { rejectWithValue, fulfillWithValue }
     ) => {
         try {
             const res = await axiosInstance.post(
-                "/user/register-verify-otp",
+                "/user/verifyUserEmail",
+                data
+            );
+            return fulfillWithValue(res.data as ApiResponseType);
+        } catch (error: any) {
+            return rejectWithValue(error.response.data as ApiResponseType);
+        }
+    }
+);
+
+export const cancelVerification = createAsyncThunk(
+    "user/cancelVerification",
+    async (
+        data: {
+            uid: string;
+            vt: string;
+        },
+        { rejectWithValue, fulfillWithValue }
+    ) => {
+        try {
+            const res = await axiosInstance.post(
+                "/user/cancelVerification",
                 data
             );
             return fulfillWithValue(res.data as ApiResponseType);
@@ -112,6 +179,18 @@ export const updateUser = createAsyncThunk(
     ) => {
         try {
             const res = await axiosInstance.patch("/user/update", data);
+            return fulfillWithValue(res.data as ApiResponseType);
+        } catch (error: any) {
+            return rejectWithValue(error.response.data as ApiResponseType);
+        }
+    }
+);
+
+export const deleteUser = createAsyncThunk(
+    "user/delete",
+    async (_, { rejectWithValue, fulfillWithValue }) => {
+        try {
+            const res = await axiosInstance.delete("/user/delete");
             return fulfillWithValue(res.data as ApiResponseType);
         } catch (error: any) {
             return rejectWithValue(error.response.data as ApiResponseType);

@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import StatusMessagesMark4 from "../constants/messages";
 
 export class APIResponseError extends Error {
+    public title?: string;
     public status: number;
     public success: boolean;
     constructor(
@@ -10,6 +11,7 @@ export class APIResponseError extends Error {
         success: boolean = false
     ) {
         super(typeof message === "string" ? message : message.description);
+        this.title = typeof message === "string" ? undefined : message.title;
         this.status = status;
         this.success = success;
     }
@@ -26,7 +28,7 @@ export const apiErrorHandler = (
     if (error instanceof APIResponseError) {
         res.status(error.status).json({
             success: error.success,
-            message: error.message,
+            message: (error.title !== undefined) ? { title: error.title, description: error.message } : error.message,
         });
     } else {
         console.log(req.url, error);

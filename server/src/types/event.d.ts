@@ -1,5 +1,7 @@
 import type mongoose from "mongoose";
 
+export type EventTriggerType = "QR" | "CLICK";
+
 export type UserAgentData = {
     userAgent?: string;
     ip: string;
@@ -7,14 +9,16 @@ export type UserAgentData = {
     browser: string;
     os: string;
     device: string;
-    region: string;
+    country?: string;
+    region?: string;
+    city?: string;
 };
 
 export interface IEvents extends mongoose.Document {
     _id: mongoose.Types.ObjectId;
     linkId: mongoose.Types.ObjectId;
     workspaceId: mongoose.Types.ObjectId;
-    type: string;
+    trigger: EventTriggerType;
     metadata: UserAgentData;
     createdAt: Date;
 }
@@ -23,14 +27,14 @@ export interface IEventsService {
     /**
      * @param workspaceId
      * @param linkId
-     * @param type
+     * @param trigger
      * @param metadata
      * @returns
      */
     captureEvent: (
         workspaceId: string,
         linkId: string,
-        type: string,
+        trigger: EventTriggerType,
         metadata: UserAgentData
     ) => Promise<IEvents>;
 
@@ -38,7 +42,7 @@ export interface IEventsService {
      * link populated
      * @param workspaceId
      * @param linkId
-     * @param type
+     * @param trigger
      * @param fetchRange - date range for fetching events, it can be "today", "yesterday", "last7days", "last30days", "thismonth", "lastmonth", "all"
      * @param skip - default is 0, you know what it does
      * @param limit - default is 10, you know what it does
@@ -47,14 +51,14 @@ export interface IEventsService {
     getEventsByWorkspaceId: ({
         workspaceId,
         linkId,
-        type,
+        trigger,
         fetchRange = "24h",
         skip = 0,
         limit = 10,
     }: {
         workspaceId: string;
         linkId?: string;
-        type?: string;
+        trigger?: EventTriggerType;
         fetchRange?: DaterangeTypes;
         skip?: number;
         limit?: number;
@@ -71,14 +75,14 @@ export interface IEventsService {
      * @description useful when deleting link or workspace
      * @description at least one of linkId, type, workspaceId is required
      * @param linkId
-     * @param type
+     * @param trigger
      * @param workspaceId
      * @returns
      */
     deleteEventsBy: (
         d: {
             linkId?: string;
-            type?: string;
+            trigger?: EventTriggerType;
             workspaceId?: string;
         },
         options?: {

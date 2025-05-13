@@ -8,7 +8,6 @@ import {
 import type { LinkDisplayConfig } from "@/redux/reducers/types";
 import { LuSettings2 } from "react-icons/lu";
 import { PiCardsThreeLight, PiTable } from "react-icons/pi";
-import { RiResetLeftFill, RiSave3Fill } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -155,19 +154,17 @@ const DisplayConfigBtn = ({
                     ))}
                 </div>
                 <DropdownMenuSeparator />
-                <div className="flex items-center justify-between gap-2 w-full my-2">
+                <div className="flex items-center justify-between gap-2 w-full my-2 text-xs">
                     <span
                         onClick={handleReset}
                         className={`${itemBtnClassName} hover:bg-destructive/15 bg-destructive/10 text-destructive`}
                     >
-                        <RiResetLeftFill className="size-4" />
                         <span>Reset</span>
                     </span>
                     <span
                         onClick={handleSave}
                         className={`${itemBtnClassName} hover:bg-foreground/10 bg-foreground/5`}
                     >
-                        <RiSave3Fill className="size-5" />
                         <span>Save</span>
                     </span>
                 </div>

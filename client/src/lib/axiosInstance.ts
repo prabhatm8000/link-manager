@@ -9,14 +9,17 @@ const handleAndShowToast = (jsonPayload: any) => {
     const description =
         message?.description ||
         new Date().toLocaleString().split(",").join(" ·");
+    const duration = message?.toastDuration;
 
     if (jsonPayload.success) {
         toast.success(title, {
             description,
+            duration,
         });
     } else {
         toast.error(title, {
             description,
+            duration,
         });
     }
 };

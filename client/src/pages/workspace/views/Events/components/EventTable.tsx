@@ -16,18 +16,26 @@ const EventTable = ({
     events: IEvent[];
     lastRowRef: (element: HTMLDivElement | null) => void;
 }) => {
+    const columns = [
+        "Short Url",
+        "Destination",
+        "Trigger",
+        "Browser",
+        "Device",
+        "OS",
+        "Country",
+        "Region",
+        "City",
+        "Date & Time",
+    ];
+
     return (
         <Table className="">
             <TableHeader>
                 <TableRow>
-                    <TableHead>Short Url</TableHead>
-                    <TableHead>Destination</TableHead>
-                    <TableHead>Event</TableHead>
-                    <TableHead>Browser</TableHead>
-                    <TableHead>Device</TableHead>
-                    <TableHead>OS</TableHead>
-                    <TableHead>Region</TableHead>
-                    <TableHead>Date & Time</TableHead>
+                    {columns.map((column) => (
+                        <TableHead key={column}>{column}</TableHead>
+                    ))}
                 </TableRow>
             </TableHeader>
             <TableBody>

@@ -3,6 +3,7 @@ import type { AppDispatch } from "@/redux/store";
 import { getMyWorkspaces } from "@/redux/thunks/workspaceThunks";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import DeleteAccountCard from "./components/DeleteAccountCard";
 import ProfileDetailCard from "./components/ProfileDetailCard";
 import ProfileEditCard from "./components/ProfileEditCard";
 import WorkspacesTableCard from "./components/WorkspacesTableCard";
@@ -30,6 +31,7 @@ const ProfileView = () => {
                         <ProfileEditCard />
                         <WorkspacesTableCard />
                     </div>
+                    <DeleteAccountCard />
                 </div>
             </div>
         </>

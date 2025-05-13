@@ -1,39 +1,33 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import {
     CardContent,
     CardFooter,
     CardHeader,
-    CardTitle
+    CardTitle,
 } from "@/components/ui/Card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import TitleText from "../../../components/TitleText";
 import type { IUserState } from "../../../redux/reducers/types";
 import type { AppDispatch } from "../../../redux/store";
-import { login } from "../../../redux/thunks/usersThunk";
+import { login, resendVerification, sendPasswordReset } from "../../../redux/thunks/usersThunk";
 import GoogleLoginBtn from "../components/GoogleLoginBtn";
 
 const AuthLogin = () => {
     const {
         register,
         handleSubmit,
+        getValues,
+        setError,
         formState: { errors },
     } = useForm();
 
     const user: IUserState = useSelector((state: any) => state.user);
     const dispatch = useDispatch<AppDispatch>();
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        if (user?.isAuthenticated) {
-            navigate("/workspace");
-        }
-    }, [user]);
 
     const onSubmit = handleSubmit((data) => {
         dispatch(
@@ -44,6 +38,37 @@ const AuthLogin = () => {
         );
     });
 
+    const handleSendVerification = () => {
+        const email = getValues("email");
+        const password = getValues("password");
+        if (!email) {
+            setError("email", {
+                message: "This field is required.",
+            });
+            return;
+        } else if (!password) {
+            setError("password", {
+                message: "This field is required.",
+            });
+            return;
+        }
+        dispatch(resendVerification({
+            email,
+            password,
+        }));
+    };
+
+    const handleForgotPassword = () => {
+        const email = getValues("email");
+        if (!email) {
+            setError("email", {
+                message: "This field is required.",
+            });
+            return;
+        }
+        dispatch(sendPasswordReset({ email }));
+    };
+
     return (
         <>
             <CardHeader>
@@ -51,8 +76,8 @@ const AuthLogin = () => {
                     <TitleText className="text-center">Login</TitleText>
                 </CardTitle>
             </CardHeader>
-            <CardContent>
-                <form className="flex flex-col gap-4" onSubmit={onSubmit}>
+            <CardContent className="px-4">
+                <form className="flex flex-col gap-2" onSubmit={onSubmit}>
                     <div className="flex flex-col gap-1 relative pb-4">
                         <Label htmlFor="email">Email</Label>
                         <Input
@@ -71,7 +96,7 @@ const AuthLogin = () => {
                             </span>
                         )}
                     </div>
-                    <div className="flex flex-col gap-1 relative pb-4">
+                    <div className="flex flex-col gap-1 relative pb-2">
                         <Label htmlFor="password">Password</Label>
                         <Input
                             {...register("password", {
@@ -89,6 +114,13 @@ const AuthLogin = () => {
                             </span>
                         )}
                     </div>
+                    <div className="flex justify-end">
+                        <div className=" flex gap-1 text-xs text-muted-foreground">
+                            <span onClick={handleSendVerification} className="cursor-pointer">Send Verfication</span>
+                            <span>·</span>
+                            <span onClick={handleForgotPassword} className="cursor-pointer">Forgot Password</span>
+                        </div>
+                    </div>
                     <Button
                         disabled={user?.loading}
                         type="submit"
@@ -98,8 +130,8 @@ const AuthLogin = () => {
                     </Button>
                 </form>
             </CardContent>
-            <CardFooter className="flex-col gap-4">
-                <div className="w-full text-center text-black/70 dark:text-white/70">
+            <CardFooter className="flex-col gap-1 px-4">
+                <div className="text-sm w-full text-center text-black/70 dark:text-white/70">
                     don't have an account?{" "}
                     <Link to="/auth/signup" className="text-blue-500">
                         Signup

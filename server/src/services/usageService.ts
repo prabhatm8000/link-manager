@@ -108,6 +108,7 @@ const incrementLinkCount = async (
         userId: new mongoose.Types.ObjectId(param.userId),
         "linkCount.workspaceId": new mongoose.Types.ObjectId(param.workspaceId),
     });
+    
     if (!result) {
         // if not found, add new one
         await Usage.updateOne(
@@ -149,6 +150,7 @@ const updateAll = async (
     await Usage.updateOne(
         {
             userId: new mongoose.Types.ObjectId(param.userId),
+            "linkCount.workspaceId": new mongoose.Types.ObjectId(param.workspaceId)
         },
         {
             $inc: {

@@ -1,4 +1,3 @@
-import BottomCpRight from "@/components/BottomCpRight";
 import ScrollToTopBtn from "@/components/ScrollToTopBtn";
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
@@ -39,11 +38,10 @@ const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
             {/* body */}
             <div
                 ref={contentAreaRef}
-                className="grid grid-cols-1 grid-rows-[auto_1fr] md:flex md:justify-center gap-4 h-full w-full bg-foreground/[3%] overflow-y-scroll p-4"
+                className="grid grid-cols-1 grid-rows-[auto_1fr] md:flex md:justify-center gap-4 h-full w-full bg-foreground/[3%] overflow-y-scroll p-4 pb-32"
             >
-                <div id="workspace" className="w-full min-w-sm max-w-6xl">
+                <div id="workspace" className="w-full max-w-6xl">
                     {children}
-                    <BottomCpRight />
                     <ScrollToTopBtn containerRef={contentAreaRef} />
                     <Button
                         variant={showSideBar ? "destructive" : "default"}

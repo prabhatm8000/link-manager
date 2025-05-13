@@ -2,11 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import { useEffect, useState, type JSX } from "react";
 import { HiCursorClick } from "react-icons/hi";
-import {
-    IoIosAdd,
-    IoIosLink,
-    IoIosSettings
-} from "react-icons/io";
+import { IoIosAdd, IoIosLink, IoIosSettings } from "react-icons/io";
 import { IoAnalytics } from "react-icons/io5";
 import { TbSelector } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
@@ -38,7 +34,7 @@ const SideBar = ({
             className={`w-60 h-full backdrop-blur-lg bg-background p-4 flex flex-col justify-between ${className}`}
         >
             <div className="flex flex-col gap-6">
-                <SideBarHeader />
+                <SideBarHeader setShowSideBar={setShowSideBar} />
                 <SideBarBody setShowSideBar={setShowSideBar} />
             </div>
             <SideBarUsageBars />
@@ -50,7 +46,11 @@ export default SideBar;
 // #endregion SideBar
 
 // #region Header
-export const SideBarHeader = () => {
+export const SideBarHeader = ({
+    setShowSideBar,
+}: {
+    setShowSideBar: () => void;
+}) => {
     const userState: IUserState = useSelector((state: any) => state.user);
     const [_, setSearchParams] = useSearchParams();
     const handleTabChange = (tab: SideBarTabType) => {
@@ -58,6 +58,7 @@ export const SideBarHeader = () => {
             p.set("tab", tab);
             return p;
         });
+        setShowSideBar();
     };
     return (
         <div className="flex items-center justify-between gap-2">
@@ -90,8 +91,8 @@ export type SideBarTabType =
     | "settings";
 const tabs: { title: string; value: SideBarTabType; icon: JSX.Element }[] = [
     { title: "Links", value: "links", icon: <IoIosLink /> },
-    { title: "Events", value: "events", icon: <HiCursorClick /> },
     { title: "Analytics", value: "analytics", icon: <IoAnalytics /> },
+    { title: "Events", value: "events", icon: <HiCursorClick /> },
     { title: "Settings", value: "settings", icon: <IoIosSettings /> },
 ];
 const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
@@ -111,7 +112,7 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
         // setShowWorkspaces(false);
         // setSelectedWorkspaceId(workspace._id);
 
-        // doning a window reload on workspace change, [probably to remove state]
+        // doning a window reload on workspace change, [probably to reset state]
         if (workspace._id === selectedWorkspaceId) return;
         setSearchParams((prev) => {
             prev.set("workspaceId", workspace._id);
@@ -138,7 +139,6 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
         setCurrentTab(tab);
     }, [searchParams, workspaceState.workspaces]);
 
-    // fetching workspaces
     useEffect(() => {
         if (!workspaceState.loading) {
             dispatch(getAllWorkspaces());

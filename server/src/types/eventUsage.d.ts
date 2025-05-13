@@ -28,11 +28,13 @@ export interface IEventUsageService {
      * @param userId 
      * @param url 
      * @param metadata 
+     * @param trigger
      * @returns 
      */
     handleEventCapture: (
         userId: string,
         url: ILinks,
+        trigger: EventTriggerType,
         metadata: UserAgentData
     ) => Promise<void>;
 }

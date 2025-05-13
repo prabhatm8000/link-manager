@@ -1,6 +1,7 @@
+type ApiMessageType = string | { title: string; description: string };
 export type ApiResponseType = {
     success: boolean;
-    message: string;
+    message: ApiMessageType;
     data: any;
 };
 
@@ -19,8 +20,8 @@ export interface IUserState {
     isAuthenticated: boolean;
     loading: boolean;
     error: string | null;
-    message: string | null;
-    isOtpSent: boolean;
+    message: ApiMessageType | null;
+    isVerificationSent: boolean;
 }
 
 export interface IWorkspace {
@@ -99,15 +100,19 @@ export type UserAgentData = {
     browser: string;
     os: string;
     device: string;
+    country: string;
     region: string;
+    city: string;
 };
+
+export type EventTriggerType = "CLICK" | "QR";
 
 export interface IEvent {
     _id: string;
     linkId: string;
     workspaceId: string;
     link: Pick<ILink, "_id" | "shortUrlKey" | "destinationUrl" | "metadata">;
-    type: string;
+    trigger: EventTriggerType;
     metadata: UserAgentData;
     createdAt: string;
 }
@@ -137,7 +142,9 @@ export interface IAnalytics {
     browser: INameCount[];
     os: INameCount[];
     device: INameCount[];
+    country: INameCount[];
     region: INameCount[];
+    city: INameCount[];
 }
 export interface IAnalyticsState {
     analytics: IAnalytics;
@@ -159,7 +166,7 @@ export interface IUsage {
         workspaces: UsageParameterType;
         links: UsageParameterType;
         events: UsageParameterType;
-    }
+    };
 }
 
 export interface IUsageState {

@@ -27,7 +27,7 @@ import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 const chartConfig = {
     count: {
         label: "Clicks",
-        color: "hsl(var(--chart-2))",
+        color: "hsl(var(--chart-1))",
     },
 } satisfies ChartConfig;
 

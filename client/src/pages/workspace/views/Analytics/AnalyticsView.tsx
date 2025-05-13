@@ -18,6 +18,7 @@ import { IoMdRefresh } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import LinkCardItem from "../Links/components/LinkCardItem";
+import GeoLocationCountCard from "./components/GeoLocationCountCard";
 import LinkAnalyticalCountCard from "./components/LinkAnalyticalCountCard";
 import MetaCountsCard from "./components/MetaCountsCard";
 import TotalClicksChart from "./components/TotalClicksChart";
@@ -165,6 +166,7 @@ const AnalyticsView = () => {
                 />
                 <MetaCountsCard />
                 <LinkAnalyticalCountCard />
+                <GeoLocationCountCard />
             </div>
         </div>
     );

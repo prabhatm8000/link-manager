@@ -10,12 +10,6 @@ const originWhitelist = [
 ];
 export const shortUrlKeyLength = 7; // 7 characters long
 
-// #region jwt
-export const jwtConfig = {
-    jwtTokenExpires: 3 * 24 * 60 * 60 * 1000, // 3 days
-};
-// #endregion
-
 
 // #region rate limiter
 /**
@@ -65,21 +59,7 @@ export const authCookieConfig = {
     sameSite: "strict" as "strict" | "lax" | "none",
     maxAge: 3 * 24 * 60 * 60 * 1000, // 3 days
 };
-
-export const otpCookieConfig = {
-    otpCookieName: "otp-cookie",
-    httpOnly: true,
-    secure: false,
-    sameSite: "strict" as "strict" | "lax" | "none",
-    maxAge: 50 * 60 * 1000, // 5 minutes
-};
 // #endregion
-
-// otp
-export const otpConfig = {
-    size: 6,
-    expiresAt: 20 * 60 * 1000, // 20 minutes
-};
 
 // invite
 export const inviteConfig = {

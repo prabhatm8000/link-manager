@@ -76,6 +76,7 @@ const CreateLinkModal = ({
     const [formSubmitLoading, setFormSubmitLoading] = useState<boolean>(false);
     const [generatingShortUrlKey, setGeneratingShortUrlKey] =
         useState<boolean>(false);
+    const [shortUrl, setShortUrl] = useState<string>("");
     const [_, setFetchingMetadata] = useState<boolean>(false);
     const dispatch = useDispatch<AppDispatch>();
     const workspaceState: IWorkspaceState = useSelector(
@@ -153,7 +154,9 @@ const CreateLinkModal = ({
         setGeneratingShortUrlKey(true);
         const resultAction = await dispatch(generateShortUrlKey({ size: 10 }));
         if (generateShortUrlKey.fulfilled.match(resultAction)) {
-            setValue("shortUrlKey", resultAction.payload.data);
+            const data = resultAction.payload.data;
+            setValue("shortUrlKey", data?.shortUrlKey || "");
+            setShortUrl(data?.shortUrl || "");
         }
         setGeneratingShortUrlKey(false);
     };
@@ -474,7 +477,7 @@ const CreateLinkModal = ({
 
                         <section className="flex flex-col gap-2 relative">
                             <div>
-                                <QRCode url="https://example.com" />
+                                <QRCode url={shortUrl} />
                             </div>
 
                             <div className="flex flex-col gap-2">

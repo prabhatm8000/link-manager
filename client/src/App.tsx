@@ -10,7 +10,7 @@ const AppRouter = lazy(() => import("./AppRouter"));
 
 const App = () => {
     return (
-        <div className="">
+        <div>
             <ThemeProvider>
                 <Provider store={store}>
                     <GoogleOAuthProvider clientId={configs.googleClientId}>

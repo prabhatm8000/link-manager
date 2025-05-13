@@ -26,6 +26,7 @@ declare global {
 const authMiddleware = asyncWrapper(
     async (req: Request, res: Response, next: NextFunction) => {
         const payload = await getAuthCookie(req);
+        
         const user = await User.aggregate([
             {
                 $match: {
@@ -41,7 +42,10 @@ const authMiddleware = asyncWrapper(
                 },
             },
             {
-                $unwind: "$usage",
+                $unwind: {
+                    path: "$usage",
+                    preserveNullAndEmptyArrays: true,
+                },
             },
             {
                 $project: {
@@ -57,9 +61,8 @@ const authMiddleware = asyncWrapper(
         if (user.length === 0) {
             throw new APIResponseError("", 401, false);
         }
-
-        req.user = user[0];
         
+        req.user = user[0];
         next();
     }
 );

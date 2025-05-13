@@ -22,12 +22,12 @@ const DeleteWorkspaceCard = () => {
     const navigate = useNavigate();
     const handleDeleteBtn = () => {
         if (!workspace) return;
-        dispatch(deleteWorkspace(workspace._id)).then(() => navigate("/workspace"));
+        dispatch(deleteWorkspace(workspace._id)).then(() => navigate("/workspace")).then(() => window.location.reload());
     };
     return (
         <Card className="border-destructive lg:col-span-2">
             <CardHeader>
-                <CardTitle className="text-red-600">Delete Workspace</CardTitle>
+                <CardTitle className="text-destructive">Delete Workspace</CardTitle>
                 <CardDescription>
                     Are you sure you want to delete this workspace and all
                     associated data (like, links, people, etc.)? This action

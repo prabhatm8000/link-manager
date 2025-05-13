@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import requestIp from "request-ip";
-import { UAParser } from "ua-parser-js";
 import asyncWrapper from "../lib/asyncWrapper";
+import { getGeoLocation, getUserAgent, type GeoLocationType } from "../lib/eventData";
 import type { UserAgentData } from "../types/event";
 
 declare global {
@@ -10,32 +10,30 @@ declare global {
             /**
              * will only be available for linkRedirect
              */
-            metadata: UserAgentData;
+            userAgentData?: UserAgentData;
         }
     }
 }
 
 const uaMiddleware = asyncWrapper(
     async (req: Request, res: Response, next: NextFunction) => {
-        const parser = new UAParser(req.headers["user-agent"]);
-        const ua = parser.getResult();
+        const ua = getUserAgent(req);
         const ip = requestIp.getClientIp(req);
 
-        const regionData = req.headers["x-vercel-ip-country"];
-        let region = "";
-        if (Array.isArray(regionData)) {
-            region = regionData.join(",");
-        } else {
-            region = regionData || "unknown";
+        let geoData: GeoLocationType | null = null
+        if (ip) {
+            geoData = await getGeoLocation(ip);
         }
 
-        req.metadata = {
+        req.userAgentData = {
             userAgent: req.headers["user-agent"] || "",
             ip: ip || "unknown",
             browser: ua.browser.name || "unknown",
             os: ua.os.name || "unknown",
             device: ua.device.type || "desktop",
-            region,
+            country: geoData?.country || "unknown",
+            region: geoData?.region || "unknown",
+            city: geoData?.city || "unknown",
             referer: req.headers.referer || "unknown",
         };
         next();
