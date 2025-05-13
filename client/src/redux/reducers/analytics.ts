@@ -7,7 +7,9 @@ const initialState: IAnalyticsState = {
         browser: [],
         device: [],
         os: [],
+        country: [],
         region: [],
+        city: [],
         metrix: {
             totalClicks: 0,
             maxClicks: { date: "", count: 0 },
@@ -29,7 +31,9 @@ const analyticsSlice = createSlice({
                 browser: [],
                 device: [],
                 os: [],
+                country: [],
                 region: [],
+                city: [],
                 metrix: {
                     totalClicks: 0,
                     maxClicks: { date: "", count: 0 },

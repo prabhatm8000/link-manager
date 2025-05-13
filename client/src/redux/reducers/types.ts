@@ -43,7 +43,7 @@ export interface IWorkspaceState {
     myWorkspaces: IWorkspace[];
     loading: boolean;
     error: string | null;
-    message: string | null;
+    message: ApiMessageType | null;
 }
 
 export interface ILink {
@@ -80,7 +80,7 @@ export interface ILinkState {
     deleteLoading: boolean;
     updateLoading: boolean;
     error: string | null;
-    message: string | null;
+    message: ApiMessageType | null;
 }
 
 export interface LinkDisplayConfig {
@@ -122,7 +122,7 @@ export interface IEventState {
     loading: boolean;
     hasMore: boolean;
     error: string | null;
-    message: string | null;
+    message: ApiMessageType | null;
 }
 
 export interface INameCount {
@@ -150,7 +150,7 @@ export interface IAnalyticsState {
     analytics: IAnalytics;
     loading: boolean;
     error: string | null;
-    message: string | null;
+    message: ApiMessageType | null;
 }
 
 export type UsageParameterType = {
@@ -172,6 +172,6 @@ export interface IUsage {
 export interface IUsageState {
     loading: boolean;
     error: string | null;
-    message: string | null;
+    message: ApiMessageType | null;
     usage: IUsage;
 }

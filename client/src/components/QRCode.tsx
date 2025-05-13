@@ -3,8 +3,6 @@ import { Label } from "./ui/label";
 
 const QRCode = ({ url }: { url: string }) => {
     const qrUrl = `${url}?qr=yes`;
-    const r = new Array(50).fill(0);
-    const c = new Array(100).fill(0);
     return (
         <div>
             <Label>QR Code</Label>
