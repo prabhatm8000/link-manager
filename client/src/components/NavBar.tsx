@@ -1,4 +1,6 @@
-import { IoIosLink } from "react-icons/io";
+import { useState } from "react";
+import { IoIosClose, IoIosLink } from "react-icons/io";
+import { TbMenu } from "react-icons/tb";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import type { IUserState } from "../redux/reducers/types";
@@ -7,23 +9,55 @@ import { Button } from "./ui/button";
 
 const NavBar = () => {
     const user: IUserState = useSelector((state: any) => state.user);
-    return (
-        <nav className="sticky top-0 flex gap-2 items-end justify-between py-4 backdrop-blur-md z-50">
-            <Link to={"/"} className="">
-                <TitleText className="text-3xl flex gap-2 justify-start items-center">
-                    <IoIosLink />
-                    <span>Ref.com</span>
-                </TitleText>
+    const [showNavItems, setShowNavItems] = useState(false);
+
+    const links = (
+        <>
+            <Link to={"#home"}>Home</Link>
+            <Link to={"#features"}>Features</Link>
+            <Link to={"#pricing"}>Pricing</Link>
+            <Link to={user?.isAuthenticated ? "/workspace" : "/auth/login"}>
+                <Button variant="default" className="px-4 py-2">
+                    {user?.isAuthenticated ? "Workspace" : "Sign up"}
+                </Button>
             </Link>
-            <div className="flex gap-6 items-center justify-end">
-                <Link to={"#home"}>Home</Link>
-                <Link to={"#features"}>Features</Link>
-                <Link to={"#pricing"}>Pricing</Link>
-                <Link to={user?.isAuthenticated ? "/workspace" : "/auth/login"}>
-                    <Button variant="default" className="px-4 py-2">
-                        {user?.isAuthenticated ? "Workspace" : "Sign up"}
-                    </Button>
+        </>
+    );
+    return (
+        <nav className={`fixed w-full top-0 p-6 z-50 flex flex-col gap-6 bg-background ${showNavItems ? "h-screen" : "h-auto"}`}>
+            <div className="flex gap-2 items-end justify-between">
+                <Link to={"/"} className="">
+                    <TitleText className="text-3xl flex gap-2 justify-start items-center">
+                        <IoIosLink />
+                        <span>Ref.com</span>
+                    </TitleText>
                 </Link>
+
+                <div className="hidden md:flex gap-6 items-center justify-end">
+                    {links}
+                </div>
+
+                <Button
+                    variant={"outline"}
+                    className="md:hidden transition-all duration-300 ease-out z-50"
+                    onClick={() => setShowNavItems((p) => !p)}
+                    size={"icon"}
+                >
+                    <div
+                        className={`transform ${
+                            showNavItems ? "rotate-0" : "rotate-360"
+                        } transition-all duration-500 ease-in-out`}
+                    >
+                        {showNavItems ? (
+                            <IoIosClose className="size-8" />
+                        ) : (
+                            <TbMenu className="size-5" />
+                        )}
+                    </div>
+                </Button>
+            </div>
+            <div className="left-0 flex flex-col gap-6 w-full md:hidden text-xl">
+                {showNavItems && links}
             </div>
         </nav>
     );

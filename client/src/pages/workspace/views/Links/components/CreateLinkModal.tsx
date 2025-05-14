@@ -183,6 +183,13 @@ const CreateLinkModal = ({
         return [];
     };
 
+    const handleCopyLinkBtn = () => {
+        const url = shortUrl;
+        if (!url) return;
+        navigator.clipboard.writeText(url);
+        toast.success("Copied to clipboard");
+    };
+
     useEffect(() => {
         if (editMode) return;
         generateShortUrlKeyCall();
@@ -302,7 +309,7 @@ const CreateLinkModal = ({
                                 <Label htmlFor="link-shortUrlKey">
                                     *Short Link
                                 </Label>
-                                <div className="flex gap-1 items-center w-full">
+                                <div className="flex gap-2 items-center w-full">
                                     <span className="text-muted-foreground">
                                         {import.meta.env.VITE_CLIENT_URL || ""}
                                     </span>
@@ -483,17 +490,31 @@ const CreateLinkModal = ({
                             <div className="flex flex-col gap-2">
                                 <Label>Share</Label>
                                 <div className="flex gap-2 justify-around">
-                                    <IoCopyOutline className="size-8 border border-input p-2 rounded-md" />
-                                    <FaXTwitter className="size-8 border border-input p-2 rounded-md" />
+                                    <Button
+                                        onClick={handleCopyLinkBtn}
+                                        variant={"outline"}
+                                        size={"icon"}
+                                        type="button"
+                                        >
+                                        <IoCopyOutline />
+                                    </Button>
+                                    <Button
+                                        onClick={handleCopyLinkBtn}
+                                        variant={"outline"}
+                                        size={"icon"}
+                                        type="button"
+                                    >
+                                        <FaXTwitter />
+                                    </Button>
                                 </div>
                             </div>
 
                             <div className="flex flex-col gap-2">
                                 <Label>Link Preview</Label>
-                                <div className="border border-ring/50 rounded-md">
+                                <div className="border border-ring/50 rounded-md p-1">
                                     <img
                                         src={watch("metadata.previewImg")}
-                                        className="w-full h-40 object-cover"
+                                        className="w-full h-40 object-cover rounded-md"
                                         alt=""
                                     />
                                 </div>

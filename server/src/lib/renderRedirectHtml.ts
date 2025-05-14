@@ -32,6 +32,7 @@ const renderMetadata = ({
     </head>
     <body>
       <p>${destinationUrl ? "Redirecting..." : "Ahoy! Something went wrong"}</p>
+      <p>Click <a href="${destinationUrl}">here</a>,if you are not redirected.</p>
     </body>
     </html>`;
 };

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { IoIosBackspace, IoIosClose } from "react-icons/io";
+import { IoIosClose } from "react-icons/io";
+import { IoRemoveCircleOutline } from "react-icons/io5";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
@@ -96,7 +97,7 @@ const ArrayInput = ({
                     />
                 </span>
             ))}
-            <div className="flex justify-between items-center w-full">
+            <div className="flex justify-between items-center gap-2 w-full">
                 <div className="relative w-full">
                     <Input
                         type={inputProps.type}
@@ -124,13 +125,13 @@ const ArrayInput = ({
                     )}
                 </div>
                 <Button
-                    variant={"ghost"}
-                    size={"sm"}
+                    variant={"outline"}
+                    size={"icon"}
                     type="button"
                     title="Clear all"
                     onClick={(_) => setArrayValues([])}
                 >
-                    <IoIosBackspace className="size-8 p-0" />
+                    <IoRemoveCircleOutline className="text-destructive size-4 p-0" />
                 </Button>
             </div>
         </div>

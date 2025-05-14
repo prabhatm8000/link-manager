@@ -1,9 +1,6 @@
 import ScrollToTopBtn from "@/components/ScrollToTopBtn";
-import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
-import { IoIosClose } from "react-icons/io";
-import { TbMenu } from "react-icons/tb";
-import SideBar from "./components/SideBar";
+import SideBar, { SideBarBtn } from "./components/SideBar";
 
 const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
     const [showSideBar, setShowSideBar] = useState<boolean>(false);
@@ -43,24 +40,7 @@ const WorkspaceLayout = ({ children }: { children: React.ReactNode }) => {
                 <div id="workspace" className="w-full max-w-6xl">
                     {children}
                     <ScrollToTopBtn containerRef={contentAreaRef} />
-                    <Button
-                        variant={showSideBar ? "destructive" : "default"}
-                        className="fixed top-0 right-0 m-6 md:hidden transition-all duration-300 ease-out z-50"
-                        onClick={() => setShowSideBar((p) => !p)}
-                        size={"icon"}
-                    >
-                        <div
-                            className={`transform ${
-                                showSideBar ? "rotate-0" : "rotate-360"
-                            } transition-all delay-75 duration-300 ease-out`}
-                        >
-                            {showSideBar ? (
-                                <IoIosClose className="size-8" />
-                            ) : (
-                                <TbMenu className="size-5" />
-                            )}
-                        </div>
-                    </Button>
+                    <SideBarBtn showSideBar={showSideBar} onClick={() => setShowSideBar((p) => !p)} />
                 </div>
                 {/* xl screen only extra content right side bar */}
                 {/* <Card className="hidden 2xl:block xl:sticky top-0 right-0  rounded-none w-60 h-fit">

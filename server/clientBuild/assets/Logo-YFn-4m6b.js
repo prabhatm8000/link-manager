@@ -1,0 +1,1 @@
+import{j as e}from"./index-XRPfCsNF.js";import{T as x,j as i}from"./AppRouter-BdQDHOMj.js";const n=({logoSize:s,className:t,showLogo:r=!0,showText:o=!0})=>e.jsxs(x,{className:`text-3xl flex gap-2 items-center ${t}`,children:[r&&e.jsx(i,{size:s}),o&&e.jsx("span",{children:"Ref.com"})]});export{n as L};

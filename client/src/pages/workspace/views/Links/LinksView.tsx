@@ -13,8 +13,7 @@ import { getLinksByWorkspaceId } from "@/redux/thunks/linksThunks";
 import { useEffect, useState } from "react";
 import { AiOutlineDelete } from "react-icons/ai";
 import { IoIosSearch, IoMdLink, IoMdRefresh } from "react-icons/io";
-import { IoAdd } from "react-icons/io5";
-import { TbEdit } from "react-icons/tb";
+import { TbCircleDashedLetterC, TbEdit } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import CreateLinkModal from "./components/CreateLinkModal";
 import DeleteLinkModal from "./components/DeleteLinkModal";
@@ -118,6 +117,19 @@ const LinksView = () => {
         },
     ];
 
+    // useEffect(() => {
+    //     const handleKeyDown = (e: KeyboardEvent) => {
+    //         if (e.key !== "c") return;
+    //         setShowModals((p) => ({ ...p, createLink: true }))
+    //     }
+
+    //     document.addEventListener("keydown", handleKeyDown);
+
+    //     return () => {
+    //         document.removeEventListener("keydown", handleKeyDown);
+    //     }
+    // }, [])
+
     useEffect(() => {
         // debounce
         const timeoutId = setTimeout(() => {
@@ -194,7 +206,8 @@ const LinksView = () => {
                             setShowModals((p) => ({ ...p, createLink: true }))
                         }
                     >
-                        <IoAdd />
+                        {/* <IoAdd /> */}
+                        <TbCircleDashedLetterC />
                         <span>Create Link</span>
                     </Button>
                 </CardContent>

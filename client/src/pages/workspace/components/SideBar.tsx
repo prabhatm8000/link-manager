@@ -1,10 +1,11 @@
+import ThemeBtn from "@/components/ThemeBtn";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import LoadingCircle from "@/components/ui/LoadingCircle";
 import { useEffect, useState, type JSX } from "react";
 import { HiCursorClick } from "react-icons/hi";
-import { IoIosAdd, IoIosLink, IoIosSettings } from "react-icons/io";
+import { IoIosAdd, IoIosClose, IoIosLink, IoIosSettings } from "react-icons/io";
 import { IoAnalytics } from "react-icons/io5";
-import { TbSelector } from "react-icons/tb";
+import { TbMenu, TbSelector } from "react-icons/tb";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useSearchParams } from "react-router-dom";
 import TitleText from "../../../components/TitleText";
@@ -63,20 +64,23 @@ export const SideBarHeader = ({
     return (
         <div className="flex items-center justify-between gap-2">
             <Link to={"/"}>
-                <TitleText className="text-xl flex gap-2 justify-start items-center">
+                <TitleText className="text-lg flex gap-2 justify-start items-center">
                     <IoIosLink />
                     <span>Ref.com</span>
                 </TitleText>
             </Link>
-            <Avatar onClick={() => handleTabChange("profile")}>
-                <AvatarImage
-                    src={userState?.user?.profilePicture || ""}
-                    alt={userState?.user?.name || ""}
-                />
-                <AvatarFallback>
-                    {userState?.user?.name?.charAt(0)}
-                </AvatarFallback>
-            </Avatar>
+            <div className="flex items-center gap-1">
+                <ThemeBtn />
+                <Avatar onClick={() => handleTabChange("profile")}>
+                    <AvatarImage
+                        src={userState?.user?.profilePicture || ""}
+                        alt={userState?.user?.name || ""}
+                    />
+                    <AvatarFallback>
+                        {userState?.user?.name?.charAt(0)}
+                    </AvatarFallback>
+                </Avatar>
+            </div>
         </div>
     );
 };
@@ -263,3 +267,26 @@ const SideBarBody = ({ setShowSideBar }: { setShowSideBar: () => void }) => {
     );
 };
 // #endregion Body
+
+export const SideBarBtn = ({ showSideBar, onClick }: {showSideBar: boolean, onClick: () => void}) => {
+    return (
+        <Button
+            variant={"outline"}
+            className="fixed top-0 right-0 m-6 md:hidden transition-all duration-300 ease-out z-50"
+            onClick={onClick}
+            size={"icon"}
+        >
+            <div
+                className={`transform ${
+                    showSideBar ? "rotate-0" : "rotate-360"
+                } transition-all duration-500 ease-in-out`}
+            >
+                {showSideBar ? (
+                    <IoIosClose className="size-8" />
+                ) : (
+                    <TbMenu className="size-5" />
+                )}
+            </div>
+        </Button>
+    );
+};
