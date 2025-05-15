@@ -15,7 +15,7 @@ const TextHighlighting = ({
     textClassName?: string;
     highlightedTextClassName?: string;
 }) => {
-    const mainText = `${text} `;
+    text = `${text} `;
     const textArr = [];
     let aText = "";
     let aHighlightedText = "";
