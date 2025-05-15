@@ -34,7 +34,7 @@ export interface IWorkspaceModel extends mongoose.Model<IWorkspace> {
      * check if user is authorized to perform action on workspace
      * @param ws
      * @param userId
-     * @param checkAll - if true[default], checks user in people and createdBy, else only in people
+     * @param checkAll - if true[default], checks user in people and createdBy both, else only in people
      * @returns
      */
     authorized: (

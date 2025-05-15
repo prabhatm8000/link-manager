@@ -21,7 +21,7 @@ const WorkspaceItem = (props: {
         });
         window.location.reload();
     };
-    const selected = searchParams.get("workspaceId") !== props.data._id
+    const selected = searchParams.get("workspaceId") === props.data._id
     return (
         <Card
             className={`py-2 cursor-pointer ${props.className}`}

@@ -48,6 +48,7 @@ const InvitePeopleBtnWithModal = () => {
                 <span>Invite</span>
             </Button>
             <Modal
+                className="max-w-sm"
                 variant="outline"
                 roundness="light"
                 isOpen={showModal}

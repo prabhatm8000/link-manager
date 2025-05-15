@@ -137,7 +137,12 @@ const workspaceSlice = createSlice({
             );
             state.currentWorkspace =
                 action.payload.data._id === state.currentWorkspace?._id
-                    ? action.payload.data
+                    ? ({
+                          ...state.currentWorkspace,
+                          name: action.payload.data.name as string,
+                          description: action.payload.data
+                              .description as string,
+                      } as IWorkspace)
                     : state.currentWorkspace;
             state.loading = false;
             state.error = null;

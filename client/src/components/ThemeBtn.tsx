@@ -24,6 +24,7 @@ const ThemeBtn = () => {
 
     return (
         <div
+            title="Ctrl + , -> to toggle theme"
             onClick={toggleTheme}
             className={`cursor-default transform text-muted-foreground ${
                 theme === "light" ? "rotate-180" : "rotate-0"

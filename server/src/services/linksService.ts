@@ -229,7 +229,7 @@ const getLinksByWorkspaceId = async (
     userId: string,
     q?: string
 ): Promise<ILinks[]> => {
-    await Workspace.authorized(workspaceId, userId);
+    await Workspace.authorized(workspaceId, userId, false);
     const queryMatchStages: any = {};
     if (q) {
         queryMatchStages["$or"] = [

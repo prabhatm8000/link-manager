@@ -1,5 +1,5 @@
 import ArrayInput from "@/components/ArrayInput";
-import QRCode from "@/components/QRCode";
+import QR from "@/components/QR";
 import TitleText from "@/components/TitleText";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -264,10 +264,13 @@ const CreateLinkModal = ({
                                 src={watch("metadata.favicon")}
                                 alt={watch("metadata.title")}
                                 className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    e.currentTarget.src = `${watch(
-                                        "destinationUrl"
-                                    )}${watch("metadata.favicon")}`;
+                                onError={(_) => {
+                                    setValue(
+                                        "metadata.favicon",
+                                        `${watch("destinationUrl")}${watch(
+                                            "metadata.favicon"
+                                        )}`
+                                    );
                                 }}
                             />
                         ) : (
@@ -280,7 +283,9 @@ const CreateLinkModal = ({
                 </div>
 
                 <form onSubmit={onSubmit} className="flex flex-col gap-4">
-                    <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-8">
+                    {/* body section */}
+                    <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-4">
+                        {/* first section with form */}
                         <section className="flex flex-col gap-4">
                             <div className="flex flex-col gap-2 relative pb-4">
                                 <Label htmlFor="link-destinationUrl">
@@ -482,9 +487,13 @@ const CreateLinkModal = ({
                             )}
                         </section>
 
+                        {/* second section with link preview */}
                         <section className="flex flex-col gap-2 relative">
                             <div>
-                                <QRCode url={shortUrl} />
+                                <QR
+                                    url={shortUrl}
+                                    logoUrl={watch("metadata.favicon")}
+                                />
                             </div>
 
                             <div className="flex flex-col gap-2">
@@ -495,7 +504,7 @@ const CreateLinkModal = ({
                                         variant={"outline"}
                                         size={"icon"}
                                         type="button"
-                                        >
+                                    >
                                         <IoCopyOutline />
                                     </Button>
                                     <Button
@@ -511,12 +520,14 @@ const CreateLinkModal = ({
 
                             <div className="flex flex-col gap-2">
                                 <Label>Link Preview</Label>
-                                <div className="border border-ring/50 rounded-md p-1">
-                                    <img
-                                        src={watch("metadata.previewImg")}
-                                        className="w-full h-40 object-cover rounded-md"
-                                        alt=""
-                                    />
+                                <div className="border border-ring/50 rounded-md p-1 w-full h-40 overflow-hidden">
+                                    {watch("metadata.previewImg") && (
+                                        <img
+                                            src={watch("metadata.previewImg")}
+                                            className="w-full h-40 object-cover rounded-md"
+                                            alt=""
+                                        />
+                                    )}
                                 </div>
                                 <div className="flex flex-col gap-2">
                                     <Input
@@ -539,6 +550,7 @@ const CreateLinkModal = ({
                         </section>
                     </div>
 
+                    {/* bottom section */}
                     <div className="flex flex-col md:flex-row gap-4 relative pb-4 justify-between">
                         <div className="flex gap-4">
                             {bottomOptions.map((option) => (

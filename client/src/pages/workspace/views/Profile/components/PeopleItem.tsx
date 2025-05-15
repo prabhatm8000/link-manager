@@ -1,8 +1,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/Card";
 import LoadingCircle from "@/components/ui/LoadingCircle";
-import { TableCell, TableRow } from "@/components/ui/table";
-import type { IUser, IUserState, IWorkspaceState } from "@/redux/reducers/types";
+import type {
+    IUser,
+    IUserState,
+    IWorkspaceState,
+} from "@/redux/reducers/types";
 import type { AppDispatch } from "@/redux/store";
 import { removePeople } from "@/redux/thunks/workspaceThunks";
 import { useState } from "react";
@@ -29,10 +33,15 @@ const PeopleItem = (props: {
             })
         ).finally(() => setIsRemoving(false));
     };
+
+    const showRemoveBtn =
+        userState.user?._id === workspaceState?.currentWorkspace?.createdBy &&
+        userState.user?._id !== props.people._id;
+
     return (
-        <TableRow>
-            <TableCell className="font-medium">
-                <div className="flex items-center gap-2">
+        <Card className={`py-2 ${props.className}`}>
+            <CardContent className="flex items-center justify-between gap-2 px-2">
+                <div className="flex items-center gap-2 ">
                     <Avatar>
                         <AvatarImage
                             src={props.people.profilePicture}
@@ -42,30 +51,40 @@ const PeopleItem = (props: {
                             {props.people.name?.charAt(0)}
                         </AvatarFallback>
                     </Avatar>
-                    <span>{props.people.name}</span>
+                    <div className="flex flex-col">
+                        <span>{props.people.name}</span>
+                        <span className="text-xs line-clamp-1 text-muted-foreground">
+                            {props.people.email}
+                        </span>
+                    </div>
                 </div>
-            </TableCell>
-            <TableCell>{props.people.email}</TableCell>
-            <TableCell className="float-right">
-                {userState.user?._id ===
-                workspaceState?.currentWorkspace?.createdBy ? (
+                {showRemoveBtn ? (
                     <Button
                         onClick={handleRemovePeople}
                         className="flex gap-2 px-4 items-center justify-center"
                         variant="destructive"
+                        disabled={isRemoving}
+                        size={"icon"}
                     >
                         {isRemoving ? (
                             <LoadingCircle className="size-5" />
                         ) : (
                             <CiCircleRemove className="size-5" />
                         )}
-                        <span>{isRemoving ? "Removing..." : "Remove"}</span>
                     </Button>
                 ) : (
-                    <>huh?</>
+                    <Button
+                        onClick={handleRemovePeople}
+                        className="flex gap-2 px-4 items-center justify-center text-xs"
+                        variant="outline"
+                        size={"icon"}
+                        disabled
+                    >
+                        You
+                    </Button>
                 )}
-            </TableCell>
-        </TableRow>
+            </CardContent>
+        </Card>
     );
 };
 

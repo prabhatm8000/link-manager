@@ -24,7 +24,7 @@ const NavBar = () => {
         </>
     );
     return (
-        <nav className={`fixed w-full top-0 p-6 z-50 flex flex-col gap-6 bg-background ${showNavItems ? "h-screen" : "h-auto"}`}>
+        <nav className={`max-w-7xl mx-auto fixed w-full top-0 p-6 z-50 flex flex-col gap-6 bg-background ${showNavItems ? "h-screen" : "h-auto"}`}>
             <div className="flex gap-2 items-end justify-between">
                 <Link to={"/"} className="">
                     <TitleText className="text-3xl flex gap-2 justify-start items-center">

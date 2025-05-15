@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { ILink, LinkDisplayConfig } from "@/redux/reducers/types";
 import { format } from "date-fns";
+import { useState } from "react";
 import { BsArrowReturnRight } from "react-icons/bs";
 import { VscCopy } from "react-icons/vsc";
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ const LinkCardItem = ({
     config: LinkDisplayConfig;
     options?: DropDownOptionsType[];
 }) => {
+    const [extended, setExtended] = useState(false);
     const handleCopy = () => {
         navigator.clipboard.writeText(link.shortUrl);
         toast.success("Copied to clipboard");
@@ -62,8 +64,9 @@ const LinkCardItem = ({
                         )}
                         {config.value === "description" ? (
                             <p
-                                className="line-clamp-1 w-full"
+                                className={`${extended ? "" : "line-clamp-1"} w-full`}
                                 title={link.metadata?.description}
+                                onClick={() => setExtended(p => !p)}
                             >
                                 {link.metadata?.description || "No description"}
                             </p>

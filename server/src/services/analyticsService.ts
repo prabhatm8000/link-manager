@@ -526,9 +526,9 @@ const getAnalyticsByDateRange = async (d: {
                 browser: { $push: "$browser" },
                 os: { $push: "$os" },
                 device: { $push: "$device" },
-                country: { $push: "$region" },
+                country: { $push: "$country" },
                 region: { $push: "$region" },
-                city: { $push: "$region" },
+                city: { $push: "$city" },
             },
         },
         {
@@ -589,7 +589,7 @@ const getAnalyticsByDateRange = async (d: {
         country: new Map<string, number>(),
         region: new Map<string, number>(),
         city: new Map<string, number>(),
-    };
+    };    
 
     // count and total
     for (const a of analytics) {

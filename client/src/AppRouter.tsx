@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
 import { toast, Toaster } from "sonner";
 import SuspenseWrapper from "./components/SuspenseWrapper";
+import ThemeBtn from "./components/ThemeBtn";
+import { Button } from "./components/ui/button";
 import useTheme from "./hooks/useTheme";
 import { PageDataContants } from "./pages/ErrorPage";
 import LinkPassword from "./pages/LinkPassword";
@@ -138,6 +140,13 @@ const AppRouter = () => {
                     }
                 />
             </Routes>
+            <Button
+                className="fixed bottom-0 right-0 m-6 rounded-full"
+                variant={"outline"}
+                size={"icon"}
+            >
+                <ThemeBtn />
+            </Button>
             <Toaster
                 theme={theme}
                 richColors

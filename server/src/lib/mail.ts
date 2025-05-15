@@ -93,17 +93,18 @@ async function sendInviteToJoinWorkspaceMail(
     workspace: Pick<IWorkspace, "id" | "name">,
     senderUser: IUser
 ) {
-    const inviteLink = genarateInviteLink(workspace.id, senderUser.id, to);
+    const inviteLink = genarateInviteLink(workspace.id, senderUser._id.toString(), to);
     const mailObj = {
         to,
         subject: `Invited by ${senderUser.name} to join workspace`,
-        text: `You have been invited by \nName: ${senderUser.name}\nEmail: ${senderUser.email}\nto join ${workspace.name} workspace.\n\nClick here to join: ${inviteLink}`,
+        text: `You have been invited by \nName: ${senderUser.name}\nEmail: ${senderUser.email}\nto join '${workspace.name}' workspace.\n\nClick here to join: ${inviteLink}`,
         html: `<p>You have been invited by</p>
                 <p>Name: ${senderUser.name}</p>
                 <p>Email: ${senderUser.email}</p>
                 <p>to join ${workspace.name} workspace.</p>
                 <p>Click here to join: <a href="${inviteLink}">${inviteLink}</a></p>`,
     };
+    
     await sendMail(mailObj);
 }
 
