@@ -5,6 +5,7 @@ import LinkDropdown from "@/components/LinkDropdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import LoadingCircle from "@/components/ui/LoadingCircle";
+import { convertToCSV, getTheCSVBlob } from "@/lib/dataToCsv";
 import { clearState } from "@/redux/reducers/events";
 import type {
     IEventState,
@@ -13,7 +14,9 @@ import type {
 } from "@/redux/reducers/types";
 import { AppDispatch } from "@/redux/store";
 import { getEvents } from "@/redux/thunks/eventsThunks";
+import { format } from "date-fns/format";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { FiDownload } from "react-icons/fi";
 import { IoMdRefresh } from "react-icons/io";
 import { IoAnalytics } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
@@ -46,7 +49,7 @@ const EventsView = () => {
     };
 
     const handleLinkSelect = (link?: ILink) => {
-        setSelectedLink(p => {
+        setSelectedLink((p) => {
             if (p?._id === link?._id) return link;
             handleRefreshEvents();
             return link;
@@ -56,6 +59,34 @@ const EventsView = () => {
     const handleDaterangeChange = (value: DaterangeType) => {
         handleRefreshEvents();
         setDaterangeFilter(value);
+    };
+
+    const handleCSVDownload = () => {
+        const data = eventsState.events?.map((event) => {
+            return {
+                "Short Url": `${window.location.origin}/${event.link.shortUrlKey}`,
+                Destination: event.link.destinationUrl,
+                Trigger: event.trigger,
+                Browser: event.metadata.browser,
+                Device: event.metadata.device,
+                OS: event.metadata.os,
+                Country: event.metadata.country,
+                Region: event.metadata.region,
+                City: event.metadata.city,
+                "Date & Time": `${format(
+                    new Date(event.createdAt),
+                    "MMM dd"
+                )} · ${format(new Date(event.createdAt), "hh:mm:ss a")}`,
+            };
+        });
+
+        const csvString = convertToCSV(data);
+        const blob = getTheCSVBlob(csvString);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `events-${daterangeFilter}-${format(new Date(), "yyyy-MM-dd_hh:mm:ss")}.csv`;
+        a.click();
     };
 
     const rowObserver = useRef<IntersectionObserver | null>(null);
@@ -104,15 +135,21 @@ const EventsView = () => {
 
     return (
         <>
-            <div className="flex gap-2 items-center mt-1 mb-4">
-                <LinkDropdown
-                    onChange={handleLinkSelect}
-                    value={selectedLink}
-                />
-                <DaterangeDropdown
-                    value={daterangeFilter}
-                    onChange={handleDaterangeChange}
-                />
+            <div className="flex gap-2 items-center justify-between w-full mt-1 mb-4">
+                <div className="flex gap-2 items-center">
+                    <LinkDropdown
+                        onChange={handleLinkSelect}
+                        value={selectedLink}
+                    />
+                    <DaterangeDropdown
+                        value={daterangeFilter}
+                        onChange={handleDaterangeChange}
+                    />
+                </div>
+                <Button onClick={handleCSVDownload} variant={"outline"}>
+                    <FiDownload />
+                    <span>Download as CSV</span>
+                </Button>
             </div>
 
             <div className="pb-4">

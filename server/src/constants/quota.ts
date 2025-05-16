@@ -11,7 +11,7 @@ export const QUOTA_LIMITS = {
     [subscriptionTiers.FREE]: {
         WORKSPACES: 2,
         LINKS: 5,
-        EVENT_CAPTURE: 3000,
+        EVENT_CAPTURE: 1000,
         PEOPLE: 10,
     },
     [subscriptionTiers.BASIC]: {

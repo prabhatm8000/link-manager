@@ -21,7 +21,7 @@ const BottomCpRight = () => {
                     here
                 </a>
             </span>
-            <span>{` · Ref.com © ${new Date().getFullYear()}`}</span>
+            <span>{` · Ref.com © ${new Date().getFullYear()}. All rights reserved.`}</span>
         </div>
     );
 };
