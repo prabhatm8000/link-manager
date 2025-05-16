@@ -3,6 +3,7 @@ import BottomHero from "./components/BottomHero";
 import FeaturesSection from "./components/FeaturesSection";
 import FooterSection from "./components/FooterSection";
 import HeroSection from "./components/HeroSection";
+import HeroVideo from "./components/HeroVideo";
 import PricingCards from "./components/PricingCards";
 
 export const afterBeforeBorderClass =
@@ -14,8 +15,9 @@ const Landing = () => {
     const currency = "INR";
     return (
         <div className="overflow-hidden">
-            <div className="max-w-7xl mx-auto mb-32">
-                <NavBar />
+            <NavBar />
+            <div className="max-w-7xl mx-auto mb-32 w-full relative">
+                <HeroVideo />
                 <HeroSection />
                 <FeaturesSection />
                 <PricingCards currencyType={currency} />

@@ -1,11 +1,25 @@
 import { Button } from "@/components/ui/button";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { afterBeforeBorderClass } from "../Landing";
 import TextHighlighting from "./textHighlighting";
 
 const HeroSection = () => {
+    const ref = useRef(null);
+    const isInView = useInView(ref, {
+        once: false,
+        margin: "0px 0px -300px 0px",
+    });
     return (
-        <div className="px-6 pt-36 lg:pt-48" id="home">
+        <motion.div
+            ref={ref}
+            initial={{ opacity: 0.5, x:-10 }}
+            animate={isInView ? { opacity: 1, x:0 } : {}}
+            transition={{ duration: 0.6, ease: "linear" }}
+            className="px-6 pt-36 lg:pt-48"
+            id="home"
+        >
             <p className="mb-2">
                 <span className="text-sm text-muted-foreground uppercase">
                     One platform. All your links. No compromises.
@@ -39,7 +53,7 @@ const HeroSection = () => {
                     </a>
                 </Button>
             </div>
-        </div>
+        </motion.div>
     );
 };
 

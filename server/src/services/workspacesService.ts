@@ -267,7 +267,7 @@ const deleteWorkspace = async (
                     userId: createdBy,
                     workspaceId,
                     workspaceCountBy: -1,
-                    linkCountBy: -linksDeleteCount,
+                    linkCountBy: -(linksDeleteCount),
                 },
                 { session }
             ),

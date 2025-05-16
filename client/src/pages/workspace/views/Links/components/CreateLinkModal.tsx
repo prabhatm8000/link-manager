@@ -520,7 +520,7 @@ const CreateLinkModal = ({
 
                             <div className="flex flex-col gap-2">
                                 <Label>Link Preview</Label>
-                                <div className="border border-ring/50 rounded-md p-1 w-full h-40 overflow-hidden">
+                                <div className="border border-ring/50 rounded-md p-1 w-full h-42 overflow-hidden">
                                     {watch("metadata.previewImg") && (
                                         <img
                                             src={watch("metadata.previewImg")}

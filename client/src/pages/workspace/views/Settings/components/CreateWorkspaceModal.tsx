@@ -105,6 +105,7 @@ const CreateWorkspaceModal = ({
                 isOpen={isOpen}
                 onClose={handleCloseModal}
                 variant="outline"
+                className="max-w-sm"
             >
                 <div className="flex flex-col gap-8">
                     <div className="flex items-center gap-2">

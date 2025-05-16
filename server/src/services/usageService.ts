@@ -4,7 +4,10 @@ import { validateObjectId } from "../lib/mongodb";
 import Usage from "../models/usage";
 import type { IUsageService } from "../types/usage";
 
-const getUsageData = async (userId: string, workspaceId: string): Promise<any> => {
+const getUsageData = async (
+    userId: string,
+    workspaceId: string
+): Promise<any> => {
     validateObjectId(userId);
     const date = new Date();
     const month = `${date.getUTCFullYear()}-${(date.getUTCMonth() + 1)
@@ -37,15 +40,15 @@ const getUsageData = async (userId: string, workspaceId: string): Promise<any> =
                             _id: 0,
                             count: 1,
                         },
-                    }
+                    },
                 ],
                 as: "eventUsage",
-            }
+            },
         },
         {
             $unwind: {
                 path: "$eventUsage",
-                preserveNullAndEmptyArrays: true,   // won't fail on empty array
+                preserveNullAndEmptyArrays: true, // won't fail on empty array
             },
         },
         {
@@ -73,7 +76,11 @@ const getUsageData = async (userId: string, workspaceId: string): Promise<any> =
             },
             links: {
                 label: "Links",
-                used: u.linkCount?.find((item: any) => item?.workspaceId?.toString() === workspaceId)?.count || 0,
+                used:
+                    u.linkCount?.find(
+                        (item: any) =>
+                            item?.workspaceId?.toString() === workspaceId
+                    )?.count || 0,
                 total: q.LINKS,
                 per: "workspace",
             },
@@ -83,8 +90,8 @@ const getUsageData = async (userId: string, workspaceId: string): Promise<any> =
                 total: q.EVENT_CAPTURE,
                 per: "month",
             },
-        }
-    }
+        },
+    };
 
     return result;
 };
@@ -108,7 +115,7 @@ const incrementLinkCount = async (
         userId: new mongoose.Types.ObjectId(param.userId),
         "linkCount.workspaceId": new mongoose.Types.ObjectId(param.workspaceId),
     });
-    
+
     if (!result) {
         // if not found, add new one
         await Usage.updateOne(
@@ -147,19 +154,43 @@ const updateAll = async (
     },
     options?: { session?: mongoose.ClientSession }
 ) => {
-    await Usage.updateOne(
-        {
-            userId: new mongoose.Types.ObjectId(param.userId),
-            "linkCount.workspaceId": new mongoose.Types.ObjectId(param.workspaceId)
-        },
-        {
-            $inc: {
-                workspaceCount: param.workspaceCountBy || 0,
-                "linkCount.$.count": param.linkCountBy || 0,
+    const result = await Usage.findOne({
+        userId: new mongoose.Types.ObjectId(param.userId),
+        "linkCount.workspaceId": new mongoose.Types.ObjectId(param.workspaceId),
+    });
+
+    if (!result) {
+        // if not found, just update the workspace
+        await Usage.updateOne(
+            { userId: new mongoose.Types.ObjectId(param.userId) },
+            {
+                $inc: {
+                    workspaceCount: param.workspaceCountBy || 0,
+                },
+            }
+        );
+    } else {
+        // if found, increment both count
+        await Usage.updateOne(
+            {
+                userId: new mongoose.Types.ObjectId(param.userId),
+                ...(param.workspaceId && {
+                    "linkCount.workspaceId": new mongoose.Types.ObjectId(
+                        param.workspaceId
+                    ),
+                }),
             },
-        },
-        { session: options?.session }
-    );
+            {
+                $inc: {
+                    workspaceCount: param.workspaceCountBy || 0,
+                    ...(param.workspaceId && {
+                        "linkCount.$.count": param.linkCountBy || 0,
+                    }),
+                },
+            },
+            { session: options?.session, upsert: true }
+        );
+    }
 };
 
 const usageService: IUsageService = {
