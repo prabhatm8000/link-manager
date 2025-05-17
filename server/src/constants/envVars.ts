@@ -17,6 +17,7 @@ const envVars = {
     JWT_SECRET: process.env.JWT_SECRET,
     PORT: process.env.PORT,
     MONGODB_URI: process.env.MONGODB_URI,
+    REDIS_URL: process.env.REDIS_URL,
     EMAIL: process.env.EMAIL,
     EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
 

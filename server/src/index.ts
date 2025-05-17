@@ -4,6 +4,7 @@ import { corsConfig, rateLimiter } from "./constants/configs";
 import envVars from "./constants/envVars";
 import consoleColor from "./lib/consoleColor";
 import { connectToDB } from "./lib/mongodb";
+import { connectToRedis } from "./lib/redisClient";
 import router from "./routes/router";
 
 const app: Express = express();
@@ -14,17 +15,17 @@ if (envVars.NODE_ENV === "dev") {
     app.use(corsConfig);
 
     // log requests
-    app.use(function(req, res, next) {
+    app.use(function (req, res, next) {
         console.log(
             consoleColor(
-                `${req.method} ${req.protocol}://${req.get(
-                    "host"
-                )}${req.originalUrl}`,
+                `${req.method} ${req.protocol}://${req.get("host")}${
+                    req.originalUrl
+                }`,
                 "FgCyan"
             )
         );
         next();
-    })
+    });
 }
 
 app.use(rateLimiter);
@@ -43,5 +44,17 @@ app.listen(PORT, "0.0.0.0", () => {
             console.log(
                 consoleColor(`Server running on port ${PORT}`, "BgBlue")
             );
+
+
+            // will work without redis
+            connectToRedis()
+                .then(() =>
+                    console.log(consoleColor("Connected to redis", "BgCyan"))
+                )
+                .catch((err) =>
+                    console.log(
+                        consoleColor(`Redis Client Error: ${err}`, "BgRed")
+                    )
+                );
         });
 });

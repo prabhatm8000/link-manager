@@ -65,3 +65,13 @@ export const authCookieConfig = {
 export const inviteConfig = {
     expiresAt: 24 * 60 * 60 * 1000, // 1 days
 };
+
+
+// #region redis
+export const redisConfig = {
+    /**
+     * @description Redis cache expiration time
+     * 30 mins
+     */
+    expirationTimeSec: 60 * 30, // 30 mins
+}

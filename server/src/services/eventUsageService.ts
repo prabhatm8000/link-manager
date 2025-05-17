@@ -61,7 +61,7 @@ const handleEventCapture = async (
             userId: new mongoose.Types.ObjectId(userId),
         });
         if (!userUsage) {
-            throw new Error("userUsage fot creator not found");
+            throw new Error("userUsage for creator not found");
         }
         const MAX_EVENT_CAPTURE = getQuotaFor("EVENT_CAPTURE", userUsage.subscriptionTier);
         

@@ -101,7 +101,8 @@ export interface ILinksService {
     ) => Promise<ILinks[]>;
 
     /**
-     * authentication not required, [probably for redirecting :D]
+     * authentication not required, [probably for redirecting :D].
+     * If not in redis then db, (store has a expiration of 30mins)
      * @param shortUrlKey
      * @returns
      */

@@ -14,9 +14,9 @@ const HeroSection = () => {
     return (
         <motion.div
             ref={ref}
-            initial={{ opacity: 0.5, x:-10 }}
-            animate={isInView ? { opacity: 1, x:0 } : {}}
-            transition={{ duration: 0.6, ease: "linear" }}
+            initial={{ opacity: 0 }}
+            animate={isInView ? { opacity: 1 } : {}}
+            transition={{ duration: 1, ease: "linear" }}
             className="px-6 pt-36 lg:pt-48"
             id="home"
         >

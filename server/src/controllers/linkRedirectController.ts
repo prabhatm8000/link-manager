@@ -30,6 +30,7 @@ const redirectToDestination = asyncWrapper(
         if (!url || !url.shortUrl) {
             throw new APIResponseError("Short URL not found", 404, false);
         }
+        
         destinationUrl = url.destinationUrl;
         status = url.status;
 

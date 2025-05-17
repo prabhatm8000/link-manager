@@ -15,6 +15,7 @@ import type { IUser } from "../types/user";
 import type { IWorkspace } from "../types/workspace";
 import analyticsService from "./analyticsService";
 import eventsService from "./eventsService";
+import redisService from "./redisService";
 import tagsService from "./tagsService";
 import usageService from "./usageService";
 import workspacesService from "./workspacesService";
@@ -204,17 +205,28 @@ const getOneLinkBy = async ({
 };
 
 /**
- * authentication not required, [probably for redirecting :D, don't use anywhere else]
+ * authentication not required, [probably for redirecting :D, don't use anywhere else].
+ * If not in redis then db, (store has a expiration of 30mins)
  * @param shortUrlKey
  * @returns
  */
 const justTheLink = async (shortUrlKey: string): Promise<ILinks> => {
+    const cachedLink = await redisService.getLinkByShortUrlKey(shortUrlKey);
+    if (cachedLink !== null) {
+        return cachedLink;
+    }
+
     const link = await Links.findOne({ shortUrlKey });
     if (!link) {
         throw new APIResponseError("Link not found", 404, false);
     }
-    link["shortUrl"] = generateUrlWithShortUrlKey(shortUrlKey);
-    return link;
+
+    const result = {
+        ...link?._doc,
+        shortUrl: generateUrlWithShortUrlKey(shortUrlKey)
+    } 
+    void redisService.setLinkByShortUrlKey(shortUrlKey, result);
+    return result;
 };
 
 /**
@@ -461,17 +473,17 @@ const deleteAllLinksByWorkspaceId = async (
 };
 
 const linksService: ILinksService = {
-    generateShortUrlKey,
-    generateUrlWithShortUrlKey,
-    createLink,
-    getOneLinkBy,
-    getLinksByWorkspaceId,
-    justTheLink,
-    incrementClickCount,
-    updateLink,
-    changeStatus,
-    deleteLink,
-    deleteAllLinksByWorkspaceId,
+    generateShortUrlKey: generateShortUrlKey,
+    generateUrlWithShortUrlKey: generateUrlWithShortUrlKey,
+    createLink: createLink,
+    getOneLinkBy: getOneLinkBy,
+    getLinksByWorkspaceId: getLinksByWorkspaceId,
+    justTheLink: justTheLink,
+    incrementClickCount: incrementClickCount,
+    updateLink: updateLink,
+    changeStatus: changeStatus,
+    deleteLink: deleteLink,
+    deleteAllLinksByWorkspaceId: deleteAllLinksByWorkspaceId,
 };
 
 export default linksService;
