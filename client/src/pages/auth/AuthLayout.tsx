@@ -30,10 +30,17 @@ const AuthLayout = ({ children }: { children: ReactNode }) => {
                 </Card>
             </div>
 
-            <span className="fixed bottom-0 m-4 text-xs text-muted-foreground w-full text-center">
-                By clicking continue, you agree to our{" "}
-                <Link to={"/legal/terms"} className="underline">Terms of Service</Link> and{" "}
-                <Link to={"/legal/privacy"} className="underline">Privacy Policy</Link>
+            <span className="fixed bottom-0 my-4 text-xs text-muted-foreground w-full text-center flex flex-col md:flex-row items-center md:items-start justify-start md:justify-center md:gap-1">
+                <span>By clicking continue, you agree to our </span>
+                <span>
+                    <Link to={"/legal/terms"} className="underline">
+                        Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link to={"/legal/privacy"} className="underline">
+                        Privacy Policy
+                    </Link>
+                </span>
             </span>
 
             <div className="fixed -z-10 top-0 left-0 w-full h-full bg-white dark:bg-black">

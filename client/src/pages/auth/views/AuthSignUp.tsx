@@ -149,7 +149,7 @@ const AuthSignUp = () => {
                 </form>
             </CardContent>
             <CardFooter className="px-4">
-                <div className="text-center w-full text-black/70 dark:text-white/70">
+                <div className="text-sm text-center w-full text-black/70 dark:text-white/70">
                     already have an account?{" "}
                     <Link to="/auth/login" className="text-blue-500">
                         Login

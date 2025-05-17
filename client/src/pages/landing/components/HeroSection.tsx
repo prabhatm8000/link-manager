@@ -17,7 +17,7 @@ const HeroSection = () => {
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
             transition={{ duration: 1, ease: "linear" }}
-            className="px-6 pt-36 lg:pt-48"
+            className="px-6 pt-20 lg:pt-44"
             id="home"
         >
             <p className="mb-2">
@@ -26,7 +26,7 @@ const HeroSection = () => {
                 </span>
             </p>
 
-            <h1 className={`max-w-5xl text-8xl mb-8 ${afterBeforeBorderClass}`}>
+            <h1 className={`max-w-5xl text-7xl lg:text-8xl mb-8 ${afterBeforeBorderClass}`}>
                 Link shortener on{" "}
                 <span className="bg-yellow-400/50">steroids</span>!
             </h1>

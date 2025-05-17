@@ -32,7 +32,7 @@ const NavBar = () => {
         >
             <div className="max-w-7xl mx-auto flex flex-col">
                 <div
-                    className={`flex gap-2 items-end justify-between ${afterBeforeBorderClass}`}
+                    className={`flex gap-2 items-end justify-between py-1 ${afterBeforeBorderClass}`}
                 >
                     <Link to={"/"} className="">
                         <TitleText className="text-3xl flex gap-2 justify-start items-center">
@@ -64,7 +64,7 @@ const NavBar = () => {
                         </div>
                     </Button>
                 </div>
-                <div className="left-0 flex flex-col gap-6 w-full md:hidden text-xl">
+                <div className="left-0 flex flex-col mt-6 gap-6 w-full md:hidden text-xl">
                     {showNavItems && links}
                 </div>
             </div>

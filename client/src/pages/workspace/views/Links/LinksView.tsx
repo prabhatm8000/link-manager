@@ -152,7 +152,7 @@ const LinksView = () => {
 
     return (
         <div className="pb-4 flex flex-col gap-4">
-            <div className="flex flex-col md:flex-row gap-2 items-start md:items-center justify-between">
+            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
                 <DisplayConfigBtn
                     config={displayConfig}
                     handleChange={handleDisplayConfigChange}

@@ -135,8 +135,8 @@ const EventsView = () => {
 
     return (
         <>
-            <div className="flex gap-2 items-center justify-between w-full mt-1 mb-4">
-                <div className="flex gap-2 items-center">
+            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between w-full mt-1 mb-4">
+                <div className="flex gap-4 items-center">
                     <LinkDropdown
                         onChange={handleLinkSelect}
                         value={selectedLink}
@@ -146,15 +146,15 @@ const EventsView = () => {
                         onChange={handleDaterangeChange}
                     />
                 </div>
-                <Button onClick={handleCSVDownload} variant={"outline"}>
+                <Button onClick={handleCSVDownload} className="w-full" variant={"outline"}>
                     <FiDownload />
                     <span>Download as CSV</span>
                 </Button>
             </div>
 
             <div className="pb-4">
-                <Card>
-                    <CardHeader className="flex justify-between items-center gap-3">
+                <Card className="py-4">
+                    <CardHeader className="px-4 flex justify-between items-center gap-3">
                         <h3 className="text-muted-foreground flex items-center gap-0">
                             <span>Events</span>
                             <Button
@@ -180,7 +180,7 @@ const EventsView = () => {
                             <span>Switch to Analytics</span>
                         </Button>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="px-4">
                         <EventTable
                             events={eventsState.events}
                             lastRowRef={lastRowRef}
