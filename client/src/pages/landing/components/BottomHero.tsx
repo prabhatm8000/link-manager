@@ -23,8 +23,10 @@ const BottomHero = () => {
                 </span>
             </p>
 
-            <h1 className={`max-w-5xl text-8xl mb-8 ${afterBeforeBorderClass}`}>
-                Smarter links. Sharper insights. Stronger results.
+            <h1 className={`max-w-5xl text-8xl mb-8 flex flex-col ${afterBeforeBorderClass}`}>
+                <span>Smarter links.</span>
+                <span>Sharper insights.</span>
+                <span>Stronger results.</span>
             </h1>
             <Button
                 variant={"ghost"}

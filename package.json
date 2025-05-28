@@ -1,7 +1,10 @@
 {
   "scripts": {
-    "prodBuildClient": "cd server && npm run build && cd ../client && npm run build && cp -r ./dist/* ../server/clientBuild",
+    "prodBuildClient": "cd client && npm run build && cp -r ./dist/* ../server/clientBuild",
     "prodRun": "cd server && npm run start",
-    "prodBuildServerOnly": "cd server && npm run build"
+    "prodBuildServer": "cd server && npm run build",
+
+    "dockerBuild": "docker build -t link-manager .",
+    "dockerRun": "docker run --env-file ./server/.env -p 1905:1905 link-manager"
   }
 }
