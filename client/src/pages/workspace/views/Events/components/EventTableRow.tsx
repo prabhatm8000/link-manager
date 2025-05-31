@@ -1,7 +1,6 @@
-// client/src/pages/workspace/views/Events/components/EventTableRow.tsx
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { TableCell, TableRow } from "@/components/ui/table";
-import type { IEvent } from "@/redux/reducers/types"; // Adjust the import based on your types
+import type { IEvent } from "@/redux/reducers/types";
 import { format } from "date-fns/format";
 import { Link } from "react-router-dom";
 import { iconsMap } from "./icons";
@@ -68,7 +67,12 @@ const EventTableRow = ({
                 </div>
             </TableCell>
 
-            <TableCell>{event.metadata.country}</TableCell>
+            <TableCell>
+                <div className="flex items-center gap-1">
+                    {iconsMap.getCountryIcon(event.metadata.country)}
+                    <span>{event.metadata.country}</span>
+                </div>
+            </TableCell>
             <TableCell>{event.metadata.region}</TableCell>
             <TableCell>{event.metadata.city}</TableCell>
             <TableCell>

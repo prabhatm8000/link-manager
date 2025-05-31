@@ -4,6 +4,7 @@ import type { IAnalyticsState } from "@/redux/reducers/types";
 import { useState } from "react";
 import { LuMousePointerClick } from "react-icons/lu";
 import { useSelector } from "react-redux";
+import { iconsMap } from "../../Events/components/icons";
 
 const GeoLocationCountCard = () => {
     const analyticsState: IAnalyticsState = useSelector(
@@ -43,13 +44,13 @@ const GeoLocationCountCard = () => {
             <CardContent className="overflow-auto p-2">
                 <div className="flex flex-col gap-2 rounded-md text-sm">
                     {Array.isArray(analytics[currentCardTab]) &&
-                        analytics[currentCardTab]?.map((item) => (
+                        analytics[currentCardTab]?.map((item, i) => (
                             <div
                                 key={item.name}
                                 className="flex items-center justify-between px-4 py-2 bg-primary/5 border border-primary/5 rounded-md"
                             >
                                 <div className="flex items-center gap-2">
-                                    {/* {handleIcon(currentCardTab)(item.name)} */}
+                                    {currentCardTab === "country" && iconsMap.getCountryIcon(item.name)}
                                     <span className="capitalize">
                                         {item.name}
                                     </span>

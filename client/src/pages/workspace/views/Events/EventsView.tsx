@@ -146,7 +146,7 @@ const EventsView = () => {
                         onChange={handleDaterangeChange}
                     />
                 </div>
-                <Button onClick={handleCSVDownload} className="w-full" variant={"outline"}>
+                <Button onClick={handleCSVDownload} className="w-full md:w-fit" variant={"outline"}>
                     <FiDownload />
                     <span>Download as CSV</span>
                 </Button>

@@ -1,3 +1,4 @@
+import countries from "@/constants/countries";
 import {
     FaEdge,
     FaInternetExplorer,
@@ -35,7 +36,7 @@ import {
 } from "react-icons/si";
 import { TbWorld } from "react-icons/tb";
 
-const defaultBrowserIcon = <TbWorld />;
+const defaultIcon = <TbWorld />;
 
 type IconMapType = {
     events: {
@@ -54,16 +55,18 @@ type IconMapType = {
     getBrowserIcon: (browser: string) => React.ReactNode;
     getOSIcon: (os: string) => React.ReactNode;
     getDeviceIcon: (device: string) => React.ReactNode;
+    getCountryIcon: (country: string) => React.ReactNode;
 };
 
 export const iconsMap: IconMapType = {
     events: {
         click: <HiCursorClick />,
         qr: <MdQrCode2 />,
-        unknown: defaultBrowserIcon,
+        unknown: defaultIcon,
     },
     browsers: {
         chrome: <SiGooglechrome />,
+        "mobile chrome": <SiGooglechrome />,
         firefox: <SiFirefoxbrowser />,
         safari: <SiSafari />,
         edge: <FaEdge />,
@@ -72,10 +75,10 @@ export const iconsMap: IconMapType = {
         brave: <SiBrave />,
         vivaldi: <SiVivaldi />,
         "samsung internet": <SiSamsung />,
-        "uc browser": defaultBrowserIcon,
+        "uc browser": defaultIcon,
         chromium: <SiGooglechrome />,
         "qq browser": <SiTencentqq />,
-        unknown: defaultBrowserIcon,
+        unknown: defaultIcon,
     },
     os: {
         windows: <FaWindows />,
@@ -103,11 +106,19 @@ export const iconsMap: IconMapType = {
         unknown: <FaQuestion />,
     },
     getEventIcon: (trigger: string) =>
-        iconsMap.events[trigger?.toLowerCase()] || defaultBrowserIcon,
+        iconsMap.events[trigger?.toLowerCase()] || defaultIcon,
     getBrowserIcon: (browser: string) =>
         iconsMap.browsers[browser?.toLowerCase() || "unknown"] ||
-        defaultBrowserIcon,
+        defaultIcon,
     getOSIcon: (os: string) => iconsMap.os[os?.toLowerCase()] || <FaQuestion />,
     getDeviceIcon: (device: string) =>
         iconsMap.devices[device?.toLowerCase()] || <FaQuestion />,
+    getCountryIcon: (country: string) => {
+        const key = country?.toLowerCase() as keyof typeof countries;
+        if (!country || !countries[key]) {
+            return defaultIcon;
+        }
+        const code = countries[key];
+        return <img src={`/country-flags/${code}.svg`} className="size-4" alt={country} />
+    }
 };
