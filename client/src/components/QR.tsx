@@ -67,7 +67,7 @@ const QR = ({ url, logoUrl }: { url: string; logoUrl?: string }) => {
                             height: 32,
                             width: 32,
                             excavate: true,
-                            // crossOrigin: "anonymous",
+                            crossOrigin: "anonymous",
                         }}
                     />
                 </div>
@@ -82,7 +82,7 @@ const QR = ({ url, logoUrl }: { url: string; logoUrl?: string }) => {
                         height: 50,
                         width: 50,
                         excavate: true,
-                        // crossOrigin: "anonymous",
+                        crossOrigin: "anonymous",
                     }}
                 />
             </div>

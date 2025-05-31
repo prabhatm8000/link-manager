@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import StatusMessagesMark4 from "../constants/messages";
 import { APIResponseError } from "../errors/response";
 import asyncWrapper from "../lib/asyncWrapper";
+import fetchImage from "../lib/fetchImage";
 import { fetchMetadata } from "../lib/urlMetadeta";
 import linksService from "../services/linksService";
 import tagsService from "../services/tagsService";
@@ -29,10 +30,22 @@ const getMetadata = asyncWrapper(async (req: Request, res: Response) => {
     }
 
     const metadata = await fetchMetadata(url);
+
+    // loding favicon
+    const faviconDataURL = await fetchImage(
+        metadata.favicon,
+        `${url}/${metadata.favicon}`
+    );
+
     res.status(200).json({
         message: "",
         success: true,
-        data: metadata,
+        data: {
+            ...metadata,
+            ...(faviconDataURL && {
+                faviconDataURL,
+            }),
+        },
     });
 });
 
@@ -59,18 +72,21 @@ const createLink = asyncWrapper(async (req: Request, res: Response) => {
         );
     }
 
-    const link = await linksService.createLink({
-        destinationUrl,
-        shortUrlKey,
-        metadata,
-        tags,
-        comment,
-        expirationTime,
-        password,
+    const link = await linksService.createLink(
+        {
+            destinationUrl,
+            shortUrlKey,
+            metadata,
+            tags,
+            comment,
+            expirationTime,
+            password,
 
-        workspaceId,
-        creatorId: req.user?._id.toString() || "", // can't be undefined
-    }, req.user as IUser);
+            workspaceId,
+            creatorId: req.user?._id.toString() || "", // can't be undefined
+        },
+        req.user as IUser
+    );
     res.status(201).json({
         success: true,
         message: statusMessages.getMessage(

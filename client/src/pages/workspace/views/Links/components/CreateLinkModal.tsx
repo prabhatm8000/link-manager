@@ -39,6 +39,7 @@ type LinkFormType = {
         description: string;
         favicon: string;
         previewImg: string;
+        faviconDataURL?: string;
     };
     tags?: string[];
     comment?: string;
@@ -492,7 +493,7 @@ const CreateLinkModal = ({
                             <div>
                                 <QR
                                     url={shortUrl}
-                                    logoUrl={watch("metadata.favicon")}
+                                    logoUrl={watch("metadata.faviconDataURL") || watch("metadata.favicon") || ""}
                                 />
                             </div>
 

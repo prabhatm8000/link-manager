@@ -44,7 +44,7 @@ const GeoLocationCountCard = () => {
             <CardContent className="overflow-auto p-2">
                 <div className="flex flex-col gap-2 rounded-md text-sm">
                     {Array.isArray(analytics[currentCardTab]) &&
-                        analytics[currentCardTab]?.map((item, i) => (
+                        analytics[currentCardTab]?.map((item) => (
                             <div
                                 key={item.name}
                                 className="flex items-center justify-between px-4 py-2 bg-primary/5 border border-primary/5 rounded-md"
