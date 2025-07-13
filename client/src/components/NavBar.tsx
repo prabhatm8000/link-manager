@@ -1,4 +1,4 @@
-import { afterBeforeBorderClass } from "@/pages/landing/Landing";
+import { motion } from "framer-motion";
 import { useState } from "react";
 import { IoIosClose, IoIosLink } from "react-icons/io";
 import { TbMenu } from "react-icons/tb";
@@ -25,15 +25,16 @@ const NavBar = () => {
         </>
     );
     return (
-        <nav
-            className={`sticky w-full top-0 p-6 z-50 bg-background/80 backdrop-blur-[2px] ${
+        <motion.nav
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 1, ease: "easeInOut" }}
+            className={`fixed w-full top-0 p-6 z-50 ${
                 showNavItems ? "h-screen gap-6" : "h-auto"
             }`}
         >
-            <div className="max-w-7xl mx-auto flex flex-col">
-                <div
-                    className={`flex gap-2 items-end justify-between py-1 ${afterBeforeBorderClass}`}
-                >
+            <div className="max-w-7xl mx-auto flex flex-col bg-muted-foreground/20 backdrop-blur-xs rounded-2xl border border-muted-foreground/20">
+                <div className={`flex gap-2 items-end justify-between p-4`}>
                     <Link to={"/"} className="">
                         <TitleText className="text-3xl flex gap-2 justify-start items-center">
                             <IoIosLink />
@@ -68,7 +69,7 @@ const NavBar = () => {
                     {showNavItems && links}
                 </div>
             </div>
-        </nav>
+        </motion.nav>
     );
 };
 

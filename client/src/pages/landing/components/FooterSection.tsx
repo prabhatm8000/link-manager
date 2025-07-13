@@ -5,7 +5,7 @@ import landingData from "../data/landing";
 
 const FooterSection = () => {
     return (
-        <div className="mt-14 pt-6 w-full bg-foreground text-background">
+        <div className="pt-6 w-full bg-foreground text-background">
             <div className="relative max-w-7xl mx-auto p-6">
                 {/* <div className="flex flex-col gap-4 lg:flex-row lg:gap-24 w-full"> */}
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-[0.3fr_0.7fr] w-full">

@@ -11,7 +11,6 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import landingData from "../data/landing";
-import { afterBeforeBorderClass } from "../Landing";
 
 const PricingCard = ({
     price,
@@ -31,14 +30,26 @@ const PricingCard = ({
             key={price.id}
             ref={ref}
             initial={{ opacity: 0, y: 40, scale: 1 }}
-            animate={isInView ? { opacity: 1, y: 0, scale: price.popped ? 1.25   : 1 } : {}}
+            animate={
+                isInView
+                    ? { opacity: 1, y: 0, scale: price.popped ? 1.25 : 1 }
+                    : {}
+            }
             transition={{ duration: 0.6, ease: "easeOut" }}
+            className="relative"
         >
+            <motion.div
+                className="absolute inset-0 -z-10 rounded-xl"
+                style={{
+                    background:
+                        "radial-gradient(125% 125% at 50% 10%, #00000000 40%, #720e9e 100%)",
+                }}
+            />
             <Card
                 className={`w-xs ${
                     price.popped
-                        ? "border-yellow-400 bg-yellow-400/10 dark:bg-yellow-400/30"
-                        : ""
+                        ? "border-muted-foreground bg-transparent"
+                        : "border-muted-foreground/40"
                 }`}
             >
                 <CardHeader className="text-center">
@@ -66,8 +77,8 @@ const PricingCard = ({
                     <Button
                         className={`w-full ${
                             price.popped
-                                ? "bg-yellow-400 hover:bg-yellow-500 text-black"
-                                : ""
+                                ? "bg-foreground/80 hover:bg-foreground"
+                                : "bg-foreground/60 hover:bg-foreground/80"
                         }`}
                     >
                         <Link className="w-full" to={"/auth/login"}>
@@ -82,28 +93,47 @@ const PricingCard = ({
 
 const PricingCards = ({ currencyType }: { currencyType?: "INR" | "USD" }) => {
     return (
-        <div className="px-6 mt-36 lg:mt-48" id="pricing">
-            <p className="mb-2">
-                <span className="text-sm text-muted-foreground uppercase">
-                    Pricing
-                </span>
-            </p>
+        <div className="relative min-h-screen flex items-center justify-center">
+            <motion.div
+                className="absolute inset-0 z-0"
+                style={
+                    {
+                        // Use CSS variable for dynamic gradient center
+                        "--x": "60%",
+                        backgroundImage:
+                            "radial-gradient(175% 175% at var(--x) 10%, #00000000 20%, #720e9e 100%)",
+                        backgroundRepeat: "no-repeat",
+                    } as React.CSSProperties
+                }
+                animate={{
+                    "--x": ["40%", "60%", "40%"],
+                }}
+                transition={{
+                    duration: 8,
+                    repeat: Infinity,
+                    ease: "circInOut",
+                }}
+            />
+            <div className="px-6 text-center" id="pricing">
+                <p className="mb-2">
+                    <span className="text-sm text-muted-foreground uppercase">
+                        Pricing
+                    </span>
+                </p>
 
-            <h1
-                className={`max-w-5xl text-5xl mb-28 ${afterBeforeBorderClass}`}
-            >
-                Start <span className="bg-yellow-400/50">free</span>, scale
-                effortlessly.
-            </h1>
+                <h1 className={`text-5xl mb-28`}>
+                    Start free, scale effortlessly.
+                </h1>
 
-            <div className="flex items-center justify-center flex-col lg:flex-row gap-20">
-                {landingData.pricing.map((price) => (
-                    <PricingCard
-                        key={price.id}
-                        price={price}
-                        currencyType={currencyType}
-                    />
-                ))}
+                <div className="flex items-center justify-center flex-col lg:flex-row gap-20">
+                    {landingData.pricing.map((price) => (
+                        <PricingCard
+                            key={price.id}
+                            price={price}
+                            currencyType={currencyType}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
     );
