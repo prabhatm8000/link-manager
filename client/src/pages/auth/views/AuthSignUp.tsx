@@ -2,7 +2,7 @@ import {
     CardContent,
     CardFooter,
     CardHeader,
-    CardTitle
+    CardTitle,
 } from "@/components/ui/Card";
 import { Label } from "@/components/ui/label";
 import { registerUser } from "@/redux/thunks/usersThunk";
@@ -15,6 +15,7 @@ import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import type { IUserState } from "../../../redux/reducers/types";
 import type { AppDispatch } from "../../../redux/store";
+import GoogleLoginBtn from "../components/GoogleLoginBtn";
 
 const AuthSignUp = () => {
     const {
@@ -39,7 +40,11 @@ const AuthSignUp = () => {
     });
 
     useEffect(() => {
-        if (!userState?.error && !userState?.loading && userState?.isVerificationSent) {
+        if (
+            !userState?.error &&
+            !userState?.loading &&
+            userState?.isVerificationSent
+        ) {
             reset();
         }
     }, [userState]);
@@ -148,13 +153,19 @@ const AuthSignUp = () => {
                     </Button>
                 </form>
             </CardContent>
-            <CardFooter className="px-4">
+            <CardFooter className="flex-col gap-1 px-4">
                 <div className="text-sm text-center w-full text-black/70 dark:text-white/70">
                     already have an account?{" "}
                     <Link to="/auth/login" className="text-blue-500">
                         Login
                     </Link>
                 </div>
+                <div className="flex w-full gap-1 items-center text-muted-foreground">
+                    <span className="pt-0.5 mt-1 w-full bg-muted-foreground/60" />
+                    <span>or</span>
+                    <span className="pt-0.5 mt-1 w-full bg-muted-foreground/60" />
+                </div>
+                <GoogleLoginBtn />
             </CardFooter>
         </>
     );

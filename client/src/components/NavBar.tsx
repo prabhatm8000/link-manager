@@ -17,11 +17,21 @@ const NavBar = () => {
             <a href={"#home"}>Home</a>
             <a href={"#features"}>Features</a>
             <a href={"#pricing"}>Pricing</a>
-            <a href={user?.isAuthenticated ? "/workspace" : "/auth/login"}>
-                <Button variant="default" className="px-4 py-2">
-                    {user?.isAuthenticated ? "Workspace" : "Sign up"}
+            <Link to={user?.isAuthenticated ? "/workspace" : "/auth/login"}>
+                <Button
+                    variant="outline"
+                    className="px-4 py-2 bg-transparent border-muted-foreground/40"
+                >
+                    {user?.isAuthenticated ? "Workspace" : "Login"}
                 </Button>
-            </a>
+            </Link>
+            {!user?.isAuthenticated && (
+                <Link to={"/auth/signup"}>
+                    <Button variant="default" className="px-4 py-2">
+                        {"Sign up"}
+                    </Button>
+                </Link>
+            )}
         </>
     );
     return (
@@ -33,8 +43,10 @@ const NavBar = () => {
                 showNavItems ? "h-screen gap-6" : "h-auto"
             }`}
         >
-            <div className="max-w-7xl mx-auto flex flex-col bg-muted-foreground/20 backdrop-blur-xs rounded-2xl border border-muted-foreground/20">
-                <div className={`flex gap-2 items-end justify-between p-4`}>
+            <div className="max-w-7xl mx-auto flex flex-col gap-4">
+                <div
+                    className={`flex gap-2 items-end justify-between p-4 bg-muted-foreground/20 backdrop-blur-xs rounded-2xl border border-muted-foreground/20`}
+                >
                     <Link to={"/"} className="">
                         <TitleText className="text-3xl flex gap-2 justify-start items-center">
                             <IoIosLink />
@@ -42,7 +54,7 @@ const NavBar = () => {
                         </TitleText>
                     </Link>
 
-                    <div className="hidden md:flex gap-6 items-center justify-end">
+                    <div className="hidden md:flex gap-4 items-center justify-end">
                         {links}
                     </div>
 
@@ -65,9 +77,11 @@ const NavBar = () => {
                         </div>
                     </Button>
                 </div>
-                <div className="left-0 flex flex-col mt-6 gap-6 w-full md:hidden text-xl">
-                    {showNavItems && links}
-                </div>
+                {showNavItems && (
+                    <div className="left-0 flex flex-col p-4 gap-4 w-full md:hidden bg-muted-foreground/20 backdrop-blur-xs rounded-2xl border border-muted-foreground/20">
+                        {links}
+                    </div>
+                )}
             </div>
         </motion.nav>
     );

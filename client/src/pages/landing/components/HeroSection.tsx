@@ -22,7 +22,7 @@ const HeroSection = () => {
                         // Use CSS variable for dynamic gradient center
                         "--x": "60%",
                         backgroundImage:
-                            "radial-gradient(175% 175% at var(--x) 10%, #00000000 20%, #720e9e 100%)",
+                            "radial-gradient(175% 175% at var(--x) 10%, #00000000 20%, #fe691e 100%)",
                         backgroundRepeat: "no-repeat",
                     } as React.CSSProperties
                 }
@@ -30,9 +30,9 @@ const HeroSection = () => {
                     "--x": ["40%", "60%", "40%"],
                 }}
                 transition={{
-                    duration: 8,
+                    duration: 15,
                     repeat: Infinity,
-                    ease: "circInOut",
+                    ease: "easeInOut",
                 }}
             />
             <motion.div
@@ -40,7 +40,7 @@ const HeroSection = () => {
                 initial={{ opacity: 0, filter: "blur(4px)" }}
                 animate={isInView ? { opacity: 1, filter: "blur(0px)" } : {}}
                 transition={{ duration: 1, ease: "easeInOut" }}
-                className="px-6 items-center flex flex-col text-center"
+                className="p-6 items-center flex flex-col text-center"
             >
                 <p className="mb-2">
                     <span className="text-sm text-muted-foreground uppercase">

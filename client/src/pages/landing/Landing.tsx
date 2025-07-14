@@ -20,6 +20,7 @@ const Landing = () => {
                 <HeroSection />
                 <BottomHero />
                 <FeaturesSection />
+                {/* <FeatureIconBand /> */}
                 <PricingCards currencyType={currency} />
             </div>
             <FooterSection />

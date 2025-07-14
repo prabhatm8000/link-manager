@@ -36,21 +36,21 @@ const PricingCard = ({
                     : {}
             }
             transition={{ duration: 0.6, ease: "easeOut" }}
-            className="relative"
+            className="relative w-2xs"
         >
-            <motion.div
+            {/* <motion.div
                 className="absolute inset-0 -z-10 rounded-xl"
                 style={{
                     background:
-                        "radial-gradient(125% 125% at 50% 10%, #00000000 40%, #720e9e 100%)",
+                        "radial-gradient(105% 105% at 50% 50%, #00000000 40%, #fe691e 100%)",
                 }}
-            />
+            /> */}
             <Card
-                className={`w-xs ${
+                className={`w-2xs ${
                     price.popped
-                        ? "border-muted-foreground bg-transparent"
-                        : "border-muted-foreground/40"
-                }`}
+                        ? "border-muted-foreground/50"
+                        : "border-muted-foreground/20"
+                } bg-background/10`}
             >
                 <CardHeader className="text-center">
                     <CardTitle>
@@ -101,7 +101,7 @@ const PricingCards = ({ currencyType }: { currencyType?: "INR" | "USD" }) => {
                         // Use CSS variable for dynamic gradient center
                         "--x": "60%",
                         backgroundImage:
-                            "radial-gradient(175% 175% at var(--x) 10%, #00000000 20%, #720e9e 100%)",
+                            "radial-gradient(175% 175% at var(--x) 10%, #00000000 20%, #fe691e 100%)",
                         backgroundRepeat: "no-repeat",
                     } as React.CSSProperties
                 }
@@ -109,12 +109,12 @@ const PricingCards = ({ currencyType }: { currencyType?: "INR" | "USD" }) => {
                     "--x": ["40%", "60%", "40%"],
                 }}
                 transition={{
-                    duration: 8,
+                    duration: 15,
                     repeat: Infinity,
-                    ease: "circInOut",
+                    ease: "easeInOut",
                 }}
             />
-            <div className="px-6 text-center" id="pricing">
+            <div className="p-6 text-center" id="pricing">
                 <p className="mb-2">
                     <span className="text-sm text-muted-foreground uppercase">
                         Pricing

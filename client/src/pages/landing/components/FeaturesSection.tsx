@@ -58,7 +58,7 @@ const FeaturesSection = () => {
                     ease: "circInOut",
                 }}
             />
-            <div className="px-6 flex flex-col items-center">
+            <div className="p-6 flex flex-col items-center">
                 {/* <h1 className="text-3xl font-semibold mb-16">Features</h1> */}
                 <p className="mb-2">
                     <span className="text-sm text-muted-foreground uppercase">

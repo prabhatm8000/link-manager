@@ -62,13 +62,6 @@ const features = [
         icon: <HiCursorClick {...iconProps} />,
     },
     {
-        id: "csv-export",
-        title: "CSV Export",
-        description:
-            "**Download raw event data as CSV** for offline analysis or reporting.",
-        icon: <FiDownload {...iconProps} />,
-    },
-    {
         id: "geo-loc-tracking",
         title: "Geo-Location Tracking",
         description:
@@ -81,6 +74,13 @@ const features = [
         description:
             "See detailed stats by device, browser, location, and more. **Visualize trends** with powerful date-range filtering.",
         icon: <IoAnalytics {...iconProps} />,
+    },
+    {
+        id: "csv-export",
+        title: "CSV Export",
+        description:
+            "**Download raw event data as CSV** for offline analysis or reporting.",
+        icon: <FiDownload {...iconProps} />,
     },
 ];
 
@@ -150,7 +150,10 @@ const footerSectionData = [
         links: [
             { title: "E-Mail", link: "mailto:prabhatm8000@gmail.com" },
             { title: "GitHub", link: "https://github.com/prabhatm8000" },
-            { title: "X", link: "https://x.com/Prabhat75279531?t=UChCR1Utkm4f43xDTi_vwg&s=09" },
+            {
+                title: "X",
+                link: "https://x.com/Prabhat75279531?t=UChCR1Utkm4f43xDTi_vwg&s=09",
+            },
         ],
     },
     {
@@ -160,12 +163,12 @@ const footerSectionData = [
             { title: "Privacy Policy", link: "/legal/privacy" },
         ],
     },
-]
+];
 
 const landingData = {
     features,
     pricing,
-    footerSectionData
+    footerSectionData,
 };
 
 export default landingData;
