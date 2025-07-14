@@ -7,10 +7,14 @@ const workspaceSchema = new mongoose.Schema(
         name: {
             type: String,
             required: true,
+            minlength: 3,
+            maxlength: 50,
         },
         description: {
             type: String,
             required: true,
+            minlength: 3,
+            maxlength: 600,
         },
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
@@ -32,7 +36,7 @@ const workspaceSchema = new mongoose.Schema(
     }
 );
 
-workspaceSchema.statics.authorized = async function(
+workspaceSchema.statics.authorized = async function (
     ws: IWorkspace | mongoose.Types.ObjectId | string,
     userId: string,
     checkAll: boolean = true

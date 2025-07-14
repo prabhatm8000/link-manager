@@ -7,11 +7,15 @@ const userSchema = new mongoose.Schema(
         name: {
             type: String,
             required: true,
+            maxlength: 50,
+            minlength: 3,
         },
         email: {
             type: String,
             required: true,
             unique: true,
+            maxlength: 100,
+            minlength: 3,
         },
         // not required for authType: google
         password: {
@@ -40,7 +44,7 @@ const userSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Usage",
             required: true,
-        }
+        },
     },
     {
         timestamps: true,

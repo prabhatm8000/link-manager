@@ -7,6 +7,7 @@ const linksSchema = new mongoose.Schema(
         destinationUrl: {
             type: String,
             required: true,
+            maxlength: 1000,
         },
         shortUrlKey: {
             type: String,
@@ -17,9 +18,11 @@ const linksSchema = new mongoose.Schema(
             type: {
                 title: {
                     type: String,
+                    maxlength: 50,
                 },
                 description: {
                     type: String,
+                    maxlength: 200,
                 },
                 favicon: {
                     type: String,
@@ -34,6 +37,7 @@ const linksSchema = new mongoose.Schema(
         },
         comment: {
             type: String,
+            maxlength: 200,
         },
         expirationTime: {
             type: Date,

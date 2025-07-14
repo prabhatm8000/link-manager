@@ -1,4 +1,3 @@
-add validations in model
 store current workspace in the cookie or something
 auto cron job for changing status of expired links
-create different env for prod and dev
+notifications
