@@ -38,7 +38,7 @@ const FooterSection = () => {
                     </div>
                 </div>
 
-                <div className="text-center mt-10">
+                <div className="mt-10">
                     <BottomCpRight />
                 </div>
             </div>

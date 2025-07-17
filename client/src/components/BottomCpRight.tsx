@@ -1,6 +1,6 @@
 const BottomCpRight = () => {
     return (
-        <div className="bottom-0 text-xs text-muted-foreground w-full my-1 flex flex-col md:flex-row">
+        <div className="bottom-0 text-xs text-muted-foreground w-full my-1 flex flex-col items-center md:flex-row md:justify-center gap-1">
             <span>
                 {"Build by"}{" "}
                 <a
@@ -11,7 +11,7 @@ const BottomCpRight = () => {
                 >
                     prabhatm8000
                 </a>
-                {" · Check out the public github repo"}{" "}
+                {" • Check out the public github repo "}
                 <a
                     href="https://github.com/prabhatm8000/link-manager"
                     target="_blank"
@@ -21,7 +21,7 @@ const BottomCpRight = () => {
                     here
                 </a>
             </span>
-            <span>{` · Ref.com © ${new Date().getFullYear()}. All rights reserved.`}</span>
+            <span>{` • Ref.com © ${new Date().getFullYear()}. All rights reserved.`}</span>
         </div>
     );
 };

@@ -13,9 +13,21 @@ const BottomHero = () => {
     });
 
     // Map scroll progress to X movement (from -50% to 0%)
-    const x1 = useTransform(scrollYProgress, [0, 0.5], ["-50%", "0%"]);
-    const x2 = useTransform(scrollYProgress, [0, 0.5], ["-70%", "0%"]);
-    const x3 = useTransform(scrollYProgress, [0, 0.5], ["-90%", "0%"]);
+    const x1 = useTransform(
+        scrollYProgress,
+        [0, 0.5, 1],
+        ["-50%", "0%", "50%"]
+    );
+    const x2 = useTransform(
+        scrollYProgress,
+        [0, 0.5, 1],
+        ["-70%", "0%", "70%"]
+    );
+    const x3 = useTransform(
+        scrollYProgress,
+        [0, 0.5, 1],
+        ["-90%", "0%", "90%"]
+    );
 
     return (
         <div ref={ref} className="relative p-6 flex flex-col justify-center">
@@ -34,12 +46,15 @@ const BottomHero = () => {
                 <motion.span style={{ x: x2 }} className="w-full inline-block">
                     Sharper insights.
                 </motion.span>
-                <motion.span style={{ x: x3 }} className="w-full inline-block">
+                <motion.span
+                    style={{ x: x3 }}
+                    className="w-full inline-block pb-8"
+                >
                     Stronger results.
                 </motion.span>
             </h1>
 
-            <motion.button className="text-xl mt-8">Hop in!</motion.button>
+            <motion.button className="text-xl">Hop in!</motion.button>
         </div>
     );
 };
